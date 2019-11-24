@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Dmenu-based directory browser
-# Dependency: dmenu
+# Dependency: dmenu; coreutils; xclip; dunst and notify-send
 
 ### OPTIONS AND VARIABLES
 DMENUFM_PATH="$HOME/.config/dmenufm"
