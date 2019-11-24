@@ -13,11 +13,11 @@ ACTION="Actions"
 FMCPPATH="CPP - Copy path"
 FMMKDIR="MKD - Create new directory"
 FMMKFILE="MKF - Create new text file"
-FMRMDIR="RMD - Remove directory"
-FMRMFILE="RMF - Remove file"
+FMRM="RMM - Remove files / directory"
+FMTRASH="TRH - Trash of dmenufm"
 FMHIST="HIS - History of dmenufm"
 FMBMARK="BMK - Bookmark for dmenufm"
-ACTLIST="$FMCPPATH:$FMMKDIR:$FMMKFILE:$FMRMDIR:$FMRMFILE:$FMHIST:$FMBMARK"
+ACTLIST="$FMCPPATH:$FMMKDIR:$FMMKFILE:$FMRM:$FMTRASH:$FMHIST:$FMBMARK"
 
 # Generate directories
 # Variables cannot store multiline string, so transform to ':'
@@ -97,7 +97,6 @@ dmenufm_action (){
 			Generate_action_menu "Copy directory/file path: "
 			printf '%s' "$PWD/$CHOICE" | xclip -selection clipboard
 			notify-send "File path copied to clipboard."
-			dmenufm_menu
 			;;
 		"$FMMKDIR")
 			dirname=$(printf '%s' "" | dmenu -i -p "Enter Directory name: ")
@@ -109,43 +108,61 @@ dmenufm_action (){
 			notify-send "File $filename created."
 			printf '%s' "$PWD/$filename" | xargs -r -I {} dmenufm-open "{}"
 			;;
-		"$FMRMDIR")
-			Generate_action_menu "Remove directory: "
-			dangerprompt "Remove all files and subdirectories in $CHOICE?" "rm -rf $PWD/$CHOICE && notify-send "Directory $dirname removed.""
+		"$FMRM")
+			Generate_action_menu "Remove file / directory: "
+			dangerprompt "Remove all files and / or subdirectories in $CHOICE?" "rm -rf $PWD/$CHOICE && notify-send "$dirname removed.""
 
 			;;
-		"$FMRMFILE")
-			Generate_action_menu "Remove file: " || return
-			dangerprompt "Remove file $CHOICE?" "rm $PWD/$CHOICE && notify-send "File "$filename" removed.""
+		"$FMTRASH")
+			[ ! -d "$DMENUFM_PATH/trash" ] && mkdir -p "$DMENUFM_PATH/trash"
+			trashmenu=$(printf '%s:' "Move file to trash" "Go to trash" "Empty trash" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Trash")
+			case $trashmenu in
+				"Move file to trash")
+					Generate_action_menu "Move file / directory to trash: "
+					if dangerprompt "Move all files and/or subdirectories in $CHOICE?" "mv "$PWD/$CHOICE" "$DMENUFM_PATH/trash""; then
+						notify-send "$CHOICE moved to trash."
+					else
+						return
+					fi
+					;;
+				"Go to trash")
+					cd "$DMENUFM_PATH/trash"
+					;;
+				"Empty trash")
+					if dangerprompt "Remove all files and/or directory in trash?" "rm -rf "$DMENUFM_PATH/trash/*""; then
+						notify-send "Trash is empty."
+					else
+						return
+					fi
+					;;
+			esac
 			;;
 		"$FMHIST")
 			# tac is inverse of cat that cat out the content of history in a reverse way
 			goto=$(tac "$DMENUFM_PATH/dmenufm_history" | dmenu -i -l 20 -p "Dmenufm History")
-			cd "$goto" && dmenufm_menu
+			cd "$goto"
 			;;
 		"$FMBMARK")
 			bookmark=$(< "$DMENUFM_PATH/dmenufm_bookmark" tr '\n' ':')
-			mark=$(printf '%s:' "$bookmark" "Add BMK" "Delete BMK" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Bookmark")
-			case "$mark" in
+			markmenu=$(printf '%s:' "$bookmark" "Add BMK" "Delete BMK" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Bookmark")
+			case "$markmenu" in
 				"Add BMK")
 					dirmark=$(printf '%s' "$PWD" | awk -F '/' '{print $NF}')
 					printf '%s\n' "$dirmark - $PWD" >> "$DMENUFM_PATH/dmenufm_bookmark"
 					sed -i "/^$/ d" "$DMENUFM_PATH/dmenufm_bookmark"
 					# sort -u "$DMENUFM_PATH/dmenufm_bookmark" > "$DMENUFM_PATH/dmenufm_bookmark"
-					dmenufm_menu
 					;;
 				"Delete BMK")
 					delnum=$(cat -n "$DMENUFM_PATH/dmenufm_bookmark" | dmenu -i -l 10 -p "Delete chosen bmk: " | awk '{print $1}')
 					sed -i "$delnum d" "$DMENUFM_PATH/dmenufm_bookmark"
-					dmenufm_menu
 					;;
 				*)
-					destination=$(printf '%s' "$mark" | awk -F ' - ' '{print $2}')
+					destination=$(printf '%s' "$markmenu" | awk -F ' - ' '{print $2}')
 					cd "$destination" || printf '%s' "$PWD/$CHOICE" | xargs -r -I {} dmenufm-open "{}"
-					dmenufm_menu
 			esac
 			;;
 	esac
+	dmenufm_menu
 }
 
 ### MAIN FUNCTIONS

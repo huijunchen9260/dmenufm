@@ -25,7 +25,12 @@ Put both `dmenufm` and `dmenufm-open` in your `$PATH`.
 			- current working directory is `$HOME`, if press `ESC` to leave dmenufm, then `$HOME` will be copied into `xclip`.
 			- If press one directory in `$HOME`, then `$HOME/target_dir/` will be copied.
 	- `MKD` and `MKF` make new directory or file to current working directory, respectively.
-	- `RMD` and `RMF` remove one directory or file, recpectively.
+	- `RMM` remove one directory and/or file.
+	- `TRH` is the trash function of dmenufm.
+		- `$HOME/.config/dmenufm/trash` is the directory storing trashes for dmenufm.
+		- `Move file to trash` will move one file/directory in current working directory into trash
+		- `Go to trash` will move current working directory to trash directory.
+		- `Empty trash` will remove all files/directories in trash directory.
 	- `HIS` records the history of all directories that you went.
 		- history file stored in `$HOME/.config/dmenufm/dmenufm_history`.
 		- The maximum number of history is 5000.
@@ -48,6 +53,5 @@ where `Meta` is also called `Alt`.
 ## TODO
 
 - Extract / Conpress directory to different format.
-- Build function of trash can.
 
 
