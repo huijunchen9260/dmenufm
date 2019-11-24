@@ -1,0 +1,227 @@
+#!/bin/sh
+
+# Dmenu-based directory browser
+# Dependency: dmenu
+
+### OPTIONS AND VARIABLES
+DMENUFM_PATH="$HOME/.config/dmenufm"
+MAX_HIS_LENGTH=5000
+CHOICE="placeholder"
+TARGET="./"
+BACKWARD="../"
+ACTION="Actions"
+FMCPPATH="CPP - Copy path"
+FMMKDIR="MKD - Create new directory"
+FMMKFILE="MKF - Create new text file"
+FMRMDIR="RMD - Remove directory"
+FMRMFILE="RMF - Remove file"
+FMHIST="HIS - History of dmenufm"
+FMBMARK="BMK - Bookmark for dmenufm"
+ACTLIST="$FMCPPATH:$FMMKDIR:$FMMKFILE:$FMRMDIR:$FMRMFILE:$FMHIST:$FMBMARK"
+
+# Generate directories
+# Variables cannot store multiline string, so transform to ':'
+menudir () {
+	# DIRs=$(printf '%s:' */)
+	DIRs=$(for dir in *; do [ -d "$dir" ] && printf '%s:' "$dir/"; done)
+}
+
+# Generate dotdirectories
+menudotdir () {
+	# DOTDIRs=$(printf '%s:' .*/)
+	DOTDIRs=$(for dir in .*; do [ -d "$dir" ] && printf '%s:' "$dir/"; done | sed "1 s=^='=; $ s=$='=")
+}
+
+# Generate files
+menufile () {
+	FILEs=$(for file in *; do [ -f "$file" ] && printf '%s:' "$file"; done)
+}
+
+# Generate dotfiles
+menudotfile () {
+	DOTFILEs=$(for file in .*; do [ -f "$file" ] && printf '%s:' "$file"; done | sed "1 s=^='=; $ s=$='=")
+	# DOTFILEs=$(for file in .*; do [ -f "$file" ] && printf '%s:' "$file"; done)
+}
+
+# Generate default menu
+menu () {
+	menudir
+	menudotdir
+	menufile
+	menudotfile
+}
+
+# Update list in each move
+update_menu () {
+	list=
+	# Rebuild list in every move
+	for element in $keeplist; do
+		case $element in
+			DIRs) menudir && list="$list$DIRs" ;;
+			FILEs) menufile && list="$list$FILEs" ;;
+			DOTDIRs) menudotdir && list="$list$DOTDIRs" ;;
+			DOTFILEs) menudotfile && list="$list$DOTFILEs" ;;
+		esac
+	done
+}
+
+dmenufm_history () {
+	[ ! -d "$DMENUFM_PATH" ] && mkdir -p "$DMENUFM_PATH"
+	printf '%s\n' "$PWD" | sed "/^$/ d" >> "$DMENUFM_PATH/dmenufm_history"
+	# Limit the max number of history
+	hisnum=$(wc -l "$DMENUFM_PATH/dmenufm_history" | awk '{print $1}')
+	if [ "$hisnum" -ge "$MAX_HIS_LENGTH" ]; then
+		sed -i "1d" "$DMENUFM_PATH/dmenufm_history"
+	fi
+}
+
+
+# Prompt that used in dangerous action
+dangerprompt () {
+	# From Luke Smith
+	[ "$(printf "No\\nYes" | dmenu -i -p "$1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ] && $2
+}
+
+Generate_action_menu () {
+	update_menu
+	# Default menu list if no arguments given
+	[ -z "$keeplist" ] && menu && list="$DIRs$FILEs$DOTDIRs$DOTFILEs"
+	# Generate menu with/without arguments
+	CHOICE=$(printf '%s:' "$list" | tr ':' '\n' | dmenu -i -l 10 -p "$1")
+}
+
+dmenufm_action (){
+	move=$(printf '%s:' "$ACTLIST" | tr ':' '\n' | dmenu -i -l 10 -p "Actions:")
+	case $move in
+		"$FMCPPATH")
+			Generate_action_menu "Copy directory/file path: "
+			printf '%s' "$PWD/$CHOICE" | xclip -selection clipboard
+			notify-send "File path copied to clipboard."
+			dmenufm_menu
+			;;
+		"$FMMKDIR")
+			dirname=$(printf '%s' "" | dmenu -i -p "Enter Directory name: ")
+			mkdir -p "$dirname" && notify-send "Directory $dirname created."
+			;;
+		"$FMMKFILE")
+			filename=$(printf '%s' "" | dmenu -i -p "Enter plain text file name: ")
+			touch "$filename"
+			notify-send "File $filename created."
+			printf '%s' "$PWD/$filename" | xargs -r -I {} dmenufm-open "{}"
+			;;
+		"$FMRMDIR")
+			Generate_action_menu "Remove directory: "
+			dangerprompt "Remove all files and subdirectories in $CHOICE?" "rm -rf $PWD/$CHOICE && notify-send "Directory $dirname removed.""
+
+			;;
+		"$FMRMFILE")
+			Generate_action_menu "Remove file: " || return
+			dangerprompt "Remove file $CHOICE?" "rm $PWD/$CHOICE && notify-send "File "$filename" removed.""
+			;;
+		"$FMHIST")
+			# tac is inverse of cat that cat out the content of history in a reverse way
+			goto=$(tac "$DMENUFM_PATH/dmenufm_history" | dmenu -i -l 20 -p "Dmenufm History")
+			cd "$goto" && dmenufm_menu
+			;;
+		"$FMBMARK")
+			bookmark=$(< "$DMENUFM_PATH/dmenufm_bookmark" tr '\n' ':')
+			mark=$(printf '%s:' "$bookmark" "Add BMK" "Delete BMK" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Bookmark")
+			case "$mark" in
+				"Add BMK")
+					dirmark=$(printf '%s' "$PWD" | awk -F '/' '{print $NF}')
+					printf '%s\n' "$dirmark - $PWD" >> "$DMENUFM_PATH/dmenufm_bookmark"
+					sed -i "/^$/ d" "$DMENUFM_PATH/dmenufm_bookmark"
+					# sort -u "$DMENUFM_PATH/dmenufm_bookmark" > "$DMENUFM_PATH/dmenufm_bookmark"
+					dmenufm_menu
+					;;
+				"Delete BMK")
+					delnum=$(cat -n "$DMENUFM_PATH/dmenufm_bookmark" | dmenu -i -l 10 -p "Delete chosen bmk: " | awk '{print $1}')
+					sed -i "$delnum d" "$DMENUFM_PATH/dmenufm_bookmark"
+					dmenufm_menu
+					;;
+				*)
+					destination=$(printf '%s' "$mark" | awk -F ' - ' '{print $2}')
+					cd "$destination" || printf '%s' "$PWD/$CHOICE" | xargs -r -I {} dmenufm-open "{}"
+					dmenufm_menu
+			esac
+			;;
+	esac
+}
+
+### MAIN FUNCTIONS
+
+dmenufm_menu () {
+	while [ -n "$CHOICE" ]; do
+		update_menu
+		# Default menu list if no arguments given
+		[ -z "$keeplist" ] && menu && list="$DIRs$FILEs$DOTDIRs$DOTFILEs"
+		# Generate menu with/without arguments
+		# Show only the current directory and one level of parent directory
+		twopwd=$(printf '%s' "$PWD" | awk -F '/' '{print $(NF-1)"/"$NF}')
+		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ACTION" "$list" | tr ':' '\n' | dmenu -i -l 10 -p "$twopwd")
+		# Outcome matching
+		if [ "$CHOICE" = "$TARGET" ]; then
+			printf '%s' "$PWD" | xargs -r -I {} dmenufm-open "{}"
+			break
+		elif [ "$CHOICE" = "$BACKWARD" ]; then
+			cd "../"
+		elif [ "$CHOICE" = "$ACTION" ]; then
+			dmenufm_action
+			break
+		elif [ -d "$CHOICE" ]; then
+			cd "$CHOICE" || exit 1
+			dmenufm_history
+			continue
+		elif [ -f "$CHOICE" ]; then
+		 	printf '%s' "$PWD/$CHOICE" | xargs -r -I {} dmenufm-open "{}"
+			printf '%s' "$PWD" |  xargs -r -I {} dmenufm-open "{}"
+		 	break
+		else
+			break
+		fi
+	done
+}
+
+### ARGUMENTS
+
+while [ -n "$1" ]; do
+	case $1 in
+		"-d"|"--directory" )
+			keeplist="${keeplist} DIRs"
+			;;
+		"-f"|"--file" )
+			keeplist="${keeplist} FILEs"
+			;;
+		"-D"|"--dotdirectory" )
+			keeplist="${keeplist} DOTDIRs"
+			;;
+		"-F"|"--dotfile" )
+			keeplist="${keeplist} DOTFILEs"
+			;;
+		# "-p"|"--prompt" )
+		# 	shift
+		# 	prompt="$1"
+		# 	;;
+		"-h"|"--help" )
+			printf "Optional arguments for custom use:
+			-d | --directory: menu is directories, no input
+			-f | --file: menu is files, no input
+			-D | --dotdirectory: menu is hidden directories, no input
+			-F | --dotfile: menu is hidden files, no input
+			-h | --help: Show this message\\n"
+			exit 0
+			;;
+		"*" )
+			printf "Invalid option"
+			exit 1
+			;;
+	esac
+	shift
+done
+
+
+			# -p | --prompt: prompt for dmenu, input as prompt name
+
+### RUN THE MAIN FUNCTION
+dmenufm_menu
+

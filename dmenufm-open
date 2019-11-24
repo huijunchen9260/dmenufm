@@ -40,7 +40,7 @@ case "$1" in
 				$BROWSER "$1" &
 				;;
 			text/* | inode/x-empty | message/rfc822)
-				$TERMINAL -e "$EDITOR "$1"" &
+				$TERMINAL -e $EDITOR "$1" &
 				;;
 			inode/directory)
 				# cd "$1" && $TERMINAL &
