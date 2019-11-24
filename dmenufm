@@ -27,9 +27,9 @@ menudir () {
 }
 
 # Generate dotdirectories
-# Delete extra ./ and ../
+# Delete extra ./ and ../ (Need use = as sed delimiter)
 menudotdir () {
-	DOTDIRs=$(for dir in .*; do [ -d "$dir" ] && printf '%s:' "$dir/"; done | sed "1 s/^/'/; s/$/'/")
+	DOTDIRs=$(for dir in .*; do [ -d "$dir" ] && printf '%s:' "$dir/"; done | sed "1 s/^/'/; s/$/'/; s=./==; s=../==")
 }
 
 # Generate files
@@ -85,11 +85,33 @@ dangerprompt () {
 
 # Generate menu for action choice, only for current directory.
 Generate_action_menu () {
-	update_menu
-	# Default menu list if no arguments given
-	[ -z "$keeplist" ] && menu && list="$DIRs$FILEs$DOTDIRs$DOTFILEs"
-	# Generate menu with/without arguments
-	CHOICE=$(printf '%s:' "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | dmenu -i -l 10 -p "$1")
+	while [ -n "$CHOICE" ]; do
+		update_menu
+		# Default menu list if no arguments given
+		[ -z "$keeplist" ] && menu && list="$DIRs$FILEs$DOTDIRs$DOTFILEs"
+		# Generate menu with/without arguments
+		# Show only the current directory and one level of parent directory
+		twopwd=$(printf '%s' "$PWD" | awk -F '/' '{print $(NF-1)"/"$NF}')
+		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | dmenu -i -l 10 -sb "#33691e" -p "$1")
+		# Outcome matching
+		if [ "$CHOICE" = "$TARGET" ]; then
+			HERE=$PWD
+			name=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
+			break
+		elif [ "$CHOICE" = "$BACKWARD" ]; then
+			cd "../"
+		elif [ -d "$CHOICE" ]; then
+			cd "$CHOICE" || exit 1
+			dmenufm_history
+			continue
+		elif [ -f "$CHOICE" ]; then
+			HERE=$(printf '%s' "$PWD/$CHOICE")
+			name=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
+		 	break
+		else
+			break
+		fi
+	done
 }
 
 # Actions that for dmenufm
@@ -99,7 +121,7 @@ dmenufm_action (){
 		"$FMCPPATH")
 			# Copy path to xclip, and send notification.
 			Generate_action_menu "Copy directory/file path: "
-			printf '%s' "$PWD/$CHOICE" | xclip -selection clipboard
+			printf '%s' "$HERE" | xclip -selection clipboard
 			notify-send "File path copied to clipboard."
 			;;
 		"$FMMKDIR")
@@ -115,7 +137,11 @@ dmenufm_action (){
 		"$FMRM")
 			# Choose file/directory in current directory to remove
 			Generate_action_menu "Remove file / directory: "
-			dangerprompt "Remove all files and / or subdirectories in $CHOICE?" "rm -rf $PWD/$CHOICE && notify-send "$dirname removed.""
+			if dangerprompt "Remove all files and/or subdirectories in $name?" "rm -rf $HERE"; then
+				notify-send "$name removed."
+			else
+				return
+			fi
 
 			;;
 		"$FMTRASH")
@@ -123,10 +149,11 @@ dmenufm_action (){
 			trashmenu=$(printf '%s:' "Move file to trash" "Go to trash" "Empty trash" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Trash")
 			case $trashmenu in
 				"Move file to trash")
-					Generate_action_menu "Move file / directory to trash: "
+					Generate_action_menu "Move file/directory to trash: "
 					# Say yes in dangerprompt, and send notification. Or do nothing.
-					if dangerprompt "Move all files and/or subdirectories in $CHOICE?" "mv "$PWD/$CHOICE" "$DMENUFM_PATH/trash""; then
+					if dangerprompt "Move all files and/or subdirectories in $name to trash?" "mv "$HERE" "$DMENUFM_PATH/trash""; then
 						notify-send "$CHOICE moved to trash."
+						cd "../"
 					else
 						return
 					fi
@@ -146,15 +173,17 @@ dmenufm_action (){
 		"$FMHIST")
 			# tac is inverse of cat that cat out the content of history in a reverse way
 			goto=$(tac "$DMENUFM_PATH/dmenufm_history" | dmenu -i -l 20 -p "Dmenufm History")
-			cd "$goto"
+			destination=$(printf '%s' "$goto" | awk -F ' - ' '{print $2}')
+			cd "$destination"
 			;;
 		"$FMBMARK")
 			bookmark=$(< "$DMENUFM_PATH/dmenufm_bookmark" tr '\n' ':')
 			markmenu=$(printf '%s:' "$bookmark" "Add BMK" "Delete BMK" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Bookmark")
 			case "$markmenu" in
 				"Add BMK")
-					dirmark=$(printf '%s' "$PWD" | awk -F '/' '{print $NF}')
-					printf '%s\n' "$dirmark - $PWD" >> "$DMENUFM_PATH/dmenufm_bookmark"
+					Generate_action_menu "Choose file/directory and add to BMK: "
+					mark=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
+					printf '%s\n' "$mark - $HERE" >> "$DMENUFM_PATH/dmenufm_bookmark"
 					sed -i "/^$/ d" "$DMENUFM_PATH/dmenufm_bookmark"
 					;;
 				"Delete BMK")
@@ -163,7 +192,7 @@ dmenufm_action (){
 					;;
 				*)
 					destination=$(printf '%s' "$markmenu" | awk -F ' - ' '{print $2}')
-					cd "$destination" || printf '%s' "$PWD/$CHOICE" | xargs -r -I {} dmenufm-open "{}"
+					cd "$destination" || printf '%s' "$HERE" | xargs -r -I {} dmenufm-open "{}"
 			esac
 			;;
 	esac

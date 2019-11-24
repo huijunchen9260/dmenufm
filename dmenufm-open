@@ -44,7 +44,7 @@ case "$1" in
 				;;
 			inode/directory)
 				# cd "$1" && $TERMINAL &
-				cd "$1" && $TERMINAL -e "$FILE" && cd - &
+				cd "$1" && $TERMINAL && cd - &
 				;;
 			image/*)
 				sxiv "$1" &
