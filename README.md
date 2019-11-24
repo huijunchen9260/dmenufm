@@ -33,6 +33,18 @@ Put both `dmenufm` and `dmenufm-open` in your `$PATH`.
 		- Choose the listed bookmark to enter that directory. Bookmarks are stored in `$HOME/.config/dmenufm/dmenufm_bookmark`
 		- Choose "Add BMK" to add current directory as bookmark.
 		- Choose "Delete BMK" to delete one directory in bookmark.
+
+Note: If you hate GUIarrowy world like me, based on `man dmenu`, you can
+
+- `Ctrl-n` to go up,
+- `Ctrl-p` to go down,
+- `Meta-h` to go up,
+- `Meta-l` to go down,
+- `Meta-k` to go one page up,
+- `Meta-j`  to go one page down,
+
+where `Meta` is also called `Alt`.
+
 ## TODO
 
 - Extract / Conpress directory to different format.
