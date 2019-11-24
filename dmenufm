@@ -21,26 +21,25 @@ ACTLIST="$FMCPPATH:$FMMKDIR:$FMMKFILE:$FMRM:$FMTRASH:$FMHIST:$FMBMARK"
 
 # Generate directories
 # Variables cannot store multiline string, so transform to ':'
+# Misbehaving due to space in file/directory name, so add ' at beginning and end.
 menudir () {
-	# DIRs=$(printf '%s:' */)
-	DIRs=$(for dir in *; do [ -d "$dir" ] && printf '%s:' "$dir/"; done)
+	DIRs=$(for dir in *; do [ -d "$dir" ] && printf '%s:' "$dir/"; done | sed "1 s/^/'/; s/$/'/")
 }
 
 # Generate dotdirectories
+# Delete extra ./ and ../
 menudotdir () {
-	# DOTDIRs=$(printf '%s:' .*/)
-	DOTDIRs=$(for dir in .*; do [ -d "$dir" ] && printf '%s:' "$dir/"; done | sed "1 s=^='=; $ s=$='=")
+	DOTDIRs=$(for dir in .*; do [ -d "$dir" ] && printf '%s:' "$dir/"; done | sed "1 s/^/'/; s/$/'/")
 }
 
 # Generate files
 menufile () {
-	FILEs=$(for file in *; do [ -f "$file" ] && printf '%s:' "$file"; done)
+	FILEs=$(for file in *; do [ -f "$file" ] && printf '%s:' "$file"; done | sed "1 s/^/'/; s/$/'/")
 }
 
 # Generate dotfiles
 menudotfile () {
-	DOTFILEs=$(for file in .*; do [ -f "$file" ] && printf '%s:' "$file"; done | sed "1 s=^='=; $ s=$='=")
-	# DOTFILEs=$(for file in .*; do [ -f "$file" ] && printf '%s:' "$file"; done)
+	DOTFILEs=$(for file in .*; do [ -f "$file" ] && printf '%s:' "$file"; done | sed "1 s/^/'/; s/$/'/")
 }
 
 # Generate default menu
@@ -51,7 +50,7 @@ menu () {
 	menudotfile
 }
 
-# Update list in each move
+# Update menu in each move
 update_menu () {
 	list=
 	# Rebuild list in every move
@@ -65,9 +64,11 @@ update_menu () {
 	done
 }
 
+# Store every move between directories into history
 dmenufm_history () {
 	[ ! -d "$DMENUFM_PATH" ] && mkdir -p "$DMENUFM_PATH"
-	printf '%s\n' "$PWD" | sed "/^$/ d" >> "$DMENUFM_PATH/dmenufm_history"
+	dirmark=$(printf '%s' "$PWD" | awk -F '/' '{print $NF}')
+	printf '%s\n' "$dirmark - $PWD" | sed "/^$/ d" >> "$DMENUFM_PATH/dmenufm_history"
 	# Limit the max number of history
 	hisnum=$(wc -l "$DMENUFM_PATH/dmenufm_history" | awk '{print $1}')
 	if [ "$hisnum" -ge "$MAX_HIS_LENGTH" ]; then
@@ -82,18 +83,21 @@ dangerprompt () {
 	[ "$(printf "No\\nYes" | dmenu -i -p "$1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ] && $2
 }
 
+# Generate menu for action choice, only for current directory.
 Generate_action_menu () {
 	update_menu
 	# Default menu list if no arguments given
 	[ -z "$keeplist" ] && menu && list="$DIRs$FILEs$DOTDIRs$DOTFILEs"
 	# Generate menu with/without arguments
-	CHOICE=$(printf '%s:' "$list" | tr ':' '\n' | dmenu -i -l 10 -p "$1")
+	CHOICE=$(printf '%s:' "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | dmenu -i -l 10 -p "$1")
 }
 
+# Actions that for dmenufm
 dmenufm_action (){
 	move=$(printf '%s:' "$ACTLIST" | tr ':' '\n' | dmenu -i -l 10 -p "Actions:")
 	case $move in
 		"$FMCPPATH")
+			# Copy path to xclip, and send notification.
 			Generate_action_menu "Copy directory/file path: "
 			printf '%s' "$PWD/$CHOICE" | xclip -selection clipboard
 			notify-send "File path copied to clipboard."
@@ -109,6 +113,7 @@ dmenufm_action (){
 			printf '%s' "$PWD/$filename" | xargs -r -I {} dmenufm-open "{}"
 			;;
 		"$FMRM")
+			# Choose file/directory in current directory to remove
 			Generate_action_menu "Remove file / directory: "
 			dangerprompt "Remove all files and / or subdirectories in $CHOICE?" "rm -rf $PWD/$CHOICE && notify-send "$dirname removed.""
 
@@ -119,6 +124,7 @@ dmenufm_action (){
 			case $trashmenu in
 				"Move file to trash")
 					Generate_action_menu "Move file / directory to trash: "
+					# Say yes in dangerprompt, and send notification. Or do nothing.
 					if dangerprompt "Move all files and/or subdirectories in $CHOICE?" "mv "$PWD/$CHOICE" "$DMENUFM_PATH/trash""; then
 						notify-send "$CHOICE moved to trash."
 					else
@@ -150,7 +156,6 @@ dmenufm_action (){
 					dirmark=$(printf '%s' "$PWD" | awk -F '/' '{print $NF}')
 					printf '%s\n' "$dirmark - $PWD" >> "$DMENUFM_PATH/dmenufm_bookmark"
 					sed -i "/^$/ d" "$DMENUFM_PATH/dmenufm_bookmark"
-					# sort -u "$DMENUFM_PATH/dmenufm_bookmark" > "$DMENUFM_PATH/dmenufm_bookmark"
 					;;
 				"Delete BMK")
 					delnum=$(cat -n "$DMENUFM_PATH/dmenufm_bookmark" | dmenu -i -l 10 -p "Delete chosen bmk: " | awk '{print $1}')
@@ -175,7 +180,7 @@ dmenufm_menu () {
 		# Generate menu with/without arguments
 		# Show only the current directory and one level of parent directory
 		twopwd=$(printf '%s' "$PWD" | awk -F '/' '{print $(NF-1)"/"$NF}')
-		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ACTION" "$list" | tr ':' '\n' | dmenu -i -l 10 -p "$twopwd")
+		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ACTION" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | dmenu -i -l 10 -p "$twopwd")
 		# Outcome matching
 		if [ "$CHOICE" = "$TARGET" ]; then
 			printf '%s' "$PWD" | xargs -r -I {} dmenufm-open "{}"
@@ -215,10 +220,6 @@ while [ -n "$1" ]; do
 		"-F"|"--dotfile" )
 			keeplist="${keeplist} DOTFILEs"
 			;;
-		# "-p"|"--prompt" )
-		# 	shift
-		# 	prompt="$1"
-		# 	;;
 		"-h"|"--help" )
 			printf "Optional arguments for custom use:
 			-d | --directory: menu is directories, no input
@@ -236,9 +237,5 @@ while [ -n "$1" ]; do
 	shift
 done
 
-
-			# -p | --prompt: prompt for dmenu, input as prompt name
-
 ### RUN THE MAIN FUNCTION
 dmenufm_menu
-
