@@ -1,5 +1,7 @@
 # Dmenufm
 
+![Dmenufm Introduction](./dmenu_intro.gif)
+
 A simple dmenu file manager written in POSIX-compliant shell script.
 
 ## Dependency
