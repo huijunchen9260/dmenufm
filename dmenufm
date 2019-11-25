@@ -80,7 +80,8 @@ dmenufm_history () {
 # Prompt that used in dangerous action
 dangerprompt () {
 	# From Luke Smith
-	[ "$(printf "No\\nYes" | dmenu -i -p "$1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ] && $2
+	# Use && command to execute the command after "Yes"
+	[ "$(printf "No\\nYes" | dmenu -i -p "$1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ]
 }
 
 # Generate menu for action choice, only for current directory.
@@ -95,11 +96,11 @@ Generate_action_menu () {
 		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | dmenu -i -l 10 -sb "#33691e" -p "$1")
 		# Outcome matching
 		if [ "$CHOICE" = "$TARGET" ]; then
-			HERE=$PWD
+			HERE=$(printf '%s' "$PWD")
 			name=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
 			break
 		elif [ "$CHOICE" = "$BACKWARD" ]; then
-			cd "../"
+			cd "../" || return
 		elif [ -d "$CHOICE" ]; then
 			cd "$CHOICE" || exit 1
 			dmenufm_history
@@ -137,7 +138,7 @@ dmenufm_action (){
 		"$FMRM")
 			# Choose file/directory in current directory to remove
 			Generate_action_menu "Remove file / directory: "
-			if dangerprompt "Remove all files and/or subdirectories in $name?" "rm -rf $HERE"; then
+			if dangerprompt "Remove all files and/or subdirectories in $name?" && rm -rf "$HERE"; then
 				notify-send "$name removed."
 			else
 				return
@@ -146,23 +147,34 @@ dmenufm_action (){
 			;;
 		"$FMTRASH")
 			[ ! -d "$DMENUFM_PATH/trash" ] && mkdir -p "$DMENUFM_PATH/trash"
-			trashmenu=$(printf '%s:' "Move file to trash" "Go to trash" "Empty trash" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Trash")
+			trashmenu=$(printf '%s:' "Move to trash" "Go to trash" "Empty trash" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Trash")
 			case $trashmenu in
-				"Move file to trash")
+				"Move to trash")
 					Generate_action_menu "Move file/directory to trash: "
+					# Check the chosen on is directory or not
+					[ -d $HERE ] && result=$?
 					# Say yes in dangerprompt, and send notification. Or do nothing.
-					if dangerprompt "Move all files and/or subdirectories in $name to trash?" "mv "$HERE" "$DMENUFM_PATH/trash""; then
-						notify-send "$CHOICE moved to trash."
-						cd "../"
+					if dangerprompt "Move all files and/or subdirectories in $name to trash?" && mv "$HERE" "$DMENUFM_PATH/trash"; then
+						if [ $result -eq 0 ]; then
+							# If chosen one is directory, send notification and cd to parent directory
+							notify-send "$name moved to trash."
+							cd "../" || return
+							# Reset result value
+							result=
+						else
+							# If not, just send notification.
+							notify-send "$name moved to trash."
+						fi
 					else
 						return
 					fi
 					;;
 				"Go to trash")
-					cd "$DMENUFM_PATH/trash"
+					cd "$DMENUFM_PATH/trash" || return
 					;;
 				"Empty trash")
-					if dangerprompt "Remove all files and/or directory in trash?" "rm -rf "$DMENUFM_PATH/trash/*""; then
+					# Lesson: You cannot quote a wildcard. No quote on *.
+					if dangerprompt "Remove all files and/or directory in trash?" && rm -rf $DMENUFM_PATH/trash/*; then
 						notify-send "Trash is empty."
 					else
 						return
@@ -174,7 +186,7 @@ dmenufm_action (){
 			# tac is inverse of cat that cat out the content of history in a reverse way
 			goto=$(tac "$DMENUFM_PATH/dmenufm_history" | dmenu -i -l 20 -p "Dmenufm History")
 			destination=$(printf '%s' "$goto" | awk -F ' - ' '{print $2}')
-			cd "$destination"
+			cd "$destination" || return
 			;;
 		"$FMBMARK")
 			bookmark=$(< "$DMENUFM_PATH/dmenufm_bookmark" tr '\n' ':')
