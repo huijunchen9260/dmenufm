@@ -51,13 +51,28 @@ Note: If you hate GUIarrowy world like me, based on `man dmenu`, you can
 - `Ctrl-n` to go up,
 - `Ctrl-p` to go down,
 - `Ctrl-y` to paste from primary X selection
-	- Everything your "are selecting" can be paste into dmenu by this hotkey.
+	- Everything your "are selecting" can be paste into dmenu by this hot key.
 - `Meta-h` to go up,
 - `Meta-l` to go down,
 - `Meta-k` to go one page up,
 - `Meta-j`  to go one page down,
 
 where `Meta` is also called `Alt`.
+
+## Dmenufm-open
+
+`Dmenufm-open` is also a POSIX compliant shell script that opens the files/directories.
+
+I use
+
+- `libreoffice` for office stuff,
+- `sxiv` for image,
+- `mpv` for video,
+- `inkscape` for svg,
+- `nvim` for text file,
+- `xdg-open` for others.
+
+Feel free to modify this opener to suit your need.
 
 ## TODO
 
