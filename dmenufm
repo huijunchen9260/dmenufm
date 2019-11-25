@@ -10,14 +10,14 @@ CHOICE="placeholder"
 TARGET="./"
 BACKWARD="../"
 ACTION="Actions"
-FMCPPATH="CPP - Copy path"
-FMMKDIR="MKD - Create new directory"
-FMMKFILE="MKF - Create new text file"
-FMRM="RMM - Remove files / directory"
-FMTRASH="TRH - Trash of dmenufm"
-FMHIST="HIS - History of dmenufm"
-FMBMARK="BMK - Bookmark for dmenufm"
-ACTLIST="$FMCPPATH:$FMMKDIR:$FMMKFILE:$FMRM:$FMTRASH:$FMHIST:$FMBMARK"
+FM_CP_PATH="CPP - Copy path"
+FM_MK_DIR="MKD - Create new directory"
+FM_MK_FILE="MKF - Create new text file"
+FM_RM="RMM - Remove files / directory"
+FM_TRASH="TRH - Trash of dmenufm"
+FM_HIST="HIS - History of dmenufm"
+FM_BMARK="BMK - Bookmark for dmenufm"
+ACTLIST="$FM_CP_PATH:$FM_MK_DIR:$FM_MK_FILE:$FM_RM:$FM_TRASH:$FM_HIST:$FM_BMARK"
 
 # Generate directories
 # Variables cannot store multiline string, so transform to ':'
@@ -64,6 +64,7 @@ update_menu () {
 	done
 }
 
+
 # Store every move between directories into history
 dmenufm_history () {
 	[ ! -d "$DMENUFM_PATH" ] && mkdir -p "$DMENUFM_PATH"
@@ -101,6 +102,7 @@ Generate_action_menu () {
 			break
 		elif [ "$CHOICE" = "$BACKWARD" ]; then
 			cd "../" || return
+			dmenufm_history
 		elif [ -d "$CHOICE" ]; then
 			cd "$CHOICE" || exit 1
 			dmenufm_history
@@ -119,23 +121,23 @@ Generate_action_menu () {
 dmenufm_action (){
 	move=$(printf '%s:' "$ACTLIST" | tr ':' '\n' | dmenu -i -l 10 -p "Actions:")
 	case $move in
-		"$FMCPPATH")
+		"$FM_CP_PATH")
 			# Copy path to xclip, and send notification.
 			Generate_action_menu "Copy directory/file path: "
 			printf '%s' "$HERE" | xclip -selection clipboard
 			notify-send "File path copied to clipboard."
 			;;
-		"$FMMKDIR")
+		"$FM_MK_DIR")
 			dirname=$(printf '%s' "" | dmenu -i -p "Enter Directory name: ")
 			mkdir -p "$dirname" && notify-send "Directory $dirname created."
 			;;
-		"$FMMKFILE")
+		"$FM_MK_FILE")
 			filename=$(printf '%s' "" | dmenu -i -p "Enter plain text file name: ")
 			touch "$filename"
 			notify-send "File $filename created."
 			printf '%s' "$PWD/$filename" | xargs -r -I {} dmenufm-open "{}"
 			;;
-		"$FMRM")
+		"$FM_RM")
 			# Choose file/directory in current directory to remove
 			Generate_action_menu "Remove file / directory: "
 			if dangerprompt "Remove all files and/or subdirectories in $name?" && rm -rf "$HERE"; then
@@ -145,14 +147,14 @@ dmenufm_action (){
 			fi
 
 			;;
-		"$FMTRASH")
+		"$FM_TRASH")
 			[ ! -d "$DMENUFM_PATH/trash" ] && mkdir -p "$DMENUFM_PATH/trash"
 			trashmenu=$(printf '%s:' "Move to trash" "Go to trash" "Empty trash" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Trash")
 			case $trashmenu in
 				"Move to trash")
 					Generate_action_menu "Move file/directory to trash: "
 					# Check the chosen on is directory or not
-					[ -d $HERE ] && result=$?
+					[ -d "$HERE" ] && result=$?
 					# Say yes in dangerprompt, and send notification. Or do nothing.
 					if dangerprompt "Move all files and/or subdirectories in $name to trash?" && mv "$HERE" "$DMENUFM_PATH/trash"; then
 						if [ $result -eq 0 ]; then
@@ -174,7 +176,7 @@ dmenufm_action (){
 					;;
 				"Empty trash")
 					# Lesson: You cannot quote a wildcard. No quote on *.
-					if dangerprompt "Remove all files and/or directory in trash?" && rm -rf $DMENUFM_PATH/trash/*; then
+					if dangerprompt "Remove all files and/or directory in trash?" && rm -rf "$DMENUFM_PATH/trash/"*; then
 						notify-send "Trash is empty."
 					else
 						return
@@ -182,13 +184,13 @@ dmenufm_action (){
 					;;
 			esac
 			;;
-		"$FMHIST")
+		"$FM_HIST")
 			# tac is inverse of cat that cat out the content of history in a reverse way
 			goto=$(tac "$DMENUFM_PATH/dmenufm_history" | dmenu -i -l 20 -p "Dmenufm History")
 			destination=$(printf '%s' "$goto" | awk -F ' - ' '{print $2}')
 			cd "$destination" || return
 			;;
-		"$FMBMARK")
+		"$FM_BMARK")
 			bookmark=$(< "$DMENUFM_PATH/dmenufm_bookmark" tr '\n' ':')
 			markmenu=$(printf '%s:' "$bookmark" "Add BMK" "Delete BMK" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Bookmark")
 			case "$markmenu" in
@@ -205,6 +207,7 @@ dmenufm_action (){
 				*)
 					destination=$(printf '%s' "$markmenu" | awk -F ' - ' '{print $2}')
 					cd "$destination" || printf '%s' "$HERE" | xargs -r -I {} dmenufm-open "{}"
+					dmenufm_history
 			esac
 			;;
 	esac
@@ -228,6 +231,7 @@ dmenufm_menu () {
 			break
 		elif [ "$CHOICE" = "$BACKWARD" ]; then
 			cd "../"
+			dmenufm_history
 		elif [ "$CHOICE" = "$ACTION" ]; then
 			dmenufm_action
 			break
@@ -237,7 +241,6 @@ dmenufm_menu () {
 			continue
 		elif [ -f "$CHOICE" ]; then
 		 	printf '%s' "$PWD/$CHOICE" | xargs -r -I {} dmenufm-open "{}"
-			printf '%s' "$PWD" |  xargs -r -I {} dmenufm-open "{}"
 		 	break
 		else
 			break

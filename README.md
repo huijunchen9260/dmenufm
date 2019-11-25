@@ -1,6 +1,8 @@
 # Dmenufm
 
-![Dmenufm Introduction](./dmenu_intro.gif)
+![Dmenufm Introduction 1](./figure/dmenufm_1.png)
+![Dmenufm Introduction 2](./figure/dmenufm_2.png)
+![Dmenufm Introduction 3](./figure/dmenufm_3.png)
 
 A simple dmenu file manager written in POSIX-compliant shell script.
 

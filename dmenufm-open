@@ -1,5 +1,4 @@
 #!/bin/sh
-# Originally "via-open" in "xalexalex/via"
 
 case "$1" in
 	*.txt)
@@ -9,7 +8,7 @@ case "$1" in
 		zathura "$1" &
 		;;
 	*.doc | *.docx | *.odt)
-		abiword "$1" &
+		libreoffice "$1" &
 		;;
 	*.xopp)
 		xournalpp "$1" &
@@ -30,7 +29,7 @@ case "$1" in
 		gimp "$1" 2>/dev/null &
 		;;
 	*.csv | *.xls | *.xlsx)
-		sc-im "$1" 2>/dev/null &
+		libreoffice "$1" 2>/dev/null &
 		;;
 	*)
 		# then try matching by mimetype
@@ -43,14 +42,13 @@ case "$1" in
 				$TERMINAL -e $EDITOR "$1" &
 				;;
 			inode/directory)
-				# cd "$1" && $TERMINAL &
-				cd "$1" && $TERMINAL && cd - &
+				cd "$1" && $TERMINAL &
 				;;
 			image/*)
 				sxiv "$1" &
 				;;
 			*)
-				exit 1
+				xdg-open "$1" &
 				;;
 		esac
 		;;
