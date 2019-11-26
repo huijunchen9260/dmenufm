@@ -135,7 +135,7 @@ dmenufm_action (){
 			filename=$(printf '%s' "" | dmenu -i -p "Enter plain text file name: ")
 			touch "$filename"
 			notify-send "File $filename created."
-			printf '%s' "$PWD/$filename" | xargs -r -I {} dmenufm-open "{}"
+			printf '%s' "$PWD/$filename" | xargs -I {} dmenufm-open "{}"
 			;;
 		"$FM_RM")
 			# Choose file/directory in current directory to remove
@@ -209,7 +209,7 @@ dmenufm_action (){
 					;;
 				*)
 					destination=$(printf '%s' "$markmenu" | awk -F ' - ' '{print $2}')
-					cd "$destination" || printf '%s' "$destination" | xargs -r -I {} dmenufm-open "{}"
+					cd "$destination" || printf '%s' "$destination" | xargs -I {} dmenufm-open "{}"
 					dmenufm_history
 			esac
 			;;
@@ -230,7 +230,7 @@ dmenufm_menu () {
 		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ACTION" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | dmenu -i -l 10 -p "$twopwd")
 		# Outcome matching
 		if [ "$CHOICE" = "$TARGET" ]; then
-			printf '%s' "$PWD" | xargs -r -I {} dmenufm-open "{}"
+			printf '%s' "$PWD" | xargs -I {} dmenufm-open "{}"
 			break
 		elif [ "$CHOICE" = "$BACKWARD" ]; then
 			cd "../"
@@ -243,7 +243,7 @@ dmenufm_menu () {
 			dmenufm_history
 			continue
 		elif [ -f "$CHOICE" ]; then
-		 	printf '%s' "$PWD/$CHOICE" | xargs -r -I {} dmenufm-open "{}"
+		 	printf '%s' "$PWD/$CHOICE" | xargs -I {} dmenufm-open "{}"
 		 	break
 		else
 			break
