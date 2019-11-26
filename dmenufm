@@ -73,7 +73,7 @@ dmenufm_history () {
 	# Limit the max number of history
 	hisnum=$(wc -l "$DMENUFM_PATH/dmenufm_history" | awk '{print $1}')
 	if [ "$hisnum" -ge "$MAX_HIS_LENGTH" ]; then
-		sed -i "1d" "$DMENUFM_PATH/dmenufm_history"
+		sed "1d" "$DMENUFM_PATH/dmenufm_history" > "$DMENUFM_PATH/dmenufm_history.backup" && cp "$DMENUFM_PATH/dmenufm_history.backup" "$DMENUFM_PATH/dmenufm_history"
 	fi
 }
 
@@ -185,8 +185,8 @@ dmenufm_action (){
 			esac
 			;;
 		"$FM_HIST")
-			# tac is inverse of cat that cat out the content of history in a reverse way
-			goto=$(tac "$DMENUFM_PATH/dmenufm_history" | dmenu -i -l 20 -p "Dmenufm History")
+			# Use sed command to mimic reverse of cat for POSIX.
+			goto=$(sed '1!G;h;$!d' "$DMENUFM_PATH/dmenufm_history" | dmenu -i -l 20 -p "Dmenufm History")
 			destination=$(printf '%s' "$goto" | awk -F ' - ' '{print $2}')
 			cd "$destination" || return
 			;;
@@ -198,15 +198,18 @@ dmenufm_action (){
 					Generate_action_menu "Choose file/directory and add to BMK: "
 					mark=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
 					printf '%s\n' "$mark - $HERE" >> "$DMENUFM_PATH/dmenufm_bookmark"
-					sed -i "/^$/ d" "$DMENUFM_PATH/dmenufm_bookmark"
+					sed "/^$/ d" "$DMENUFM_PATH/dmenufm_bookmark" >  "$DMENUFM_PATH/dmenufm_bookmark.backup" && cp "$DMENUFM_PATH/dmenufm_bookmark.backup" "$DMENUFM_PATH/dmenufm_bookmark"
 					;;
 				"Delete BMK")
-					delnum=$(cat -n "$DMENUFM_PATH/dmenufm_bookmark" | dmenu -i -l 10 -p "Delete chosen bmk: " | awk '{print $1}')
-					sed -i "$delnum d" "$DMENUFM_PATH/dmenufm_bookmark"
+					delbmk=$(cat "$DMENUFM_PATH/dmenufm_bookmark" | dmenu -i -l 10 -sb darkred -p "Delete chosen bmk: ")
+					# POSIX way of sed -i.
+					# Assign address as '=' by '\=pattern='
+					# Create backup file and cp to original file.
+					sed "\=$delbmk= d" "$DMENUFM_PATH/dmenufm_bookmark" > "$DMENUFM_PATH/dmenufm_bookmark.backup" && cp "$DMENUFM_PATH/dmenufm_bookmark.backup" "$DMENUFM_PATH/dmenufm_bookmark"
 					;;
 				*)
 					destination=$(printf '%s' "$markmenu" | awk -F ' - ' '{print $2}')
-					cd "$destination" || printf '%s' "$HERE" | xargs -r -I {} dmenufm-open "{}"
+					cd "$destination" || printf '%s' "$destination" | xargs -r -I {} dmenufm-open "{}"
 					dmenufm_history
 			esac
 			;;
