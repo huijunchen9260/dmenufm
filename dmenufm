@@ -10,7 +10,7 @@ CHOICE="placeholder"
 TARGET="./"
 BACKWARD="../"
 ACTION="Actions"
-CMD="CommandLine"
+CMD="Command Line"
 FM_CP_PATH="PCP - Copy path"
 FM_MK_DIR="MKD - Create new directory"
 FM_MK_FILE="MKF - Create new text file"
@@ -21,6 +21,12 @@ FM_HIST="HIS - History of dmenufm"
 FM_BMARK="BMK - Bookmark for dmenufm"
 FM_COMMAND="CMD - Frequently used command"
 ACTLIST="$FM_CP_PATH:$FM_MK_DIR:$FM_MK_FILE:$FM_MV:$FM_RM:$FM_TRASH:$FM_HIST:$FM_BMARK:$FM_COMMAND"
+
+# You may need to modify executecmd to match how your terminal execute the command.
+executecmd () {
+	$TERMINAL -e $1 | ${SHELL:-"/bin/sh"}
+}
+
 
 # Generate directories
 # Variables cannot store multiline string, so transform to ':'
@@ -77,14 +83,6 @@ dmenufm_history () {
 	hisnum=$(wc -l "$DMENUFM_PATH/dmenufm_history" | awk '{print $1}')
 	if [ "$hisnum" -ge "$MAX_HIS_LENGTH" ]; then
 		sed "1d" "$DMENUFM_PATH/dmenufm_history" > "$DMENUFM_PATH/dmenufm_history.backup" && cp "$DMENUFM_PATH/dmenufm_history.backup" "$DMENUFM_PATH/dmenufm_history"
-	fi
-}
-
-checkcmd () {
-	if [ "$check" = "Yes" ]; then
-		$TERMINAL -e $1 | ${SHELL:-"/bin/sh"}
-	else
-		printf '%s' "$1" | ${SHELL:-"/bin/sh"}
 	fi
 }
 
@@ -254,14 +252,12 @@ dmenufm_action (){
 					sed "\+$delcmd+ d" "$DMENUFM_PATH/dmenufm_command" > "$DMENUFM_PATH/dmenufm_command.backup" && cp "$DMENUFM_PATH/dmenufm_command.backup" "$DMENUFM_PATH/dmenufm_command"
 					;;
 				"Type and execute")
-					check=$(printf "No\\nYes" | dmenu -i -sb "#33691e" -p "Open in terminal? ")
 					execmd=$(dmenu -i -sb "#33691e" -p "Type and execute: ")
-					checkcmd "$execmd"
+					executecmd "$execmd"
 					;;
 				*)
-					check=$(printf "No\\nYes" | dmenu -i -sb "#33691e" -p "Open in terminal? ")
 					execmd=$(printf '%s' "$cmdmenu" | awk -F ' - ' '{print $1}')
-					checkcmd "$execmd"
+					executecmd "$execmd"
 					;;
 			esac
 			;;
@@ -291,9 +287,8 @@ dmenufm_menu () {
 			dmenufm_action
 			break
 		elif [ "$CHOICE" = "$CMD" ]; then
-			check=$(printf "No\\nYes" | dmenu -i -sb "#33691e" -p "Open in terminal? ")
 			execmd=$(dmenu -i -sb "#33691e" -p "Type and execute: ")
-			checkcmd "$execmd"
+			executecmd "$execmd"
 		elif [ -d "$CHOICE" ]; then
 			cd "$CHOICE" || exit 1
 			dmenufm_history

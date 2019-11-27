@@ -27,8 +27,6 @@ Put both `dmenufm` and `dmenufm-open` in your `$PATH`.
 
 `CommandLine` to execute any command in dmenufm.
 
-There is a dmenu prompt asking whether this command should execute inside a terminal or not.
-
 ### Actions
 
 `Actions` is the actions you can do.
@@ -56,23 +54,10 @@ There is a dmenu prompt asking whether this command should execute inside a term
 		- To add directory to bookmark, enter the directory and choose `./` to confirm.
 	- Choose "Delete BMK" to delete one file/directory in bookmark.
 - `CMD` can store command that used frequently.
-	- Choose any stored command to execute. You need to answer whether this command should be executed in terminal or not.
+	- Choose any stored command to execute.
 	- Choose "Add CMD" to add both the command and command description in `$HOME/.config/dmenufm/dmenufm_command`.
 	- Choose "Delete CMD" to delete any command in `$HOME/.config/dmenufm/dmenufm_command`.
 	- Choose "Type and execute" to type and execute command.
-
-Note: If you hate GUIarrowy world like me, based on `man dmenu`, you can
-
-- `Ctrl-n` to go up,
-- `Ctrl-p` to go down,
-- `Ctrl-y` to paste from primary X selection
-	- Everything your "are selecting" can be paste into dmenu by this hot key.
-- `Meta-h` to go up,
-- `Meta-l` to go down,
-- `Meta-k` to go one page up,
-- `Meta-j`  to go one page down,
-
-where `Meta` is also called `Alt`.
 
 ## Dmenufm-open
 
@@ -90,6 +75,22 @@ I use
 Now this script are able to extract compression file by choosing it in dmenufm.
 
 Feel free to modify this opener to suit your need.
+
+## Note
+
+If you hate GUIarrowy world like me, based on `man dmenu`, you can
+
+- `Ctrl-n` to go up,
+- `Ctrl-p` to go down,
+- `Ctrl-y` to paste from primary X selection
+	- Everything your "are selecting" can be paste into dmenu by this hot key.
+- `Meta-h` to go up,
+- `Meta-l` to go down,
+- `Meta-k` to go one page up,
+- `Meta-j`  to go one page down,
+
+where `Meta` is also called `Alt`.
+
 
 ## TODO
 
