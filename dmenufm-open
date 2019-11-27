@@ -3,7 +3,7 @@
 extraction () {
 	# $1: command to extract compress
 	# $2: compression name
-	# Example: extraction "extraction command" "filename"
+	# Example: extraction "unzip" "$HOME/filename.zip"
 	dirname="$(printf '%s' "$2" | awk -F '/' '{printf $NF}' | awk -F '.' '{print $1}')"
 	mkdir -p "$dirname" && cd "$dirname" || exit
 	$1 "$2"

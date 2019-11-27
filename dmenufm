@@ -4,8 +4,15 @@
 # Dependency: dmenu; coreutils; xclip; dunst and notify-send
 
 ### OPTIONS AND VARIABLES
-DMENUFM_PATH="$HOME/.config/dmenufm"
+
+## OPTIONS
+FM_PATH="$HOME/.config/dmenufm"
+BMKFILE="$FM_PATH/dmenufm_bookmark"
+CMDFILE="$FM_PATH/dmenufm_command"
+HISFILE="$FM_PATH/dmenufm_history"
 MAX_HIS_LENGTH=5000
+
+## GLOBAL VARIABLES
 CHOICE="placeholder"
 TARGET="./"
 BACKWARD="../"
@@ -23,13 +30,14 @@ FM_COMMAND="CMD - Frequently used command"
 ACTLIST="$FM_CP_PATH:$FM_MK_DIR:$FM_MK_FILE:$FM_MV:$FM_RM:$FM_TRASH:$FM_HIST:$FM_BMARK:$FM_COMMAND"
 
 # You may need to modify executecmd to match how your terminal execute the command.
-# NoDisplay for sxiv.
+# Use `< $(locate $software.desktop | tail -n 1) grep "Terminal=false` to check whether the .desktop file should open in terminal
+# Like sxiv, the desktop file don't have Terminal entry. You need to Use `< $(locate sxiv.desktop | tail -n 1) sudo $EDITOR` to add `Terminal=false`
 executecmd () {
 	software=$(printf '%s' "$1" | awk -F ' ' '{print $1}')
-	if < "$(locate "$software".desktop | tail -n 1)" grep -e "Terminal=false" -e "NoDisplay"; then
-		printf '%s' "$1" | ${SHELL:-"/bin/sh"}
+	if < $(locate $software.desktop | tail -n 1) grep "Terminal=false"; then
+		printf '%s' "$1" | ${SHELL:-"/bin/sh"} &
 	else
-		$TERMINAL -e $1 | ${SHELL:-"/bin/sh"}
+		$TERMINAL -e $1 | ${SHELL:-"/bin/sh"} &
 	fi
 }
 
@@ -82,13 +90,13 @@ update_menu () {
 
 # Store every move between directories into history
 dmenufm_history () {
-	[ ! -d "$DMENUFM_PATH" ] && mkdir -p "$DMENUFM_PATH"
+	[ ! -d "$FM_PATH" ] && mkdir -p "$FM_PATH"
 	dirmark=$(printf '%s' "$PWD" | awk -F '/' '{print $NF}')
-	printf '%s\n' "$dirmark - $PWD" | sed "/^$/ d" >> "$DMENUFM_PATH/dmenufm_history"
+	printf '%s\n' "$dirmark - $PWD" | sed "/^$/ d" >> "$HISFILE"
 	# Limit the max number of history
-	hisnum=$(wc -l "$DMENUFM_PATH/dmenufm_history" | awk '{print $1}')
+	hisnum=$(wc -l "$HISFILE" | awk '{print $1}')
 	if [ "$hisnum" -ge "$MAX_HIS_LENGTH" ]; then
-		sed "1d" "$DMENUFM_PATH/dmenufm_history" > "$DMENUFM_PATH/dmenufm_history.backup" && cp "$DMENUFM_PATH/dmenufm_history.backup" "$DMENUFM_PATH/dmenufm_history"
+		sed "1d" "$HISFILE" > "$HISFILE.backup" && cp "$HISFILE.backup" "$HISFILE"
 	fi
 }
 
@@ -174,7 +182,7 @@ dmenufm_action (){
 
 			;;
 		"$FM_TRASH")
-			[ ! -d "$DMENUFM_PATH/trash" ] && mkdir -p "$DMENUFM_PATH/trash"
+			[ ! -d "$FM_PATH/trash" ] && mkdir -p "$FM_PATH/trash"
 			trashmenu=$(printf '%s:' "Move to trash" "Go to trash" "Empty trash" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Trash")
 			case $trashmenu in
 				"Move to trash")
@@ -183,7 +191,7 @@ dmenufm_action (){
 					# Check the chosen on is directory or not
 					[ -d "$HERE" ] && result=$?
 					# Say yes in dangerprompt, and send notification. Or do nothing.
-					if dangerprompt "Move all files and/or subdirectories in $name to trash?" && mv "$HERE" "$DMENUFM_PATH/trash"; then
+					if dangerprompt "Move all files and/or subdirectories in $name to trash?" && mv "$HERE" "$FM_PATH/trash"; then
 						if [ $result -eq 0 ]; then
 							# If chosen one is directory, send notification and cd to parent directory
 							notify-send "$name moved to trash." || return
@@ -199,11 +207,11 @@ dmenufm_action (){
 					fi
 					;;
 				"Go to trash")
-					cd "$DMENUFM_PATH/trash" || return
+					cd "$FM_PATH/trash" || return
 					;;
 				"Empty trash")
 					# Lesson: You cannot quote a wildcard. No quote on *.
-					if dangerprompt "Remove all files and/or directory in trash?" && rm -rf "$DMENUFM_PATH/trash/"*; then
+					if dangerprompt "Remove all files and/or directory in trash?" && rm -rf "$FM_PATH/trash/"*; then
 						notify-send "Trash is empty." || return
 					else
 						return
@@ -213,26 +221,26 @@ dmenufm_action (){
 			;;
 		"$FM_HIST")
 			# Use sed command to mimic reverse of cat for POSIX.
-			goto=$(sed '1!G;h;$!d' "$DMENUFM_PATH/dmenufm_history" | dmenu -i -l 20 -p "Dmenufm History")
+			goto=$(sed '1!G;h;$!d' "$HISFILE" | dmenu -i -l 20 -p "Dmenufm History")
 			destination=$(printf '%s' "$goto" | awk -F ' - ' '{print $2}')
 			cd "$destination" || return
 			;;
 		"$FM_BMARK")
-			bookmark=$(< "$DMENUFM_PATH/dmenufm_bookmark" tr '\n' ':')
+			bookmark=$(< "$BMKFILE" tr '\n' ':')
 			markmenu=$(printf '%s:' "$bookmark" "Add BMK" "Delete BMK" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Bookmark")
 			case "$markmenu" in
 				"Add BMK")
 					Generate_action_menu "Choose file/directory and add to BMK: " "#33691e"
 					mark=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
-					printf '%s\n' "$mark - $HERE" >> "$DMENUFM_PATH/dmenufm_bookmark"
-					sed "/^$/ d" "$DMENUFM_PATH/dmenufm_bookmark" >  "$DMENUFM_PATH/dmenufm_bookmark.backup" && cp "$DMENUFM_PATH/dmenufm_bookmark.backup" "$DMENUFM_PATH/dmenufm_bookmark"
+					printf '%s\n' "$mark - $HERE" >> "$BMKFILE"
+					sed "/^$/ d" "$BMKFILE" >  "$BMKFILE.backup" && cp "$BMKFILE.backup" "$BMKFILE"
 					;;
 				"Delete BMK")
-					delbmk=$(< "$DMENUFM_PATH/dmenufm_bookmark" dmenu -i -l 10 -sb darkred -p "Delete chosen bmk: ")
+					delbmk=$(< "$BMKFILE" dmenu -i -l 10 -sb darkred -p "Delete chosen bmk: ")
 					# POSIX way of sed -i.
 					# Assign address as '=' by '\=pattern='
 					# Create backup file and cp to original file.
-					sed "\=$delbmk= d" "$DMENUFM_PATH/dmenufm_bookmark" > "$DMENUFM_PATH/dmenufm_bookmark.backup" && cp "$DMENUFM_PATH/dmenufm_bookmark.backup" "$DMENUFM_PATH/dmenufm_bookmark"
+					sed "\=$delbmk= d" "$BMKFILE" > "$BMKFILE.backup" && cp "$BMKFILE.backup" "$BMKFILE"
 					;;
 				*)
 					destination=$(printf '%s' "$markmenu" | awk -F ' - ' '{print $2}')
@@ -240,22 +248,22 @@ dmenufm_action (){
 			esac
 			;;
 		"$FM_COMMAND")
-			cmd=$(< "$DMENUFM_PATH/dmenufm_command" tr '\n' ':')
+			cmd=$(< "$CMDFILE" tr '\n' ':')
 			cmdmenu=$(printf '%s:' "$cmd" "Add CMD" "Delete CMD" "Type and execute" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Custom Command")
 			case "$cmdmenu" in
 				"Add CMD")
 					addcmd=$(dmenu -i -sb "#33691e" -p "Recording your command: ")
 					desp=$(dmenu -i -sb "#33691e" -p "Enter command description: ")
-					printf '%s\n' "$addcmd - $desp" >> "$DMENUFM_PATH/dmenufm_command"
-					sed "/^$/ d" "$DMENUFM_PATH/dmenufm_command" >  "$DMENUFM_PATH/dmenufm_command.backup" && cp "$DMENUFM_PATH/dmenufm_command.backup" "$DMENUFM_PATH/dmenufm_command"
+					printf '%s\n' "$addcmd - $desp" >> "$CMDFILE"
+					sed "/^$/ d" "$CMDFILE" >  "$CMDFILE.backup" && cp "$CMDFILE.backup" "$CMDFILE"
 					;;
 				"Delete CMD")
-					delcmd=$(< "$DMENUFM_PATH/dmenufm_command" dmenu -i -l 10 -sb darkred -p "Delete chosen command: ")
+					delcmd=$(< "$CMDFILE" dmenu -i -l 10 -sb darkred -p "Delete chosen command: ")
 					# POSIX way of sed -i.
 					# Assign address as '+' by '\+pattern+'
 					# '=' seems not usable in command
 					# Create backup file and cp to original file.
-					sed "\+$delcmd+ d" "$DMENUFM_PATH/dmenufm_command" > "$DMENUFM_PATH/dmenufm_command.backup" && cp "$DMENUFM_PATH/dmenufm_command.backup" "$DMENUFM_PATH/dmenufm_command"
+					sed "\+$delcmd+ d" "$CMDFILE" > "$CMDFILE.backup" && cp "$CMDFILE.backup" "$CMDFILE"
 					;;
 				"Type and execute")
 					execmd=$(dmenu -i -sb "#33691e" -p "Type and execute: ")

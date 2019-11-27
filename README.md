@@ -27,7 +27,41 @@ Put both `dmenufm` and `dmenufm-open` in your `$PATH`.
 
 `CommandLine` to execute any command in dmenufm.
 
-You might need to modify the `executecmd` function to match the behavior of your terminal.
+If you find the terminal command doesn't appear in your terminal, you need to modify `executecmd` function in `dmenufm`.
+
+```sh
+executecmd () {
+	software=$(printf '%s' "$1" | awk -F ' ' '{print $1}')
+	if < $(locate $software.desktop | tail -n 1) grep "Terminal=false"; then
+		printf '%s' "$1" | ${SHELL:-"/bin/sh"} &
+	else
+		$TERMINAL -e $1 | ${SHELL:-"/bin/sh"} &
+	fi
+}
+```
+
+`$TERMINAL -e $1` is the one you need to modify.
+
+I am using urxvt. The default setting will match urxvt.
+
+Also, for non-terminal application like `sxiv`, default setting will open sxiv in a new terminal. In total, 2 windows will be opened.
+
+This is because `sxiv.desktop` has no `Terminal=false` entry.
+
+To fix this, use
+
+```sh
+< $(locate sxiv.desktop | tail -n 1) sudo $EDITOR
+```
+
+You can replace `sxiv` to any application.
+
+to open your editor, and add
+
+```sh
+Terminal=false
+```
+
 
 ### Actions
 
