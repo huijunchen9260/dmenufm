@@ -27,6 +27,8 @@ Put both `dmenufm` and `dmenufm-open` in your `$PATH`.
 
 `CommandLine` to execute any command in dmenufm.
 
+You might need to modify the `executecmd` function to match the behavior of your terminal.
+
 ### Actions
 
 `Actions` is the actions you can do.
