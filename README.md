@@ -22,7 +22,16 @@ Put both `dmenufm` and `dmenufm-open` in your `$PATH`.
 3. `./` to open your file manager (determined by `dmenufm-open`)
 4. Choices with `/` are directory; choices without `/` are files.
 5. Use `dmenufm-open` to open directories / files.
-6. `Actions` is the actions you can do.
+
+### CommandLine
+
+`CommandLine` to execute any command in dmenufm.
+
+There is a dmenu prompt asking whether this command should execute inside a terminal or not.
+
+### Actions
+
+`Actions` is the actions you can do.
 	- `CPP` to copy the directory path.
 		- Example:
 			- current working directory is `$HOME`, if press `ESC` to leave dmenufm, then `$HOME` will be copied into `xclip`.
@@ -45,6 +54,11 @@ Put both `dmenufm` and `dmenufm-open` in your `$PATH`.
 			- To add file to bookmark, choose files in new dmenu prompt.
 			- To add directory to bookmark, enter the directory and choose `./` to confirm.
 		- Choose "Delete BMK" to delete one file/directory in bookmark.
+	- `CMD` can store command that used frequently.
+		- Choose any stored command to execute. You need to answer whether this command should be executed in terminal or not.
+		- Choose "Add CMD" to add both the command and command description in `$HOME/.config/dmenufm/dmenufm_command`.
+		- Choose "Delete CMD" to delete any command in `$HOME/.config/dmenufm/dmenufm_command`.
+		- Choose "Type and execute" to type and execute command.
 
 Note: If you hate GUIarrowy world like me, based on `man dmenu`, you can
 
@@ -61,7 +75,7 @@ where `Meta` is also called `Alt`.
 
 ## Dmenufm-open
 
-`Dmenufm-open` is also a POSIX compliant shell script that opens the files/directories.
+`Dmenufm-open` is a POSIX compliant shell script that opens the files/directories.
 
 I use
 
@@ -72,10 +86,15 @@ I use
 - `nvim` for text file,
 - `xdg-open` for others.
 
+Now this script are able to extract compression file by choosing it in dmenufm.
+
 Feel free to modify this opener to suit your need.
 
 ## TODO
 
-- Extract / Conpress directory to different format.
+- Compress directory to different format.
+- `mv` function
+- `cp` function
+- rename function (maybe use `mv`)
 
 

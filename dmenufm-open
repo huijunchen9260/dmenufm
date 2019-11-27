@@ -1,5 +1,15 @@
 #!/bin/sh
 
+extraction () {
+	# $1: command to extract compress
+	# $2: compression name
+	# Example: extraction "extraction command" "filename"
+	dirname="$(printf '%s' "$2" | awk -F '/' '{printf $NF}' | awk -F '.' '{print $1}')"
+	mkdir -p "$dirname" && cd "$dirname" || exit
+	$1 "$2"
+	dmenufm
+}
+
 case "$1" in
 	*.txt)
 		$TERMINAL -e "$EDITOR "$1"" &
@@ -30,6 +40,42 @@ case "$1" in
 		;;
 	*.csv | *.xls | *.xlsx)
 		libreoffice "$1" 2>/dev/null &
+		;;
+	*.tar.bz2|*.tar.xz|*.tbz2)
+		extraction "tar xvjf" "$1"
+		;;
+	*.tar.gz|*.tgz)
+		extraction "tar xvzf" "$1"
+		;;
+	*.lzma)
+		extraction "unlzma" "$1"
+		;;
+	*.bz2)
+		extraction "bunzip2" "$1"
+		;;
+	*.rar)
+		extraction "unrar x -ad" "$1"
+		;;
+	*.gz)
+		extraction "gunzip" "$1"
+		;;
+	*.tar)
+		tar xvf "$1"
+		;;
+	*.zip)
+		extraction "unzip" "$1"
+		;;
+	*.Z)
+		extraction "uncompress" "$1"
+		;;
+	*.7z)
+		extraction "7z x" "$1"
+		;;
+	*.xz)
+		extraction "unxz" "$1"
+		;;
+	*.exe)
+		extraction "cabextract" "$1"
 		;;
 	*)
 		# then try matching by mimetype

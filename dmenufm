@@ -10,14 +10,17 @@ CHOICE="placeholder"
 TARGET="./"
 BACKWARD="../"
 ACTION="Actions"
-FM_CP_PATH="CPP - Copy path"
+CMD="CommandLine"
+FM_CP_PATH="PCP - Copy path"
 FM_MK_DIR="MKD - Create new directory"
 FM_MK_FILE="MKF - Create new text file"
 FM_RM="RMM - Remove files / directory"
+FM_MV="MVR - Move or rename files"
 FM_TRASH="TRH - Trash of dmenufm"
 FM_HIST="HIS - History of dmenufm"
 FM_BMARK="BMK - Bookmark for dmenufm"
-ACTLIST="$FM_CP_PATH:$FM_MK_DIR:$FM_MK_FILE:$FM_RM:$FM_TRASH:$FM_HIST:$FM_BMARK"
+FM_COMMAND="CMD - Frequently used command"
+ACTLIST="$FM_CP_PATH:$FM_MK_DIR:$FM_MK_FILE:$FM_MV:$FM_RM:$FM_TRASH:$FM_HIST:$FM_BMARK:$FM_COMMAND"
 
 # Generate directories
 # Variables cannot store multiline string, so transform to ':'
@@ -77,6 +80,14 @@ dmenufm_history () {
 	fi
 }
 
+checkcmd () {
+	if [ "$check" = "Yes" ]; then
+		$TERMINAL -e $1 | ${SHELL:-"/bin/sh"}
+	else
+		printf '%s' "$1" | ${SHELL:-"/bin/sh"}
+	fi
+}
+
 
 # Prompt that used in dangerous action
 dangerprompt () {
@@ -86,6 +97,7 @@ dangerprompt () {
 }
 
 # Generate menu for action choice, only for current directory.
+# $1 is the prompt, $2 is the selected background color
 Generate_action_menu () {
 	while [ -n "$CHOICE" ]; do
 		update_menu
@@ -94,7 +106,7 @@ Generate_action_menu () {
 		# Generate menu with/without arguments
 		# Show only the current directory and one level of parent directory
 		twopwd=$(printf '%s' "$PWD" | awk -F '/' '{print $(NF-1)"/"$NF}')
-		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | dmenu -i -l 10 -sb "#33691e" -p "$1")
+		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | dmenu -i -l 10 -sb "$2" -p "$1")
 		# Outcome matching
 		if [ "$CHOICE" = "$TARGET" ]; then
 			HERE=$(printf '%s' "$PWD")
@@ -123,25 +135,35 @@ dmenufm_action (){
 	case $move in
 		"$FM_CP_PATH")
 			# Copy path to xclip, and send notification.
-			Generate_action_menu "Copy directory/file path: "
-			printf '%s' "$HERE" | xclip -selection clipboard
-			notify-send "File path copied to clipboard."
+			Generate_action_menu "Copy directory/file path: " "#33691e"
+			[ -n "$CHOICE" ] && printf '%s' "$HERE" | xclip -selection clipboard && notify-send "Path $name copied to clipboard." || return
 			;;
 		"$FM_MK_DIR")
 			dirname=$(printf '%s' "" | dmenu -i -p "Enter Directory name: ")
-			mkdir -p "$dirname" && notify-send "Directory $dirname created."
+			mkdir -p "$dirname"
+			notify-send "Directory $dirname created." || return
 			;;
 		"$FM_MK_FILE")
 			filename=$(printf '%s' "" | dmenu -i -p "Enter plain text file name: ")
 			touch "$filename"
-			notify-send "File $filename created."
-			printf '%s' "$PWD/$filename" | xargs -I {} dmenufm-open "{}"
+			notify-send "File $filename created." || return
+			;;
+		"$FM_MV")
+			#TODO
 			;;
 		"$FM_RM")
 			# Choose file/directory in current directory to remove
-			Generate_action_menu "Remove file / directory: "
+			Generate_action_menu "Remove file / directory: " "#33691e"
+			# Check the chosen on is directory or not
+			[ -d "$HERE" ] && result=$?
 			if dangerprompt "Remove all files and/or subdirectories in $name?" && rm -rf "$HERE"; then
-				notify-send "$name removed."
+				if [ $result -eq 0 ]; then
+					notify-send "$name removed." || return
+					cd "../" || return
+					result=
+				else
+					notify-send "$name removed." || return
+				fi
 			else
 				return
 			fi
@@ -152,20 +174,21 @@ dmenufm_action (){
 			trashmenu=$(printf '%s:' "Move to trash" "Go to trash" "Empty trash" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Trash")
 			case $trashmenu in
 				"Move to trash")
-					Generate_action_menu "Move file/directory to trash: "
+					Generate_action_menu "Move file/directory to trash: " "#33691e"
+
 					# Check the chosen on is directory or not
 					[ -d "$HERE" ] && result=$?
 					# Say yes in dangerprompt, and send notification. Or do nothing.
 					if dangerprompt "Move all files and/or subdirectories in $name to trash?" && mv "$HERE" "$DMENUFM_PATH/trash"; then
 						if [ $result -eq 0 ]; then
 							# If chosen one is directory, send notification and cd to parent directory
-							notify-send "$name moved to trash."
+							notify-send "$name moved to trash." || return
 							cd "../" || return
 							# Reset result value
 							result=
 						else
 							# If not, just send notification.
-							notify-send "$name moved to trash."
+							notify-send "$name moved to trash." || return
 						fi
 					else
 						return
@@ -177,7 +200,7 @@ dmenufm_action (){
 				"Empty trash")
 					# Lesson: You cannot quote a wildcard. No quote on *.
 					if dangerprompt "Remove all files and/or directory in trash?" && rm -rf "$DMENUFM_PATH/trash/"*; then
-						notify-send "Trash is empty."
+						notify-send "Trash is empty." || return
 					else
 						return
 					fi
@@ -195,13 +218,13 @@ dmenufm_action (){
 			markmenu=$(printf '%s:' "$bookmark" "Add BMK" "Delete BMK" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Bookmark")
 			case "$markmenu" in
 				"Add BMK")
-					Generate_action_menu "Choose file/directory and add to BMK: "
+					Generate_action_menu "Choose file/directory and add to BMK: " "#33691e"
 					mark=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
 					printf '%s\n' "$mark - $HERE" >> "$DMENUFM_PATH/dmenufm_bookmark"
 					sed "/^$/ d" "$DMENUFM_PATH/dmenufm_bookmark" >  "$DMENUFM_PATH/dmenufm_bookmark.backup" && cp "$DMENUFM_PATH/dmenufm_bookmark.backup" "$DMENUFM_PATH/dmenufm_bookmark"
 					;;
 				"Delete BMK")
-					delbmk=$(cat "$DMENUFM_PATH/dmenufm_bookmark" | dmenu -i -l 10 -sb darkred -p "Delete chosen bmk: ")
+					delbmk=$(< "$DMENUFM_PATH/dmenufm_bookmark" dmenu -i -l 10 -sb darkred -p "Delete chosen bmk: ")
 					# POSIX way of sed -i.
 					# Assign address as '=' by '\=pattern='
 					# Create backup file and cp to original file.
@@ -210,7 +233,36 @@ dmenufm_action (){
 				*)
 					destination=$(printf '%s' "$markmenu" | awk -F ' - ' '{print $2}')
 					cd "$destination" || printf '%s' "$destination" | xargs -I {} dmenufm-open "{}"
-					dmenufm_history
+			esac
+			;;
+		"$FM_COMMAND")
+			cmd=$(< "$DMENUFM_PATH/dmenufm_command" tr '\n' ':')
+			cmdmenu=$(printf '%s:' "$cmd" "Add CMD" "Delete CMD" "Type and execute" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Custom Command")
+			case "$cmdmenu" in
+				"Add CMD")
+					addcmd=$(dmenu -i -sb "#33691e" -p "Recording your command: ")
+					desp=$(dmenu -i -sb "#33691e" -p "Enter command description: ")
+					printf '%s\n' "$addcmd - $desp" >> "$DMENUFM_PATH/dmenufm_command"
+					sed "/^$/ d" "$DMENUFM_PATH/dmenufm_command" >  "$DMENUFM_PATH/dmenufm_command.backup" && cp "$DMENUFM_PATH/dmenufm_command.backup" "$DMENUFM_PATH/dmenufm_command"
+					;;
+				"Delete CMD")
+					delcmd=$(< "$DMENUFM_PATH/dmenufm_command" dmenu -i -l 10 -sb darkred -p "Delete chosen command: ")
+					# POSIX way of sed -i.
+					# Assign address as '+' by '\+pattern+'
+					# '=' seems not usable in command
+					# Create backup file and cp to original file.
+					sed "\+$delcmd+ d" "$DMENUFM_PATH/dmenufm_command" > "$DMENUFM_PATH/dmenufm_command.backup" && cp "$DMENUFM_PATH/dmenufm_command.backup" "$DMENUFM_PATH/dmenufm_command"
+					;;
+				"Type and execute")
+					check=$(printf "No\\nYes" | dmenu -i -sb "#33691e" -p "Open in terminal? ")
+					execmd=$(dmenu -i -sb "#33691e" -p "Type and execute: ")
+					checkcmd "$execmd"
+					;;
+				*)
+					check=$(printf "No\\nYes" | dmenu -i -sb "#33691e" -p "Open in terminal? ")
+					execmd=$(printf '%s' "$cmdmenu" | awk -F ' - ' '{print $1}')
+					checkcmd "$execmd"
+					;;
 			esac
 			;;
 	esac
@@ -227,7 +279,7 @@ dmenufm_menu () {
 		# Generate menu with/without arguments
 		# Show only the current directory and one level of parent directory
 		twopwd=$(printf '%s' "$PWD" | awk -F '/' '{print $(NF-1)"/"$NF}')
-		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ACTION" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | dmenu -i -l 10 -p "$twopwd")
+		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ACTION" "$CMD" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | dmenu -i -l 10 -p "$twopwd")
 		# Outcome matching
 		if [ "$CHOICE" = "$TARGET" ]; then
 			printf '%s' "$PWD" | xargs -I {} dmenufm-open "{}"
@@ -238,6 +290,10 @@ dmenufm_menu () {
 		elif [ "$CHOICE" = "$ACTION" ]; then
 			dmenufm_action
 			break
+		elif [ "$CHOICE" = "$CMD" ]; then
+			check=$(printf "No\\nYes" | dmenu -i -sb "#33691e" -p "Open in terminal? ")
+			execmd=$(dmenu -i -sb "#33691e" -p "Type and execute: ")
+			checkcmd "$execmd"
 		elif [ -d "$CHOICE" ]; then
 			cd "$CHOICE" || exit 1
 			dmenufm_history
