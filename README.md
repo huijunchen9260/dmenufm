@@ -32,33 +32,34 @@ There is a dmenu prompt asking whether this command should execute inside a term
 ### Actions
 
 `Actions` is the actions you can do.
-	- `CPP` to copy the directory path.
-		- Example:
-			- current working directory is `$HOME`, if press `ESC` to leave dmenufm, then `$HOME` will be copied into `xclip`.
-			- You can browse into the any directory. Inside that directory, choose `./`, and current working directory will be copied.
-	- `MKD` and `MKF` make new directory or file to current working directory, respectively.
-	- `RMM` remove one directory and/or file.
-	- `TRH` is the trash function of dmenufm.
-		- `$HOME/.config/dmenufm/trash` is the directory storing trashes for dmenufm.
-		- `Move file to trash` will generate a new dmenu prompt.
-			- Choose any file to move to trash.
-			- To move a directory to trash, enter the directory, and choose `./` to confirm this directory..
-		- `Go to trash` will move current working directory to trash directory.
-		- `Empty trash` will remove all files/directories in trash directory.
-	- `HIS` records the history of all directories that you went.
-		- history file stored in `$HOME/.config/dmenufm/dmenufm_history`.
-		- The maximum number of history is 5000.
-	- `BMK` shows directories that you store as bookmarks.
-		- Choose the listed bookmark to enter that directory. Bookmarks are stored in `$HOME/.config/dmenufm/dmenufm_bookmark`
-		- Choose "Add BMK" to browse between directories using new dmenu prompt.
-			- To add file to bookmark, choose files in new dmenu prompt.
-			- To add directory to bookmark, enter the directory and choose `./` to confirm.
-		- Choose "Delete BMK" to delete one file/directory in bookmark.
-	- `CMD` can store command that used frequently.
-		- Choose any stored command to execute. You need to answer whether this command should be executed in terminal or not.
-		- Choose "Add CMD" to add both the command and command description in `$HOME/.config/dmenufm/dmenufm_command`.
-		- Choose "Delete CMD" to delete any command in `$HOME/.config/dmenufm/dmenufm_command`.
-		- Choose "Type and execute" to type and execute command.
+
+- `CPP` to copy the directory path.
+	- Example:
+		- current working directory is `$HOME`, if press `ESC` to leave dmenufm, then `$HOME` will be copied into `xclip`.
+		- You can browse into the any directory. Inside that directory, choose `./`, and current working directory will be copied.
+- `MKD` and `MKF` make new directory or file to current working directory, respectively.
+- `RMM` remove one directory and/or file.
+- `TRH` is the trash function of dmenufm.
+	- `$HOME/.config/dmenufm/trash` is the directory storing trashes for dmenufm.
+	- `Move file to trash` will generate a new dmenu prompt.
+		- Choose any file to move to trash.
+		- To move a directory to trash, enter the directory, and choose `./` to confirm this directory..
+	- `Go to trash` will move current working directory to trash directory.
+	- `Empty trash` will remove all files/directories in trash directory.
+- `HIS` records the history of all directories that you went.
+	- history file stored in `$HOME/.config/dmenufm/dmenufm_history`.
+	- The maximum number of history is 5000.
+- `BMK` shows directories that you store as bookmarks.
+	- Choose the listed bookmark to enter that directory. Bookmarks are stored in `$HOME/.config/dmenufm/dmenufm_bookmark`
+	- Choose "Add BMK" to browse between directories using new dmenu prompt.
+		- To add file to bookmark, choose files in new dmenu prompt.
+		- To add directory to bookmark, enter the directory and choose `./` to confirm.
+	- Choose "Delete BMK" to delete one file/directory in bookmark.
+- `CMD` can store command that used frequently.
+	- Choose any stored command to execute. You need to answer whether this command should be executed in terminal or not.
+	- Choose "Add CMD" to add both the command and command description in `$HOME/.config/dmenufm/dmenufm_command`.
+	- Choose "Delete CMD" to delete any command in `$HOME/.config/dmenufm/dmenufm_command`.
+	- Choose "Type and execute" to type and execute command.
 
 Note: If you hate GUIarrowy world like me, based on `man dmenu`, you can
 
