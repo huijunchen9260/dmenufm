@@ -23,8 +23,14 @@ FM_COMMAND="CMD - Frequently used command"
 ACTLIST="$FM_CP_PATH:$FM_MK_DIR:$FM_MK_FILE:$FM_MV:$FM_RM:$FM_TRASH:$FM_HIST:$FM_BMARK:$FM_COMMAND"
 
 # You may need to modify executecmd to match how your terminal execute the command.
+# NoDisplay for sxiv.
 executecmd () {
-	$TERMINAL -e $1 | ${SHELL:-"/bin/sh"}
+	software=$(printf '%s' "$1" | awk -F ' ' '{print $1}')
+	if < "$(locate "$software".desktop | tail -n 1)" grep -e "Terminal=false" -e "NoDisplay"; then
+		printf '%s' "$1" | ${SHELL:-"/bin/sh"}
+	else
+		$TERMINAL -e $1 | ${SHELL:-"/bin/sh"}
+	fi
 }
 
 
