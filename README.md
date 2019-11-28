@@ -148,6 +148,21 @@ Terminal=false
 
 You can replace `sxiv` to any GUI application which has the same issue.
 
+## Dmenu font is too big/small
+
+Open `dmenufm` script, and you can change the following three variables:
+
+```sh
+GENEFONT="Monospace-20"
+NOTIFONT="Monospace-30"
+DANGERFONT="Monospace-30"
+```
+
+- `GENEFONT` for general dmenu font size,
+- `NOTIFONT` for notification prompt, and
+- `DANGERFONT` for dangerous prompt for further confirmation in `RMM` and `TRH`.
+
+
 # TODO
 
 - Compress directory and extract files to different format.
