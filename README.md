@@ -9,7 +9,8 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 
 - `awk`, `sed`, `cat`, `wc -l`, `rm`, `mkdir`, `touch` in their POSIX-compliant version.
 - `xclip` as clipboard
-- `dunst` as notification daemon, and `notify-send` to send notification.
+- ~~`dunst` as notification daemon, and `notify-send` to send notification.~~
+	- Use `dmenu` to show notification.
 
 ## Installation
 
@@ -26,6 +27,8 @@ Put both `dmenufm` and `dmenufm-open` in your `$PATH`.
 ### CommandLine
 
 `CommandLine` to execute any command in dmenufm.
+
+GUI application will open only one windows, and terminal application will open a terminal for this command.
 
 If you find the terminal command doesn't appear in your terminal, you need to modify `executecmd` function in `dmenufm`.
 
@@ -44,23 +47,6 @@ executecmd () {
 
 I am using urxvt. The default setting will match urxvt.
 
-Also, for non-terminal application like `sxiv`, default setting will open sxiv in a new terminal. In total, 2 windows will be opened.
-
-This is because `sxiv.desktop` has no `Terminal=false` entry.
-
-To fix this, use
-
-```sh
-< $(locate sxiv.desktop | tail -n 1) sudo $EDITOR
-```
-
-You can replace `sxiv` to any application.
-
-to open your editor, and add
-
-```sh
-Terminal=false
-```
 
 
 ### Actions
@@ -127,6 +113,27 @@ If you hate GUIarrowy world like me, based on `man dmenu`, you can
 
 where `Meta` is also called `Alt`.
 
+## Troubleshooting
+
+### Why some of my GUI app will open in terminal?
+
+For GUI application like `sxiv`, default setting will open sxiv in a new terminal. In total, 2 windows will be opened.
+
+This is because `sxiv.desktop` has no `Terminal=false` entry.
+
+To fix this, use
+
+```sh
+< $(locate sxiv.desktop | tail -n 1) sudo $EDITOR
+```
+
+to open `.desktop` file in your editor, and add
+
+```sh
+Terminal=false
+```
+
+You can replace `sxiv` to any GUI application which has the same issue.
 
 ## TODO
 

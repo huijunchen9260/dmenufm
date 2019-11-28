@@ -1,7 +1,7 @@
 #!/bin/sh
 
 # Dmenu-based directory browser
-# Dependency: dmenu; coreutils; xclip; dunst and notify-send
+# Dependency: dmenu; xclip
 
 ### OPTIONS AND VARIABLES
 
@@ -34,7 +34,7 @@ ACTLIST="$FM_CP_PATH:$FM_MK_DIR:$FM_MK_FILE:$FM_MV:$FM_RM:$FM_TRASH:$FM_HIST:$FM
 # Like sxiv, the desktop file don't have Terminal entry. You need to Use `< $(locate sxiv.desktop | tail -n 1) sudo $EDITOR` to add `Terminal=false`
 executecmd () {
 	software=$(printf '%s' "$1" | awk -F ' ' '{print $1}')
-	if < $(locate $software.desktop | tail -n 1) grep "Terminal=false"; then
+	if < $(locate "$software".desktop | tail -n 1) grep "Terminal=false"; then
 		printf '%s' "$1" | ${SHELL:-"/bin/sh"} &
 	else
 		$TERMINAL -e $1 | ${SHELL:-"/bin/sh"} &
@@ -101,6 +101,10 @@ dmenufm_history () {
 }
 
 
+notifyprompt () {
+	dmenu -fn Monospace-18 -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000" -p "$1" <&-
+}
+
 # Prompt that used in dangerous action
 dangerprompt () {
 	# From Luke Smith
@@ -143,22 +147,22 @@ Generate_action_menu () {
 
 # Actions that for dmenufm
 dmenufm_action (){
-	move=$(printf '%s:' "$ACTLIST" | tr ':' '\n' | dmenu -i -l 10 -p "Actions:")
+	move=$(printf '%s' "$ACTLIST" | tr ':' '\n' | dmenu -i -l 10 -p "Actions:")
 	case $move in
 		"$FM_CP_PATH")
 			# Copy path to xclip, and send notification.
 			Generate_action_menu "Copy directory/file path: " "#33691e"
-			[ -n "$CHOICE" ] && printf '%s' "$HERE" | xclip -selection clipboard && notify-send "Path $name copied to clipboard." || return
+			[ -n "$CHOICE" ] && printf '%s' "$HERE" | xclip -selection clipboard && notifyprompt "Path $name copied to clipboard." || return
 			;;
 		"$FM_MK_DIR")
-			dirname=$(printf '%s' "" | dmenu -i -p "Enter Directory name: ")
+			dirname=$(dmenu -fn -i -p "Enter Directory name: ")
 			mkdir -p "$dirname"
-			notify-send "Directory $dirname created." || return
+			notifyprompt "Directory $dirname created." || return
 			;;
 		"$FM_MK_FILE")
-			filename=$(printf '%s' "" | dmenu -i -p "Enter plain text file name: ")
+			filename=$(dmenu -fn -i -p "Enter plain text file name: ")
 			touch "$filename"
-			notify-send "File $filename created." || return
+			notifyprompt "File $filename created." || return
 			;;
 		"$FM_MV")
 			#TODO
@@ -170,11 +174,11 @@ dmenufm_action (){
 			[ -d "$HERE" ] && result=$?
 			if dangerprompt "Remove all files and/or subdirectories in $name?" && rm -rf "$HERE"; then
 				if [ $result -eq 0 ]; then
-					notify-send "$name removed." || return
+					notifyprompt "$name removed." || return
 					cd "../" || return
 					result=
 				else
-					notify-send "$name removed." || return
+					notifyprompt "$name removed." || return
 				fi
 			else
 				return
@@ -183,7 +187,7 @@ dmenufm_action (){
 			;;
 		"$FM_TRASH")
 			[ ! -d "$FM_PATH/trash" ] && mkdir -p "$FM_PATH/trash"
-			trashmenu=$(printf '%s:' "Move to trash" "Go to trash" "Empty trash" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Trash")
+			trashmenu=$(printf '%s\n' "Move to trash" "Go to trash" "Empty trash" | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Trash")
 			case $trashmenu in
 				"Move to trash")
 					Generate_action_menu "Move file/directory to trash: " "#33691e"
@@ -194,13 +198,13 @@ dmenufm_action (){
 					if dangerprompt "Move all files and/or subdirectories in $name to trash?" && mv "$HERE" "$FM_PATH/trash"; then
 						if [ $result -eq 0 ]; then
 							# If chosen one is directory, send notification and cd to parent directory
-							notify-send "$name moved to trash." || return
+							notifyprompt "$name moved to trash." || return
 							cd "../" || return
 							# Reset result value
 							result=
 						else
 							# If not, just send notification.
-							notify-send "$name moved to trash." || return
+							notifyprompt "$name moved to trash." || return
 						fi
 					else
 						return
@@ -212,7 +216,7 @@ dmenufm_action (){
 				"Empty trash")
 					# Lesson: You cannot quote a wildcard. No quote on *.
 					if dangerprompt "Remove all files and/or directory in trash?" && rm -rf "$FM_PATH/trash/"*; then
-						notify-send "Trash is empty." || return
+						notifyprompt "Trash is empty." || return
 					else
 						return
 					fi
@@ -226,8 +230,7 @@ dmenufm_action (){
 			cd "$destination" || return
 			;;
 		"$FM_BMARK")
-			bookmark=$(< "$BMKFILE" tr '\n' ':')
-			markmenu=$(printf '%s:' "$bookmark" "Add BMK" "Delete BMK" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Bookmark")
+			markmenu=$(printf '%s\n' "$(cat $BMKFILE)" "Add BMK" "Delete BMK" | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Bookmark")
 			case "$markmenu" in
 				"Add BMK")
 					Generate_action_menu "Choose file/directory and add to BMK: " "#33691e"
@@ -244,12 +247,11 @@ dmenufm_action (){
 					;;
 				*)
 					destination=$(printf '%s' "$markmenu" | awk -F ' - ' '{print $2}')
-					cd "$destination" || printf '%s' "$destination" | xargs -I {} dmenufm-open "{}"
+					cd "$destination" || dmenufm-open "$destination"
 			esac
 			;;
 		"$FM_COMMAND")
-			cmd=$(< "$CMDFILE" tr '\n' ':')
-			cmdmenu=$(printf '%s:' "$cmd" "Add CMD" "Delete CMD" "Type and execute" | tr ':' '\n' | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Custom Command")
+			cmdmenu=$(printf '%s\n' "$(cat "$CMDFILE")" "Add CMD" "Delete CMD" "Type and execute" | sed "/^$/ d" | dmenu -i -l 20 -p "Dmenufm Custom Command")
 			case "$cmdmenu" in
 				"Add CMD")
 					addcmd=$(dmenu -i -sb "#33691e" -p "Recording your command: ")
