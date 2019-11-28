@@ -139,10 +139,10 @@ Generate_action_menu () {
 			cd "$actCHOICE" || exit 1
 			dmenufm_history
 			continue
-		elif [ -f "$actCHOICE" ]; then
+		elif [ -f "$actCHOICE" ] || [ -n "$allownew" ]; then
 			HERE=$(printf '%s' "$PWD/$actCHOICE")
 			name=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
-		 	break
+			break
 		else
 			HERE=
 			name=
@@ -215,10 +215,11 @@ dmenufm_action (){
 			;;
 		"$FM_MV")
 			Generate_action_menu "Source: " "#33691e" || return
-			[ -n "$HERE" ] && start="$HERE" && startname="$name"
-			[ -n "$start" ] && Generate_action_menu "Destination: " "#FF8C00" || return
+			[ -n "$HERE" ] && start="$HERE" && startname="$name" && allownew="true"
+			[ -n "$start" ] && Generate_action_menu "Destination: " "#FF8C00" || return && allownew=
 			[ -n "$HERE" ] && destination="$HERE" && destname="$name"
 			[ -n "$HERE" ] && mv "$start" "$destination" && notifyprompt "$startname moved to $destname"
+			allownew=
 			;;
 		"$FM_RM")
 			# Choose file/directory in current directory to remove
