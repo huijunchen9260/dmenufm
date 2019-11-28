@@ -11,13 +11,15 @@ BMKFILE="$FM_PATH/dmenufm_bookmark"
 CMDFILE="$FM_PATH/dmenufm_command"
 HISFILE="$FM_PATH/dmenufm_history"
 MAX_HIS_LENGTH=5000
+XDGDIR1="/usr/share/applications"
+XDGDIR2="/usr/local/share/applications"
 
 ## GLOBAL VARIABLES
 CHOICE="placeholder"
 TARGET="./"
 BACKWARD="../"
 ACTION="Actions"
-CMD="Command Line"
+TERM="Terminal"
 FM_CP_PATH="PCP - Copy path"
 FM_MK_DIR="MKD - Create new directory"
 FM_MK_FILE="MKF - Create new text file"
@@ -29,18 +31,39 @@ FM_BMARK="BMK - Bookmark for dmenufm"
 FM_COMMAND="CMD - Frequently used command"
 ACTLIST="$FM_CP_PATH:$FM_MK_DIR:$FM_MK_FILE:$FM_MV:$FM_RM:$FM_TRASH:$FM_HIST:$FM_BMARK:$FM_COMMAND"
 
+
+
+### FUNCTIONS
+
+
+## OPEN FUNCTIONS
+
 # You may need to modify executecmd to match how your terminal execute the command.
 # Use `< $(locate $software.desktop | tail -n 1) grep "Terminal=false` to check whether the .desktop file should open in terminal
 # Like sxiv, the desktop file don't have Terminal entry. You need to Use `< $(locate sxiv.desktop | tail -n 1) sudo $EDITOR` to add `Terminal=false`
 executecmd () {
 	software=$(printf '%s' "$1" | awk -F ' ' '{print $1}')
-	if < $(locate "$software".desktop | tail -n 1) grep "Terminal=false"; then
+	if < "$(find "$XDGDIR1" "$XDGDIR2" *"$software"*.desktop | tail -n 1)" grep "Terminal=false"; then
 		printf '%s' "$1" | ${SHELL:-"/bin/sh"} &
 	else
 		$TERMINAL -e $1 | ${SHELL:-"/bin/sh"} &
 	fi
 }
 
+# Open files with xdg-open
+# To edit default applications in xdg-open,
+# sudo $EDITOR /usr/share/applications/mimeinfo.cache
+open () {
+	appdesktop=$(xdg-mime query filetype "$1" | xargs -I {} xdg-mime query default "{}")
+	if < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" grep "Terminal=false"; then
+		xdg-open "$1" &
+	else
+		$TERMINAL -e xdg-open "$1" &
+	fi
+}
+
+
+## MENUFUNCTIONS
 
 # Generate directories
 # Variables cannot store multiline string, so transform to ':'
@@ -87,31 +110,6 @@ update_menu () {
 	done
 }
 
-
-# Store every move between directories into history
-dmenufm_history () {
-	[ ! -d "$FM_PATH" ] && mkdir -p "$FM_PATH"
-	dirmark=$(printf '%s' "$PWD" | awk -F '/' '{print $NF}')
-	printf '%s\n' "$dirmark - $PWD" | sed "/^$/ d" >> "$HISFILE"
-	# Limit the max number of history
-	hisnum=$(wc -l "$HISFILE" | awk '{print $1}')
-	if [ "$hisnum" -ge "$MAX_HIS_LENGTH" ]; then
-		sed "1d" "$HISFILE" > "$HISFILE.backup" && cp "$HISFILE.backup" "$HISFILE"
-	fi
-}
-
-
-notifyprompt () {
-	dmenu -fn Monospace-18 -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000" -p "$1" <&-
-}
-
-# Prompt that used in dangerous action
-dangerprompt () {
-	# From Luke Smith
-	# Use && command to execute the command after "Yes"
-	[ "$(printf "No\\nYes" | dmenu -i -p "$1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ]
-}
-
 # Generate menu for action choice, only for current directory.
 # $1 is the prompt, $2 is the selected background color
 Generate_action_menu () {
@@ -144,6 +142,35 @@ Generate_action_menu () {
 		fi
 	done
 }
+
+## PROMPT FUNCTIONS
+notifyprompt () {
+	dmenu -fn Monospace-18 -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000" -p "$1" <&-
+}
+
+# Prompt that used in dangerous action
+dangerprompt () {
+	# From Luke Smith
+	# Use && command to execute the command after "Yes"
+	[ "$(printf "No\\nYes" | dmenu -i -p "$1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ]
+}
+
+
+## TOOL FUNCTIONS
+
+# Store every move between directories into history
+dmenufm_history () {
+	[ ! -d "$FM_PATH" ] && mkdir -p "$FM_PATH"
+	dirmark=$(printf '%s' "$PWD" | awk -F '/' '{print $NF}')
+	printf '%s\n' "$dirmark - $PWD" | sed "/^$/ d" >> "$HISFILE"
+	# Limit the max number of history
+	hisnum=$(wc -l "$HISFILE" | awk '{print $1}')
+	if [ "$hisnum" -ge "$MAX_HIS_LENGTH" ]; then
+		sed "1d" "$HISFILE" > "$HISFILE.backup" && cp "$HISFILE.backup" "$HISFILE"
+	fi
+}
+
+
 
 # Actions that for dmenufm
 dmenufm_action (){
@@ -247,7 +274,7 @@ dmenufm_action (){
 					;;
 				*)
 					destination=$(printf '%s' "$markmenu" | awk -F ' - ' '{print $2}')
-					cd "$destination" || dmenufm-open "$destination"
+					cd "$destination" || open "$destination"
 			esac
 			;;
 		"$FM_COMMAND")
@@ -291,10 +318,10 @@ dmenufm_menu () {
 		# Generate menu with/without arguments
 		# Show only the current directory and one level of parent directory
 		twopwd=$(printf '%s' "$PWD" | awk -F '/' '{print $(NF-1)"/"$NF}')
-		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ACTION" "$CMD" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | dmenu -i -l 10 -p "$twopwd")
+		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | dmenu -i -l 10 -p "$twopwd")
 		# Outcome matching
 		if [ "$CHOICE" = "$TARGET" ]; then
-			printf '%s' "$PWD" | xargs -I {} dmenufm-open "{}"
+			open "$PWD"
 			break
 		elif [ "$CHOICE" = "$BACKWARD" ]; then
 			cd "../"
@@ -302,15 +329,14 @@ dmenufm_menu () {
 		elif [ "$CHOICE" = "$ACTION" ]; then
 			dmenufm_action
 			break
-		elif [ "$CHOICE" = "$CMD" ]; then
-			execmd=$(dmenu -i -sb "#33691e" -p "Type and execute: ")
-			executecmd "$execmd"
+		elif [ "$CHOICE" = "$TERM" ]; then
+			$TERMINAL
 		elif [ -d "$CHOICE" ]; then
 			cd "$CHOICE" || exit 1
 			dmenufm_history
 			continue
 		elif [ -f "$CHOICE" ]; then
-		 	printf '%s' "$PWD/$CHOICE" | xargs -I {} dmenufm-open "{}"
+			open "$PWD/$CHOICE"
 		 	break
 		else
 			break
