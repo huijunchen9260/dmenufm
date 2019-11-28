@@ -2,9 +2,9 @@
 
 A simple dmenu file manager written in POSIX-compliant shell script.
 
-<center> [![Distrotube introduce my project better than me.](https://img.youtube.com/vi/EyW6pRlWv6Q/0.jpg)](https://www.youtube.com/watch?v=EyW6pRlWv6Q) </center>
+[![Distrotube introduce my project better than me.](https://img.youtube.com/vi/EyW6pRlWv6Q/0.jpg)](https://www.youtube.com/watch?v=EyW6pRlWv6Q)
 
-<center> [Distrotube](https://www.youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg) introduce my project much better than I do.</center>
+[Distrotube](https://www.youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg) introduce my project much better than I do.
 
 # Some gifs
 ![Dmenufm Introduction 1](./figure/dmenufm_1.gif)
