@@ -11,13 +11,14 @@ FM_TRASH_PATH="$FM_PATH/trash"
 BMKFILE="$FM_PATH/dmenufm_bookmark"
 CMDFILE="$FM_PATH/dmenufm_command"
 HISFILE="$FM_PATH/dmenufm_history"
+LASTPATHFILE="$FM_PATH/dmenufm_lastpath"
 MAX_HIS_LENGTH=5000
 XDGDIR1="/usr/share/applications"
 XDGDIR2="/usr/local/share/applications"
 # FONT
-GENEFONT="Monospace-20"
-NOTIFONT="Monospace-30"
-DANGERFONT="Monospace-30"
+GENEFONT="Monospace-15"
+NOTIFONT="Monospace-25"
+DANGERFONT="Monospace-20"
 
 
 ## GLOBAL VARIABLES
@@ -197,6 +198,8 @@ dmenufm_history () {
 
 
 # Actions that for dmenufm
+# Note: Use `[ -n "$VAR" ]` after each menu to check whether the menu is correctly execute.
+# 	If not, then the later command will not execute.
 dmenufm_action (){
 	move=$(printf '%s' "$ACTLIST" | tr ':' '\n' | verticalprompt "Actions:" "#005577")
 	case $move in
@@ -299,7 +302,9 @@ dmenufm_action (){
 					;;
 				*)
 					destination=$(printf '%s' "$markmenu" | awk -F ' - ' '{print $2}')
-					[ -n "$destination" ] && cd "$destination" || open "$destination"
+					if [ -n "$destination" ]; then
+						cd "$destination" || open "$destination"
+					fi
 			esac
 			;;
 		"$FM_COMMAND")
@@ -382,12 +387,16 @@ while [ -n "$1" ]; do
 		"-F"|"--dotfile" )
 			keeplist="${keeplist} DOTFILEs"
 			;;
+		"-p"|"--lastpath" )
+			outputpath="placeholder"
+			;;
 		"-h"|"--help" )
-			printf "Optional arguments for custom use:
-			-d | --directory: menu is directories, no input
-			-f | --file: menu is files, no input
-			-D | --dotdirectory: menu is hidden directories, no input
-			-F | --dotfile: menu is hidden files, no input
+			printf " Optional arguments for custom usage:
+			-d | --directory: dmenufm only show directories
+			-f | --file: dmenufm only show files
+			-D | --dotdirectory: dmenufm only show hidden directories
+			-F | --dotfile: dmenufm only hidden files
+			-p | --lastpath: dmenufm open on last working directory
 			-h | --help: Show this message\\n"
 			exit 0
 			;;
@@ -400,4 +409,10 @@ while [ -n "$1" ]; do
 done
 
 ### RUN THE MAIN FUNCTION
+
+# --lastpath option:
+[ -n "$outputpath" ] && cd "$(cat "$LASTPATHFILE")" && rm "$LASTPATHFILE" 2>&1
+
 dmenufm_menu
+
+[ -n "$outputpath" ] && printf '%s' "$PWD" > "$LASTPATHFILE"

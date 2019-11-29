@@ -7,6 +7,7 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 [Distrotube](https://www.youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg) introduce my project much better than I do.
 
 # Some gifs
+
 ![Dmenufm Introduction 1](./figure/dmenufm_1.gif)
 ![Dmenufm Introduction 2](./figure/dmenufm_2.gif)
 
@@ -29,6 +30,17 @@ Put `dmenufm` in your `$PATH`.
 2. `../` to go back to parent directory.
 3. `./` to open your file manager in currend working directory (determined by `xdg-open`)
 4. Choices with `/` are directory; choices without `/` are files.
+
+
+```sh
+Optional arguments for custom usage:
+-d | --directory: dmenufm only show directories
+-f | --file: dmenufm only show files
+-D | --dotdirectory: dmenufm only show hidden directories
+-F | --dotfile: dmenufm only hidden files
+-p | --lastpath: dmenufm open on last working directory
+-h | --help: Show this message
+```
 
 ## Terminal
 
