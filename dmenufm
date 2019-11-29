@@ -394,11 +394,11 @@ while [ -n "$1" ]; do
 			;;
 		"-h"|"--help" )
 			printf " Optional arguments for custom usage:
-			-d | --directory: dmenufm only show directories
-			-f | --file: dmenufm only show files
-			-D | --dotdirectory: dmenufm only show hidden directories
-			-F | --dotfile: dmenufm only hidden files
-			-p | --lastpath: dmenufm open on last working directory (cd on exit)
+			-d | --directory: only directories
+			-f | --file: only show files
+			-D | --dotdirectory: only show hidden directories
+			-F | --dotfile: only show hidden files
+			-p | --lastpath: opens in last working directory (cd on exit)
 			-h | --help: Show this message\\n"
 			exit 0
 			;;
@@ -417,4 +417,4 @@ done
 
 dmenufm_menu
 
-[ -n "$outputpath" ] && printf '%s' "$PWD" > "$LASTPATHFILE"
+printf '%s' "$PWD" > "$LASTPATHFILE"
