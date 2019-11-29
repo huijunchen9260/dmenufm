@@ -67,7 +67,7 @@ Example:
 ### `NEW` to make new file / directory
 
 Name with slash will consider as a directory; without as file.
-	- Example: Type `dirname/` to create new directory, and `filename` to create new file.
+- Example: Type `dirname/` to create new directory, and `filename` to create new file.
 
 ### `MVR` to move / rename file
 
