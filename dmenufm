@@ -34,11 +34,12 @@ FM_CP_PATH="PCP - Copy path"
 FM_NEW="NEW - Create new file / directory"
 FM_RM="RMM - Remove files / directory"
 FM_MVR="MVR - Move files"
+FM_CP="CPP - Copy files"
 FM_TRASH="TRH - Trash of dmenufm"
 FM_HIST="HIS - History of dmenufm"
 FM_BMARK="BMK - Bookmark for dmenufm"
 FM_COMMAND="CMD - Frequently used command"
-ACTLIST="$FM_CP_PATH:$FM_NEW:$FM_MVR:$FM_RM:$FM_TRASH:$FM_HIST:$FM_BMARK:$FM_COMMAND"
+ACTLIST="$FM_CP_PATH:$FM_NEW:$FM_MVR:$FM_CP:$FM_RM:$FM_TRASH:$FM_HIST:$FM_BMARK:$FM_COMMAND"
 
 
 
@@ -245,13 +246,15 @@ dmenufm_action (){
 				:>"$name" && notifyprompt "File $name created."
 			fi
 			;;
-		"$FM_MVR")
+		"$FM_MVR"|"$FM_CP")
+			cmd="mv" && cmdname="moved"
+			[ "$move" = "$FM_CP" ] && cmd="cp" && cmdname="copied"
 			Generate_action_menu "Source: " "#33691e" || return
 			[ -n "$HERE" ] && start="$HERE" && startname="$name" && rename="true"
 			[ -d "$start" ] && cd "../"
-			[ -n "$start" ] && Generate_action_menu "Destination / Type rename: " "#FF8C00" || return && rename=
+			[ -n "$start" ] && Generate_action_menu "Destination / Type new name: " "#FF8C00" || return && rename=
 			[ -n "$HERE" ] && destination="$HERE" && destname="$name"
-			[ -n "$HERE" ] && mv "$start" "$destination" && notifyprompt "$startname moved to $destname"
+			[ -n "$HERE" ] && $cmd "$start" "$destination" && notifyprompt "$startname $cmdname to $destname"
 			rename=
 			;;
 		"$FM_RM")
