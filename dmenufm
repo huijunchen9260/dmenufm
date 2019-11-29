@@ -388,9 +388,13 @@ while [ -n "$1" ]; do
 			-f | --file: menu is files, no input
 			-D | --dotdirectory: menu is hidden directories, no input
 			-F | --dotfile: menu is hidden files, no input
+			-p | --lastpath: output the last path accessed (for cd on exit)
 			-h | --help: Show this message\\n"
 			exit 0
 			;;
+        "-p"|"--lastpath" )
+            outputpath="y"
+            ;;
 		"*" )
 			printf "Invalid option"
 			exit 1
@@ -401,3 +405,7 @@ done
 
 ### RUN THE MAIN FUNCTION
 dmenufm_menu
+
+if [ ! -z "$outputpath" ]; then
+    echo "$PWD"
+fi
