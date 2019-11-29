@@ -171,6 +171,36 @@ Terminal=false
 
 You can replace `sxiv` to any GUI application which has the same issue.
 
+## Why files do not open in the right application
+
+`dmenufm` use `xdg-open` to open files in the default application.
+
+To open in the application that you want, you need to
+1. find the filetype (`minor/major`) of the file
+2. type it in the correct file.
+
+For example, I am using `sxhkd`. So I need to modify `sxhkdrc`. However, it is not opened in `nvim.desktop`, but in `firefox.desktop`.
+
+So I
+
+1. find the filetype:
+	```sh
+	# Go to directory
+	cd ~/.config/sxhkd
+	# find the filetype
+	xdg-mime query filetype sxhkdrc
+	```
+	Find filetype `text/x-matlab`
+1. type it in the file:
+	```sh
+	# Open cache file in vim
+	sudo $EDITOR /usr/share/applications/mimeinfo.cache/
+	# Type this line in anywhere:
+	text/x-matlab=nvim.desktop
+	```
+
+and you are all set.
+
 ## Dmenu font is too big/small
 
 Open `dmenufm` script, and you can change the following three variables:
