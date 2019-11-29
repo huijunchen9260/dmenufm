@@ -63,9 +63,13 @@ Example:
 Name with slash will consider as a directory; without as file.
 	- Example: Type `dirname/` to create new directory, and `filename` to create new file.
 
-### `MVV` to move file
+### `MVR` to move / rename file
 
-Choose source and destination to move your file. Enter the directory and choose `./` to confirm the destination.
+- To move file to destination:
+	- Choose source and destination to move your file. Enter the directory and choose `./` to confirm the destination.
+- To rename file:
+	- After choosing source, in the destination, type your new name, and press `Shift+Return` to confirm inputed new name.
+	- Note: `Shift+Return` will confirm the input rather than patched menu item.
 
 ### `RMM` to remove
 
@@ -179,6 +183,5 @@ DANGERFONT="Monospace-30"
 
 - Compress directory and extract files to different format.
 - `cp` function
-- rename function (maybe use `mv`)
 
 

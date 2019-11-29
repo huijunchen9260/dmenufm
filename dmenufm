@@ -31,12 +31,12 @@ TERM="Terminal"
 FM_CP_PATH="PCP - Copy path"
 FM_NEW="NEW - Create new file / directory"
 FM_RM="RMM - Remove files / directory"
-FM_MV="MVV - Move files"
+FM_MVR="MVR - Move files"
 FM_TRASH="TRH - Trash of dmenufm"
 FM_HIST="HIS - History of dmenufm"
 FM_BMARK="BMK - Bookmark for dmenufm"
 FM_COMMAND="CMD - Frequently used command"
-ACTLIST="$FM_CP_PATH:$FM_NEW:$FM_MV:$FM_RM:$FM_TRASH:$FM_HIST:$FM_BMARK:$FM_COMMAND"
+ACTLIST="$FM_CP_PATH:$FM_NEW:$FM_MVR:$FM_RM:$FM_TRASH:$FM_HIST:$FM_BMARK:$FM_COMMAND"
 
 
 
@@ -140,7 +140,7 @@ Generate_action_menu () {
 			cd "$actCHOICE" || exit 1
 			dmenufm_history
 			continue
-		elif [ -f "$actCHOICE" ] || [ -n "$allownew" ]; then
+		elif [ -f "$actCHOICE" ] || [ -n "$rename" ]; then
 			HERE=$(printf '%s' "$PWD/$actCHOICE")
 			name=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
 			break
@@ -216,13 +216,13 @@ dmenufm_action (){
 				:>"$name" && notifyprompt "File $name created."
 			fi
 			;;
-		"$FM_MV")
+		"$FM_MVR")
 			Generate_action_menu "Source: " "#33691e" || return
-			[ -n "$HERE" ] && start="$HERE" && startname="$name" && allownew="true"
-			[ -n "$start" ] && Generate_action_menu "Destination: " "#FF8C00" || return && allownew=
+			[ -n "$HERE" ] && start="$HERE" && startname="$name" && rename="true"
+			[ -n "$start" ] && Generate_action_menu "Destination: " "#FF8C00" || return && rename=
 			[ -n "$HERE" ] && destination="$HERE" && destname="$name"
 			[ -n "$HERE" ] && mv "$start" "$destination" && notifyprompt "$startname moved to $destname"
-			allownew=
+			rename=
 			;;
 		"$FM_RM")
 			# Choose file/directory in current directory to remove
