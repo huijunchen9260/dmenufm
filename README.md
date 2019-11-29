@@ -38,7 +38,7 @@ Optional arguments for custom usage:
 -f | --file: dmenufm only show files
 -D | --dotdirectory: dmenufm only show hidden directories
 -F | --dotfile: dmenufm only hidden files
--p | --lastpath: dmenufm open on last working directory
+-p | --lastpath: dmenufm open on last working directory (cd on exit)
 -h | --help: Show this message
 ```
 
@@ -46,6 +46,13 @@ Optional arguments for custom usage:
 
 `Terminal` to open terminal in currend working directory.
 
+## CD on exit
+
+Use `-p` option:
+
+```sh
+dmenufm -p
+```
 
 ## Actions
 
