@@ -223,3 +223,4 @@ DANGERFONT="Monospace-30"
 # TODO
 
 - Compress directory ~~and extract files~~ to different format.
+- Ranger style bulk rename
