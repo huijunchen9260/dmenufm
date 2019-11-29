@@ -413,7 +413,7 @@ done
 ### RUN THE MAIN FUNCTION
 
 # --lastpath option:
-[ -n "$outputpath" ] && cd "$(cat "$LASTPATHFILE")" && rm "$LASTPATHFILE" 2>&1
+[ -n "$outputpath" ] && cd "$(cat "$LASTPATHFILE")"
 
 dmenufm_menu
 
