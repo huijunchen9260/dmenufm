@@ -77,6 +77,10 @@ Name with slash will consider as a directory; without as file.
 	- After choosing source, in the destination, type your new name (No need to add slash even for directory), and press `Shift+Return` to confirm inputed new name.
 	- Note: `Shift+Return` will confirm the input rather than patched menu item.
 
+### `CPP` to copy files to new / existing file
+
+- The usage of this action is the same as `MVR`, but will copy the file instead of moving it.
+
 ### `RMM` to remove
 
 Remove one directory or file.
