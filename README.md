@@ -15,8 +15,7 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 
 - `awk`, `sed`, `cat`, `wc -l`, `rm`, `mkdir`, `touch` in their POSIX-compliant version.
 - `xclip` as clipboard
-- ~~`dunst` as notification daemon, and `notify-send` to send notification.~~
-	- Use `dmenu` to show notification.
+- `tar`; `unlzma`; `bunzip2`; `unrar`; `unzip`; `uncompress`; `7z`; `unxz`; `cabextract` for extraction.
 
 # Installation
 
@@ -128,11 +127,12 @@ executecmd () {
 
 `$TERMINAL -e $1` is the one you need to modify.
 
-# Dmenufm-ext
+## Open files
 
-`dmenufm-ext` is a POSIX compliant shell script that extract files.
+Files are opened using `xdg-open`. If you have any trouble, go to [troubleshooting on xdg-open](#why-files-do-not-open-in-the-right-application)
 
-~~Now this script are able to extract compression file by choosing it in dmenufm.~~
+For compressions, now you can choose the compression, and it will extract into a new directory named by the compression.
+
 
 # Note
 
@@ -218,7 +218,7 @@ DANGERFONT="Monospace-30"
 
 # TODO
 
-- Compress directory and extract files to different format.
+- Compress directory ~~and extract files~~ to different format.
 - `cp` function
 
 

@@ -2,6 +2,8 @@
 
 # Dmenu-based directory browser
 # Dependency: dmenu; xclip
+# Dependency on extraction: tar; unlzma; bunzip2; unrar; unzip; uncompress; 7z; unxz; cabextract.
+
 
 ### OPTIONS AND VARIABLES
 
@@ -57,16 +59,34 @@ executecmd () {
 	fi
 }
 
-# Open files with xdg-open
+# Open files with xdg-open, if not compression.
+# Compressions are extracted by its file extension.
+# Use extraction to put content in a new directory.
 # To edit default applications in xdg-open,
 # sudo $EDITOR /usr/share/applications/mimeinfo.cache
 open () {
-	appdesktop=$(xdg-mime query filetype "$1" | xargs -I {} xdg-mime query default "{}")
-	if < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" grep "Terminal=false"; then
-		xdg-open "$1"
-	else
-		$TERMINAL -e xdg-open "$1"
-	fi
+case "$1" in
+	*.tar.bz2|*.tar.xz|*.tbz2) extraction "tar xvjf" "$1" ;;
+	*.tar.gz|*.tgz) extraction "tar xvzf" "$1" ;;
+	*.lzma) extraction "unlzma" "$1" ;;
+	*.bz2) extraction "bunzip2" "$1" ;;
+	*.rar) extraction "unrar x -ad" "$1" ;;
+	*.gz) extraction "gunzip" "$1" ;;
+	*.tar) extraction "tar xvf" "$1" ;;
+	*.zip) extraction "unzip" "$1" ;;
+	*.Z) extraction "uncompress" "$1" ;;
+	*.7z) extraction "7z x" "$1" ;;
+	*.xz) extraction "unxz" "$1" ;;
+	*.exe) extraction "cabextract" "$1" ;;
+	*)
+		appdesktop=$(xdg-mime query filetype "$1" | xargs -I {} xdg-mime query default "{}")
+		if < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" grep "Terminal=false"; then
+			xdg-open "$1"
+		else
+			$TERMINAL -e xdg-open "$1"
+		fi
+		;;
+esac
 }
 
 
@@ -195,7 +215,16 @@ dmenufm_history () {
 	fi
 }
 
-
+# Extract files and make a new directory to contain all the files.
+extraction () {
+	# $1: command to extract compress
+	# $2: compression name
+	# Example: extraction "unzip" "$HOME/filename.zip"
+	dirname="$(printf '%s' "$2" | awk -F '/' '{printf $NF}' | awk -F '.' '{print $1}')"
+	mkdir -p "$dirname" && cd "$dirname" || exit
+	$1 "$2"
+	dmenufm
+}
 
 # Actions that for dmenufm
 # Note: Use `[ -n "$VAR" ]` after each menu to check whether the menu is correctly execute.
