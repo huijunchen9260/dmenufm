@@ -7,6 +7,7 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 [Distrotube](https://www.youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg) introduce my project much better than I do.
 
 # Some gifs
+
 ![Dmenufm Introduction 1](./figure/dmenufm_1.gif)
 ![Dmenufm Introduction 2](./figure/dmenufm_2.gif)
 
@@ -30,10 +31,28 @@ Put `dmenufm` in your `$PATH`.
 3. `./` to open your file manager in currend working directory (determined by `xdg-open`)
 4. Choices with `/` are directory; choices without `/` are files.
 
+
+```sh
+Optional arguments for custom usage:
+-d | --directory: dmenufm only show directories
+-f | --file: dmenufm only show files
+-D | --dotdirectory: dmenufm only show hidden directories
+-F | --dotfile: dmenufm only hidden files
+-p | --lastpath: dmenufm open on last working directory (cd on exit)
+-h | --help: Show this message
+```
+
 ## Terminal
 
 `Terminal` to open terminal in currend working directory.
 
+## CD on exit
+
+Use `-p` option:
+
+```sh
+dmenufm -p
+```
 
 ## Actions
 
@@ -51,9 +70,13 @@ Example:
 Name with slash will consider as a directory; without as file.
 	- Example: Type `dirname/` to create new directory, and `filename` to create new file.
 
-### `MVV` to move file
+### `MVR` to move / rename file
 
-Choose source and destination to move your file. Enter the directory and choose `./` to confirm the destination.
+- To move file to destination:
+	- Choose source and destination to move your file. Enter the directory and choose `./` to confirm the destination.
+- To rename file:
+	- After choosing source, in the destination, type your new name (No need to add slash even for directory), and press `Shift+Return` to confirm inputed new name.
+	- Note: `Shift+Return` will confirm the input rather than patched menu item.
 
 ### `RMM` to remove
 
@@ -167,6 +190,5 @@ DANGERFONT="Monospace-30"
 
 - Compress directory and extract files to different format.
 - `cp` function
-- rename function (maybe use `mv`)
 
 
