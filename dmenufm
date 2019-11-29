@@ -219,7 +219,8 @@ dmenufm_action (){
 		"$FM_MVR")
 			Generate_action_menu "Source: " "#33691e" || return
 			[ -n "$HERE" ] && start="$HERE" && startname="$name" && rename="true"
-			[ -n "$start" ] && Generate_action_menu "Destination: " "#FF8C00" || return && rename=
+			[ -d "$start" ] && cd "../"
+			[ -n "$start" ] && Generate_action_menu "Destination / Type rename: " "#FF8C00" || return && rename=
 			[ -n "$HERE" ] && destination="$HERE" && destname="$name"
 			[ -n "$HERE" ] && mv "$start" "$destination" && notifyprompt "$startname moved to $destname"
 			rename=

@@ -68,7 +68,7 @@ Name with slash will consider as a directory; without as file.
 - To move file to destination:
 	- Choose source and destination to move your file. Enter the directory and choose `./` to confirm the destination.
 - To rename file:
-	- After choosing source, in the destination, type your new name, and press `Shift+Return` to confirm inputed new name.
+	- After choosing source, in the destination, type your new name (No need to add slash even for directory), and press `Shift+Return` to confirm inputed new name.
 	- Note: `Shift+Return` will confirm the input rather than patched menu item.
 
 ### `RMM` to remove
