@@ -285,7 +285,7 @@ dmenufm_action (){
 					HERE=$multilist
 					echo "DEBUG: $HERE"
 				done
-				HERE=$(printf '%s' "$HERE" | cut -b2- | tr ':' '\n')
+				HERE=$(printf '%s' "$HERE" | cut -b2- | tr ':' '\n' | uniq)
 			fi
 			allowmulti=
 			# Check the chosen on is directory or not
