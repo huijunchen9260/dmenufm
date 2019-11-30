@@ -42,7 +42,7 @@ Optional arguments for custom usage:
 ## Terminal
 
 `Terminal` to open terminal in currend working directory. Should define terminal by adding 
-`export TERMINAL=<your terminal>` to the end of your `.bashrc` file (or any other configuration file for your shell, like `.zshrc`).
+`export TERMINAL=<your terminal>` to the end of your `.bashrc` file (or any other system configuration file, like `.profile`, `zshrc`, etc).
 
 ## CD on exit
 
