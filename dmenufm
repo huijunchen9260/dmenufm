@@ -13,7 +13,7 @@
 [ -n "$DMENUFM_BMKFILE" ] || DMENUFM_BMKFILE="$DMENUFM_PATH/dmenufm_bookmark"
 [ -n "$DMENUFM_CMDFILE" ] || DMENUFM_CMDFILE="$DMENUFM_PATH/dmenufm_command"
 [ -n "$DMENUFM_HISFILE" ] || DMENUFM_HISFILE="$DMENUFM_PATH/dmenufm_history"
-[ -n "$DMENUFM_LASTPATHFILE" ] || DMENUFM_LASTPATHFILE="$DMENUFM_PATH/dmenufm_lastpath"
+[ -n "$DMENUFM_LAST_PATH_FILE" ] || DMENUFM_LAST_PATH_FILE="$DMENUFM_PATH/dmenufm_lastpath"
 [ -n "$DMENUFM_MAX_HIS_LENGTH" ] || DMENUFM_MAX_HIS_LENGTH=5000
 XDGDIR1="/usr/share/applications"
 XDGDIR2="/usr/local/share/applications"
@@ -445,8 +445,8 @@ done
 ### RUN THE MAIN FUNCTION
 
 # --lastpath option:
-[ -n "$outputpath" ] && cd "$(cat "$DMENUFM_LASTPATHFILE")"
+[ -n "$outputpath" ] && cd "$(cat "$DMENUFM_LAST_PATH_FILE")"
 
 dmenufm_menu
 
-printf '%s' "$PWD" > "$DMENUFM_LASTPATHFILE"
+printf '%s' "$PWD" > "$DMENUFM_LAST_PATH_FILE"
