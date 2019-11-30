@@ -136,6 +136,23 @@ Files are opened using `xdg-open`. If you have any trouble, go to [troubleshooti
 
 For compressions, now you can choose the compression, and it will extract into a new directory named by the compression.
 
+# Configuration
+
+There are many environment variables you can use to conigure dmenufm by exporting them in your system or shell configuration file.
+
+The default options are as follows:
+```sh
+export DMENUFM_PATH="$HOME/.config/dmenufm"
+export DMENUFM_TRASH_PATH="$DMENUFM_PATH/trash"
+export DMENUFM_BMKFILE="$DMENUFM_PATH/dmenufm_bookmark"
+export DMENUFM_CMDFILE="$DMENUFM_PATH/dmenufm_command"
+export DMENUFM_HISFILE="$DMENUFM_PATH/dmenufm_history"
+export DMENUFM_LAST_PATH_FILE="$DMENUFM_PATH/dmenufm_lastpath"
+export DMENUFM_MAX_HIS_LENGTH=5000
+export DMENUFM_GENERIC_FONT="Monospace-15"
+export DMENUFM_NOTIF_FONT="Monospace-25"
+export DMENUFM_DANGER_FONT="Monospace-20"
+```
 
 # Note
 
@@ -203,17 +220,17 @@ and you are all set.
 
 ## Dmenu font is too big/small
 
-Open `dmenufm` script, and you can change the following three variables:
+You can export the following environment variables in your shell or system configuration file:
 
 ```sh
-GENEFONT="Monospace-20"
-NOTIFONT="Monospace-30"
-DANGERFONT="Monospace-30"
+DMENUFM_GENERIC_FONT="Monospace-20"
+DMENUFM_NOTIF_FONT="Monospace-30"
+DMENUFM_DANGER_FONT="Monospace-30"
 ```
 
-- `GENEFONT` for general dmenu font size,
-- `NOTIFONT` for notification prompt, and
-- `DANGERFONT` for dangerous prompt for further confirmation in `RMM` and `TRH`.
+- `DMENUFM_GENERIC_FONT` for general dmenu font size,
+- `DMENUFM_NOTIF_FONT` for notification prompt, and
+- `DMENUFM_DANGER_FONT` for dangerous prompt for further confirmation in `RMM` and `TRH`.
 
 
 # TODO
