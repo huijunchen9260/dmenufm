@@ -222,3 +222,4 @@ DANGERFONT="Monospace-30"
 - Ranger style bulk rename
 - Support MacOS (darwin)
 - Multi-choices action
+- Function to set up the xdg-open default application (Or is there any file that I can modify to just set up all my files once permanently?)
