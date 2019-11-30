@@ -41,7 +41,7 @@ Optional arguments for custom usage:
 
 ## Terminal
 
-`Terminal` to open terminal in currend working directory. Should define terminal by adding 
+`Terminal` to open terminal in currend working directory. Should define terminal by adding
 `export TERMINAL=<your terminal>` to the end of your `.bashrc` file (or any other system configuration file, like `.profile`, `zshrc`, etc).
 
 ## CD on exit
@@ -224,3 +224,4 @@ DANGERFONT="Monospace-30"
 - Compress directory ~~and extract files~~ to different format.
 - Ranger style bulk rename
 - Support MacOS (darwin)
+- Multi-choices action
