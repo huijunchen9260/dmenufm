@@ -21,8 +21,6 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 
 Put `dmenufm` in your `$PATH`.
 
-(`dmenufm-ext` is file for extraction. Use this file into `dmenufm` is one of the TODO list.)
-
 # Usage
 
 1. Type `dmenufm` to launch, or assign `dmenufm` to your favorite hot key.
@@ -43,7 +41,8 @@ Optional arguments for custom usage:
 
 ## Terminal
 
-`Terminal` to open terminal in currend working directory.
+`Terminal` to open terminal in currend working directory. Should define terminal by adding 
+`export TERMINAL=<your terminal>` to the end of your `.bashrc` file (or any other system configuration file, like `.profile`, `zshrc`, etc).
 
 ## CD on exit
 
