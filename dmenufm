@@ -8,19 +8,19 @@
 ### OPTIONS AND VARIABLES
 
 ## OPTIONS
-FM_PATH="$HOME/.config/dmenufm"
-FM_TRASH_PATH="$FM_PATH/trash"
-BMKFILE="$FM_PATH/dmenufm_bookmark"
-CMDFILE="$FM_PATH/dmenufm_command"
-HISFILE="$FM_PATH/dmenufm_history"
-LASTPATHFILE="$FM_PATH/dmenufm_lastpath"
-MAX_HIS_LENGTH=5000
+[ -n "$DMENUFM_PATH" ] || DMENUFM_PATH="$HOME/.config/dmenufm"
+[ -n "$DMENUFM_TRASH_PATH" ] || DMENUFM_TRASH_PATH="$DMENUFM_PATH/trash"
+[ -n "$DMENUFM_BMKFILE" ] || DMENUFM_BMKFILE="$DMENUFM_PATH/dmenufm_bookmark"
+[ -n "$DMENUFM_CMDFILE" ] || DMENUFM_CMDFILE="$DMENUFM_PATH/dmenufm_command"
+[ -n "$DMENUFM_HISFILE" ] || DMENUFM_HISFILE="$DMENUFM_PATH/dmenufm_history"
+[ -n "$DMENUFM_LASTPATHFILE" ] || DMENUFM_LASTPATHFILE="$DMENUFM_PATH/dmenufm_lastpath"
+[ -n "$DMENUFM_MAX_HIS_LENGTH" ] || DMENUFM_MAX_HIS_LENGTH=5000
 XDGDIR1="/usr/share/applications"
 XDGDIR2="/usr/local/share/applications"
 # FONT
-GENEFONT="Monospace-15"
-NOTIFONT="Monospace-25"
-DANGERFONT="Monospace-20"
+[ -n "$DMENUFM_GENERIC_FONT" ] || DMENUFM_GENERIC_FONT="Monospace-15"
+[ -n "$DMENUFM_NOTIF_FONT" ] || DMENUFM_NOTIF_FONT="Monospace-25"
+[ -n "$DMENUFM_DANGER_FONT" ] || DMENUFM_DANGER_FONT="Monospace-20"
 
 
 ## GLOBAL VARIABLES
@@ -177,23 +177,23 @@ Generate_action_menu () {
 ## PROMPT FUNCTIONS
 verticalprompt () {
 	# $1 is prompt
-	dmenu -fn "$GENEFONT" -i -sb "$2" -l 10 -p "$1"
+	dmenu -fn "$DMENUFM_GENERIC_FONT" -i -sb "$2" -l 10 -p "$1"
 }
 
 horizontalprompt () {
 	# $1 is prompt
-	dmenu -fn "$GENEFONT" -i -sb "$2" -p "$1"
+	dmenu -fn "$DMENUFM_GENERIC_FONT" -i -sb "$2" -p "$1"
 }
 
 notifyprompt () {
-	dmenu -fn "$NOTIFONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000" -p "$1" <&-
+	dmenu -fn "$DMENUFM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000" -p "$1" <&-
 }
 
 # Prompt that used in dangerous action
 dangerprompt () {
 	# From Luke Smith
 	# Use && command to execute the command after "Yes"
-	[ "$(printf "No\\nYes" | dmenu -fn "$DANGERFONT" -i -p "$1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ]
+	[ "$(printf "No\\nYes" | dmenu -fn "$DMENUFM_DANGER_FONT" -i -p "$1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ]
 }
 
 
@@ -206,13 +206,13 @@ escape () {
 
 # Store every move between directories into history
 dmenufm_history () {
-	[ ! -d "$FM_PATH" ] && mkdir -p "$FM_PATH"
+	[ ! -d "$DMENUFM_PATH" ] && mkdir -p "$DMENUFM_PATH"
 	dirmark=$(printf '%s' "$PWD" | awk -F '/' '{print $NF}')
-	printf '%s\n' "$dirmark - $PWD" | sed "/^$/ d" >> "$HISFILE"
+	printf '%s\n' "$dirmark - $PWD" | sed "/^$/ d" >> "$DMENUFM_HISFILE"
 	# Limit the max number of history
-	hisnum=$(wc -l "$HISFILE" | awk '{print $1}')
-	if [ "$hisnum" -ge "$MAX_HIS_LENGTH" ]; then
-		sed "1d" "$HISFILE" > "$HISFILE.backup" && cp "$HISFILE.backup" "$HISFILE"
+	hisnum=$(wc -l "$DMENUFM_HISFILE" | awk '{print $1}')
+	if [ "$hisnum" -ge "$DMENUFM_MAX_HIS_LENGTH" ]; then
+		sed "1d" "$DMENUFM_HISFILE" > "$DMENUFM_HISFILE.backup" && cp "$DMENUFM_HISFILE.backup" "$DMENUFM_HISFILE"
 	fi
 }
 
@@ -279,7 +279,7 @@ dmenufm_action (){
 
 			;;
 		"$FM_TRASH")
-			[ ! -d "$FM_TRASH_PATH" ] && mkdir -p "$FM_TRASH_PATH"
+			[ ! -d "$DMENUFM_TRASH_PATH" ] && mkdir -p "$DMENUFM_TRASH_PATH"
 			trashmenu=$(printf '%s\n' "Move to trash" "Go to trash" "Empty trash" | sed "/^$/ d" | verticalprompt "Dmenufm Trash" "#005577")
 			case $trashmenu in
 				"Move to trash")
@@ -287,7 +287,7 @@ dmenufm_action (){
 					# Check the chosen on is directory or not
 					[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 					# Say yes in dangerprompt, and send notification. Or do nothing.
-					if [ -n "$HERE" ] && dangerprompt "Move all files and/or subdirectories in $name to trash?" && mv "$HERE" "$FM_TRASH_PATH"; then
+					if [ -n "$HERE" ] && dangerprompt "Move all files and/or subdirectories in $name to trash?" && mv "$HERE" "$DMENUFM_TRASH_PATH"; then
 						if [ $result -eq 0 ]; then
 							notifyprompt "$name moved to trash." || return
 							cd "../" || return
@@ -300,11 +300,11 @@ dmenufm_action (){
 					fi
 					;;
 				"Go to trash")
-					cd "$FM_TRASH_PATH" || return
+					cd "$DMENUFM_TRASH_PATH" || return
 					;;
 				"Empty trash")
 					# Lesson: You cannot quote a wildcard. No quote on *.
-					if dangerprompt "Remove all files and/or directory in trash?" && rm -rf "$FM_TRASH_PATH"/*; then
+					if dangerprompt "Remove all files and/or directory in trash?" && rm -rf "$DMENUFM_TRASH_PATH"/*; then
 						notifyprompt "Trash is empty." || return
 					else
 						return
@@ -314,25 +314,25 @@ dmenufm_action (){
 			;;
 		"$FM_HIST")
 			# Use sed command to mimic reverse of cat for POSIX.
-			goto=$(sed '1!G;h;$!d' "$HISFILE" | verticalprompt "Dmenufm History" "#005577")
+			goto=$(sed '1!G;h;$!d' "$DMENUFM_HISFILE" | verticalprompt "Dmenufm History" "#005577")
 			destination=$(printf '%s' "$goto" | awk -F ' - ' '{print $2}')
 			cd "$destination" || return
 			;;
 		"$FM_BMARK")
-			markmenu=$(printf '%s\n' "$(cat "$BMKFILE")" "Add BMK" "Delete BMK" | sed "/^$/ d" |  verticalprompt "Dmenufm Bookmark" "#005577")
+			markmenu=$(printf '%s\n' "$(cat "$DMENUFM_BMKFILE")" "Add BMK" "Delete BMK" | sed "/^$/ d" |  verticalprompt "Dmenufm Bookmark" "#005577")
 			case "$markmenu" in
 				"Add BMK")
 					Generate_action_menu "Choose file/directory and add to BMK: " "#33691e" || return
 					mark=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
-					[ -n "$mark" ] && printf '%s\n' "$mark - $HERE" >> "$BMKFILE"
-					[ -n "$mark" ] && sed "/^$/ d" "$BMKFILE" >  "$BMKFILE.backup" && cp "$BMKFILE.backup" "$BMKFILE"
+					[ -n "$mark" ] && printf '%s\n' "$mark - $HERE" >> "$DMENUFM_BMKFILE"
+					[ -n "$mark" ] && sed "/^$/ d" "$DMENUFM_BMKFILE" >  "$DMENUFM_BMKFILE.backup" && cp "$DMENUFM_BMKFILE.backup" "$DMENUFM_BMKFILE"
 					;;
 				"Delete BMK")
-					delbmk=$(< "$BMKFILE" verticalprompt "Delete chosen bmk: " "darkred") || return
+					delbmk=$(< "$DMENUFM_BMKFILE" verticalprompt "Delete chosen bmk: " "darkred") || return
 					# POSIX way of sed -i.
 					# Assign address as '=' by '\=pattern='
 					# Create backup file and cp to original file.
-					[ -n "$delbmk" ] && sed "\=$delbmk= d" "$BMKFILE" > "$BMKFILE.backup" && cp "$BMKFILE.backup" "$BMKFILE"
+					[ -n "$delbmk" ] && sed "\=$delbmk= d" "$DMENUFM_BMKFILE" > "$DMENUFM_BMKFILE.backup" && cp "$DMENUFM_BMKFILE.backup" "$DMENUFM_BMKFILE"
 					;;
 				*)
 					destination=$(printf '%s' "$markmenu" | awk -F ' - ' '{print $2}')
@@ -342,21 +342,21 @@ dmenufm_action (){
 			esac
 			;;
 		"$FM_COMMAND")
-			cmdmenu=$(printf '%s\n' "$(cat "$CMDFILE")" "Add CMD" "Delete CMD" "Type and execute" | sed "/^$/ d" | verticalprompt "Dmenufm Custom Command" "#005577")
+			cmdmenu=$(printf '%s\n' "$(cat "$DMENUFM_CMDFILE")" "Add CMD" "Delete CMD" "Type and execute" | sed "/^$/ d" | verticalprompt "Dmenufm Custom Command" "#005577")
 			case "$cmdmenu" in
 				"Add CMD")
 					addcmd=$(horizontalprompt "Recording your command: " "#33691e") || return
 					desp=$(horizontalprompt "Enter command description: " "#33691e") || return
-					[ -n "$addcmd" ] && printf '%s\n' "$addcmd - $desp" >> "$CMDFILE"
-					[ -n "$addcmd" ] && sed "/^$/ d" "$CMDFILE" >  "$CMDFILE.backup" && cp "$CMDFILE.backup" "$CMDFILE"
+					[ -n "$addcmd" ] && printf '%s\n' "$addcmd - $desp" >> "$DMENUFM_CMDFILE"
+					[ -n "$addcmd" ] && sed "/^$/ d" "$DMENUFM_CMDFILE" >  "$DMENUFM_CMDFILE.backup" && cp "$DMENUFM_CMDFILE.backup" "$DMENUFM_CMDFILE"
 					;;
 				"Delete CMD")
-					delcmd=$(< "$CMDFILE" verticalprompt "Delete chosen command: " "darkred")
+					delcmd=$(< "$DMENUFM_CMDFILE" verticalprompt "Delete chosen command: " "darkred")
 					# POSIX way of sed -i.
 					# Assign address as '+' by '\+pattern+'
 					# '=' seems not usable in command
 					# Create backup file and cp to original file.
-					[ -n "$delcmd" ] && sed "\+$delcmd+ d" "$CMDFILE" > "$CMDFILE.backup" && cp "$CMDFILE.backup" "$CMDFILE"
+					[ -n "$delcmd" ] && sed "\+$delcmd+ d" "$DMENUFM_CMDFILE" > "$DMENUFM_CMDFILE.backup" && cp "$DMENUFM_CMDFILE.backup" "$DMENUFM_CMDFILE"
 					;;
 				"Type and execute")
 					execmd=$(horizontalprompt "Type and execute: " "#33691e")
@@ -445,8 +445,8 @@ done
 ### RUN THE MAIN FUNCTION
 
 # --lastpath option:
-[ -n "$outputpath" ] && cd "$(cat "$LASTPATHFILE")"
+[ -n "$outputpath" ] && cd "$(cat "$DMENUFM_LASTPATHFILE")"
 
 dmenufm_menu
 
-printf '%s' "$PWD" > "$LASTPATHFILE"
+printf '%s' "$PWD" > "$DMENUFM_LASTPATHFILE"
