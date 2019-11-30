@@ -180,7 +180,8 @@ You can replace `sxiv` to any GUI application which has the same issue.
 
 To open in the application that you want, you need to
 1. find the filetype (`minor/major`) of the file
-2. type it in the correct file.
+~~2. type it in the correct file.~~ (May disappear after reboot your computer)
+2. Set xdg-open default applications.
 
 For example, I am using `sxhkd`. So I need to modify `sxhkdrc`. However, it is not opened in `nvim.desktop`, but in `firefox.desktop`.
 
@@ -194,12 +195,16 @@ So I
 	xdg-mime query filetype sxhkdrc
 	```
 	Find filetype `text/x-matlab`
-1. type it in the file:
+~~1. type it in the file:~~
 	```sh
 	# Open cache file in vim
 	sudo $EDITOR /usr/share/applications/mimeinfo.cache/
 	# Type this line in anywhere:
 	text/x-matlab=nvim.desktop
+	```
+1. Set `xdg-open` default applications:
+	```sh
+	xdg-mime default nvim.desktop text/x-matlab
 	```
 
 and you are all set.
