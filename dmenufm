@@ -224,7 +224,7 @@ extraction () {
 	dirname="$(printf '%s' "$2" | awk -F '/' '{printf $NF}' | awk -F '.' '{print $1}')"
 	mkdir -p "$dirname" && cd "$dirname" || exit
 	$1 "$2"
-	dmenufm
+	notifyprompt "$CHOICE extracted to $dirname"
 }
 
 # Actions that for dmenufm
