@@ -276,6 +276,7 @@ dmenufm_action (){
 			;;
 		"$FM_RM")
 			# Allow multiple files to be selected
+			multilist=
 			allowmulti="true"
 			# Choose file/directory in current directory to remove
 			Generate_action_menu "Remove file / directory: " "#33691e" || return && allowmulti=
@@ -283,7 +284,6 @@ dmenufm_action (){
 				while [ -n "$multiselection" ]; do
 					Generate_action_menu "Select files " "#33691e" || return && allowmulti=
 					HERE=$multilist
-					echo "DEBUG: $HERE"
 				done
 				HERE=$(printf '%s' "$HERE" | cut -b2- | tr ':' '\n' | uniq)
 			fi
@@ -291,10 +291,8 @@ dmenufm_action (){
 			# Check the chosen on is directory or not
 			[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 			if [ -n "$multilist" ]; then
-				echo "DEBUG: removing :$HERE:"
 				if [ -n "$HERE" ] && dangerprompt "Remove ALL selected files?"; then
 					for file in $(printf '%s' "$HERE"); do
-						echo "rm -rf $file"
 						rm -rf "$file"
 					done && notifyprompt "Selected files removed." || return
 					result=
@@ -319,7 +317,6 @@ dmenufm_action (){
 					return
 				fi
 			fi
-			multilist=
 			;;
 		"$FM_TRASH")
 			[ ! -d "$DMENUFM_TRASH_PATH" ] && mkdir -p "$DMENUFM_TRASH_PATH"
