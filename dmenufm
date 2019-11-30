@@ -28,6 +28,8 @@ CHOICE="placeholder"
 actCHOICE="placeholder"
 TARGET="./"
 BACKWARD="../"
+MULTISELECT="Multi Select"
+ENDSELECTION="End Selection"
 ACTION="Actions"
 TERM="Terminal"
 FM_CP_PATH="PCP - Copy path"
@@ -148,7 +150,15 @@ Generate_action_menu () {
 		# Generate menu with/without arguments
 		# Show only the current directory and one level of parent directory
 		twopwd=$(printf '%s' "$PWD" | awk -F '/' '{print $(NF-1)"/"$NF}')
-		actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
+		if [ -n "$multiselection" ]; then
+			actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ENDSELECTION" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
+		else
+			if [ -n "$allowmulti" ]; then
+				actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$MULTISELECT" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
+			else
+				actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
+			fi
+		fi
 		# Outcome matching
 		if [ "$actCHOICE" = "$TARGET" ]; then
 			HERE=$(printf '%s' "$PWD")
@@ -157,6 +167,12 @@ Generate_action_menu () {
 		elif [ "$actCHOICE" = "$BACKWARD" ]; then
 			cd "../" || return
 			dmenufm_history
+		elif [ "$actCHOICE" = "$ENDSELECTION" ]; then
+			multiselection=
+			break
+		elif [ "$actCHOICE" = "$MULTISELECT" ]; then
+			multiselection="true"
+			break
 		elif [ -d "$actCHOICE" ]; then
 			cd "$actCHOICE" || exit 1
 			dmenufm_history
@@ -164,6 +180,7 @@ Generate_action_menu () {
 		elif [ -f "$actCHOICE" ] || [ -n "$rename" ]; then
 			HERE=$(printf '%s' "$PWD/$actCHOICE")
 			name=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
+			[ -n "$multiselection" ] && multilist="$multilist:$HERE"
 			break
 		else
 			HERE=
@@ -258,25 +275,51 @@ dmenufm_action (){
 			rename=
 			;;
 		"$FM_RM")
+			# Allow multiple files to be selected
+			allowmulti="true"
 			# Choose file/directory in current directory to remove
-			Generate_action_menu "Remove file / directory: " "#33691e" || return
+			Generate_action_menu "Remove file / directory: " "#33691e" || return && allowmulti=
+			if [ -n "$multiselection" ]; then
+				while [ -n "$multiselection" ]; do
+					Generate_action_menu "Select files " "#33691e" || return && allowmulti=
+					HERE=$multilist
+					echo "DEBUG: $HERE"
+				done
+				HERE=$(printf '%s' "$HERE" | cut -b2- | tr ':' '\n')
+			fi
+			allowmulti=
 			# Check the chosen on is directory or not
 			[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
-			if [ -n "$HERE" ] && dangerprompt "Remove all files and/or subdirectories in $name?" && rm -rf "$HERE"; then
-				# If chosen one is directory, send notification and cd to parent directory
-				if [ $result -eq 0 ]; then
-					notifyprompt "$name removed." || return
-					cd "../" || return
-					# Reset result value
+			if [ -n "$multilist" ]; then
+				echo "DEBUG: removing :$HERE:"
+				if [ -n "$HERE" ] && dangerprompt "Remove ALL selected files?"; then
+					for file in $(printf '%s' "$HERE"); do
+						echo "rm -rf $file"
+						rm -rf "$file"
+					done && notifyprompt "Selected files removed." || return
 					result=
+					multilist=
 				else
-					# If not, just send notification.
-					notifyprompt "$name removed." || return
+					return
+					multilist=
 				fi
 			else
-				return
+				if [ -n "$HERE" ] && dangerprompt "Remove all files and/or subdirectories in $name?" && rm -rf "$HERE"; then
+					# If chosen one is directory, send notification and cd to parent directory
+					if [ $result -eq 0 ]; then
+						notifyprompt "$name removed." || return
+						cd "../" || return
+						# Reset result value
+						result=
+					else
+						# If not, just send notification.
+						notifyprompt "$name removed." || return
+					fi
+				else
+					return
+				fi
 			fi
-
+			multilist=
 			;;
 		"$FM_TRASH")
 			[ ! -d "$DMENUFM_TRASH_PATH" ] && mkdir -p "$DMENUFM_TRASH_PATH"
