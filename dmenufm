@@ -143,7 +143,6 @@ update_menu () {
 # Generate menu for action choice, only for current directory.
 # $1 is the prompt, $2 is the selected background color
 Generate_action_menu () {
-	echo "DEBUG1: $actCHOICE"
 	while [ -n "$actCHOICE" ]; do
 		update_menu
 		# Default menu list if no arguments given
@@ -151,11 +150,9 @@ Generate_action_menu () {
 		# Generate menu with/without arguments
 		# Show only the current directory and one level of parent directory
 		twopwd=$(printf '%s' "$PWD" | awk -F '/' '{print $(NF-1)"/"$NF}')
-		echo "DEBUG2: $multiselection"
 		if [ -n "$multiselection" ]; then
 			actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ENDSELECTION" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
 		else
-			echo "DEBUG3: $allowmulti"
 			if [ "$allowmulti" != "NotAllowed" ]; then
 				actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$allowmulti" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
 			else
@@ -264,7 +261,6 @@ dmenufm_multiselect () {
 	while [ -n "$multiselection" ]; do
 		Generate_action_menu "$multiprompt" "#33691e" || return && allowmulti="NotAllowed"
 		HERE=$multilist
-		echo "DEBUG4: 1,$actCHOICE 2,$multiselection 3,$allowmulti"
 		multiselection=
 		allowmulti="NotAllowed"
 	done
