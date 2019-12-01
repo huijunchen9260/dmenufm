@@ -298,7 +298,7 @@ dmenufm_action () {
 				# Single-selection mode
 				[ -n "$HERE" ] && start="$HERE" && startname="$name" && rename="true"
 				[ -d "$start" ] && cd "../"
-				[ -n "$start" ] && Generate_action_menu "Destination / Type new name: " "#FF8C00" || return && rename=
+				[ -n "$start" ] && Generate_action_menu "Destination / Type new name: " "#FF8C00" || return && rename= && actCHOICE="placeholder"
 				[ -n "$HERE" ] && destination="$HERE" && destname="$name"
 				[ -n "$HERE" ] && $cmd "$start" "$destination" && notifyprompt "$startname $cmdname to $destname"
 				rename=
