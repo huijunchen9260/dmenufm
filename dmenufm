@@ -261,7 +261,6 @@ dmenufm_multiselect () {
 	while [ -n "$multiselection" ]; do
 		Generate_action_menu "$multiprompt" "#33691e" || return && allowmulti="NotAllowed"
 		HERE=$multilist
-		multiselection=
 		allowmulti="NotAllowed"
 	done
 
