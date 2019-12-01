@@ -200,7 +200,7 @@ verticalprompt () {
 
 horizontalprompt () {
 	# $1 is prompt
-	dmenu -fn "$DMENUFM_GENERIC_FONT" -i -sb "$2" -p "$1"
+	dmenu -fn "$DMENUFM_GENERIC_FONT" -i -sb "$2" -p "$1" <&-
 }
 
 notifyprompt () {
