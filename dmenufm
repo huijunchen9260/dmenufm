@@ -245,6 +245,32 @@ extraction () {
 	notifyprompt "$CHOICE extracted to $dirname"
 }
 
+dmenufm_multiselect () {
+	# $1 for the command to run on all files in the selection
+	# $2 for the prompt when multi selecting
+	# $3 for notification
+	# $4 for prompt if it is dangerous
+	actioncmd=$1
+	multiprompt=$2
+	notifymessage=$3
+	dangerousmessage=$4
+	HERE=
+	multilist=
+	Generate_action_menu "$multiprompt" "#33691e" || return && allowmulti=
+	while [ -n "$multiselection" ]; do
+		Generate_action_menu "$multiprompt" "#33691e" || return && allowmulti=
+		HERE=$multilist
+	done
+
+	HERE=$(printf '%s' "$HERE" | cut -b2- | tr ':' '\n' | uniq)
+	allowmulti=
+
+	[ -n "$dangerousmessage" ] && dangerprompt "$dangerousmessage" || return
+	for selection in $(printf '%s' "$HERE"); do
+		$actioncmd "$selection"
+	done && [ -n "$notifymessage" ] && notifyprompt "$notifymessage"
+}
+
 # Actions that for dmenufm
 # Note: Use `[ -n "$VAR" ]` after each menu to check whether the menu is correctly execute.
 # 	If not, then the later command will not execute.
@@ -277,35 +303,18 @@ dmenufm_action (){
 			;;
 		"$FM_RM")
 			# Allow multiple files to be selected
-			multilist=
 			allowmulti="true"
 			# Choose file/directory in current directory to remove
 			Generate_action_menu "Remove file / directory: " "#33691e" || return && allowmulti=
 			if [ -n "$multiselection" ]; then
-				while [ -n "$multiselection" ]; do
-					Generate_action_menu "Select files " "#33691e" || return && allowmulti=
-					HERE=$multilist
-				done
-				HERE=$(printf '%s' "$HERE" | cut -b2- | tr ':' '\n' | uniq)
-			fi
-			allowmulti=
-			# Check the chosen on is directory or not
-			[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
-			if [ -n "$multilist" ]; then
-				if [ -n "$HERE" ] && dangerprompt "Remove ALL selected files?"; then
-					for file in $(printf '%s' "$HERE"); do
-						rm -rf "$file"
-					done && notifyprompt "Selected files removed." || return
-					result=
-					multilist=
-				else
-					return
-					multilist=
-				fi
+				dmenufm_multiselect "rm -rf" "Select files / directories " "Selected files deleted" "Are you sure you would like to delete all selected files?"
 			else
+			# Check the chosen on is directory or not
+				echo "DEBUG: Reached $HERE $name"
+				[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 				if [ -n "$HERE" ] && dangerprompt "Remove all files and/or subdirectories in $name?" && rm -rf "$HERE"; then
 					# If chosen one is directory, send notification and cd to parent directory
-					if [ $result -eq 0 ]; then
+					if [ "$result" = "0" ]; then
 						notifyprompt "$name removed." || return
 						cd "../" || return
 						# Reset result value
