@@ -520,9 +520,13 @@ while [ -n "$1" ]; do
 			-h | --help: Show this message\\n"
 			exit 0
 			;;
-		"*" )
-			printf "Invalid option"
-			exit 1
+		*)
+			if [ -d "$1" ]; then
+				cd "$1"
+			else
+				printf '%s\n' "Invalid option"
+				exit 1
+			fi
 			;;
 	esac
 	shift
