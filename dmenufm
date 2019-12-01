@@ -310,7 +310,6 @@ dmenufm_action (){
 				dmenufm_multiselect "rm -rf" "Select files / directories " "Selected files deleted" "Are you sure you would like to delete all selected files?"
 			else
 			# Check the chosen on is directory or not
-				echo "DEBUG: Reached $HERE $name"
 				[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 				if [ -n "$HERE" ] && dangerprompt "Remove all files and/or subdirectories in $name?" && rm -rf "$HERE"; then
 					# If chosen one is directory, send notification and cd to parent directory
