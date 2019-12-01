@@ -264,6 +264,8 @@ dmenufm_multiselect () {
 	HERE=$(printf '%s' "$HERE" | cut -b2- | tr ':' '\n' | uniq)
 	allowmulti=
 
+	printf '%s' "$HERE" | verticalprompt "Selected files (Enter to continue): " "#33691e" || return
+
 	[ -n "$dangerousmessage" ] && dangerprompt "$dangerousmessage" || return
 	for selection in $(printf '%s' "$HERE"); do
 		$actioncmd "$selection"
