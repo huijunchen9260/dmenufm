@@ -269,7 +269,7 @@ dmenufm_multiselect () {
 
 	[ "$actCHOICE" = "$ENDSELECTION" ] && printf '%s' "$HERE" | verticalprompt "Selected files (Enter to continue): " "#33691e"
 
-	[ "$actCHOICE" = "$ENDSELECTION" ] && [ -n "$dangerousmessage" ] && dangerprompt "$dangerousmessage" || return
+	[ "$actCHOICE" = "$ENDSELECTION" ] && [ -n "$dangerousmessage" ] && dangerprompt "$dangerousmessage"
 	case $actioncmd in
 		"RMM")
 			for selection in $(printf '%s' "$HERE"); do
@@ -279,6 +279,14 @@ dmenufm_multiselect () {
 		"TRH")
 			for selection in $(printf '%s' "$HERE"); do
 				mv "$selection" "$DMENUFM_TRASH_PATH"
+			done && [ -n "$notifymessage" ] && notifyprompt "$notifymessage"
+			;;
+		"MVR"|"CPP")
+			selected="$HERE"
+			[ -n "$selected" ] && Generate_action_menu "Destination: " "#FF8C00" || return && rename=
+			[ -n "$HERE" ] && destination="$HERE/" && destname="$name"
+			for selection in $(printf '%s' "$selected"); do
+				$cmd "$selection" "$destination"
 			done && [ -n "$notifymessage" ] && notifyprompt "$notifymessage"
 			;;
 		*)
@@ -307,15 +315,20 @@ dmenufm_action (){
 			fi
 			;;
 		"$FM_MVR"|"$FM_CP")
-			cmd="mv" && cmdname="moved"
-			[ "$move" = "$FM_CP" ] && cmd="cp" && cmdname="copied"
-			Generate_action_menu "Source: " "#33691e" || return
-			[ -n "$HERE" ] && start="$HERE" && startname="$name" && rename="true"
-			[ -d "$start" ] && cd "../"
-			[ -n "$start" ] && Generate_action_menu "Destination / Type new name: " "#FF8C00" || return && rename=
-			[ -n "$HERE" ] && destination="$HERE" && destname="$name"
-			[ -n "$HERE" ] && $cmd "$start" "$destination" && notifyprompt "$startname $cmdname to $destname"
-			rename=
+			cmd="mv" && cmdname="moved" && multiname="MVR" && allowmulti="Bulk move"
+			[ "$move" = "$FM_CP" ] && cmd="cp -R" && cmdname="copied" && multiname="CPP" && allowmulti="Bulk copy"
+			Generate_action_menu "Source: " "#33691e" || return && allowmulti="NotAllowed"
+			if [ -n "$multiselection" ]; then
+				# No need for dangerousmessage
+				dmenufm_multiselect "$multiname" "Select files / directories " "Selected files $cmdname to $destname" ""
+			else
+				[ -n "$HERE" ] && start="$HERE" && startname="$name" && rename="true"
+				[ -d "$start" ] && cd "../"
+				[ -n "$start" ] && Generate_action_menu "Destination / Type new name: " "#FF8C00" || return && rename=
+				[ -n "$HERE" ] && destination="$HERE" && destname="$name"
+				[ -n "$HERE" ] && $cmd "$start" "$destination" && notifyprompt "$startname $cmdname to $destname"
+				rename=
+			fi
 			;;
 		"$FM_RM")
 			# Allow multiple files to be selected
