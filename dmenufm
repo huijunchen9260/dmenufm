@@ -247,7 +247,7 @@ extraction () {
 }
 
 dmenufm_multiselect () {
-	# $1 for the command to run on all files in the selection
+	# $1 for the action to run
 	# $2 for the prompt when multi selecting
 	# $3 for notification
 	# $4 for prompt if it is dangerous
@@ -270,9 +270,16 @@ dmenufm_multiselect () {
 	[ "$actCHOICE" = "$ENDSELECTION" ] && printf '%s' "$HERE" | verticalprompt "Selected files (Enter to continue): " "#33691e"
 
 	[ "$actCHOICE" = "$ENDSELECTION" ] && [ -n "$dangerousmessage" ] && dangerprompt "$dangerousmessage" || return
-	for selection in $(printf '%s' "$HERE"); do
-		$actioncmd "$selection"
-	done && [ -n "$notifymessage" ] && notifyprompt "$notifymessage"
+	case $actioncmd in
+		"RMM")
+			for selection in $(printf '%s' "$HERE"); do
+				rm -rf "$selection"
+			done && [ -n "$notifymessage" ] && notifyprompt "$notifymessage"
+			;;
+		*)
+			return
+			;;
+	esac
 }
 
 # Actions that for dmenufm
@@ -311,7 +318,7 @@ dmenufm_action (){
 			# Choose file/directory in current directory to remove
 			Generate_action_menu "Remove file / directory: " "#33691e" || return && allowmulti="NotAllowed"
 			if [ -n "$multiselection" ]; then
-				dmenufm_multiselect "rm -rf" "Select files / directories " "Selected files deleted" "Are you sure you would like to delete all selected files?"
+				dmenufm_multiselect "RMM" "Select files / directories " "Selected files deleted" "Are you sure you would like to delete all selected files?"
 			else
 			# Check the chosen on is directory or not
 				[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
