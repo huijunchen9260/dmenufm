@@ -28,6 +28,8 @@ CHOICE="placeholder"
 actCHOICE="placeholder"
 TARGET="./"
 BACKWARD="../"
+ENDSELECTION="End Selection"
+allowmulti="NotAllowed"
 ACTION="Actions"
 TERM="Terminal"
 FM_CP_PATH="PCP - Copy path"
@@ -148,15 +150,30 @@ Generate_action_menu () {
 		# Generate menu with/without arguments
 		# Show only the current directory and one level of parent directory
 		twopwd=$(printf '%s' "$PWD" | awk -F '/' '{print $(NF-1)"/"$NF}')
-		actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
+		if [ -n "$multiselection" ]; then
+			actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ENDSELECTION" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
+		else
+			if [ "$allowmulti" != "NotAllowed" ]; then
+				actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$allowmulti" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
+			else
+				actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
+			fi
+		fi
 		# Outcome matching
 		if [ "$actCHOICE" = "$TARGET" ]; then
 			HERE=$(printf '%s' "$PWD")
 			name=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
+			[ -n "$multiselection" ] && multilist="$multilist:$HERE" && cd "../"
 			break
 		elif [ "$actCHOICE" = "$BACKWARD" ]; then
 			cd "../" || return
 			dmenufm_history
+		elif [ "$actCHOICE" = "$ENDSELECTION" ]; then
+			multiselection=
+			break
+		elif [ "$actCHOICE" = "$allowmulti" ]; then
+			multiselection="true"
+			break
 		elif [ -d "$actCHOICE" ]; then
 			cd "$actCHOICE" || exit 1
 			dmenufm_history
@@ -164,10 +181,12 @@ Generate_action_menu () {
 		elif [ -f "$actCHOICE" ] || [ -n "$rename" ]; then
 			HERE=$(printf '%s' "$PWD/$actCHOICE")
 			name=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
+			[ -n "$multiselection" ] && multilist="$multilist:$HERE"
 			break
 		else
 			HERE=
 			name=
+			multiselection=
 			actCHOICE="placeholder"
 			break
 		fi
@@ -182,7 +201,7 @@ verticalprompt () {
 
 horizontalprompt () {
 	# $1 is prompt
-	dmenu -fn "$DMENUFM_GENERIC_FONT" -i -sb "$2" -p "$1"
+	dmenu -fn "$DMENUFM_GENERIC_FONT" -i -sb "$2" -p "$1" <&-
 }
 
 notifyprompt () {
@@ -227,6 +246,47 @@ extraction () {
 	notifyprompt "$CHOICE extracted to $dirname"
 }
 
+dmenufm_multiselect () {
+	# $1 for the action to run
+	# $2 for the prompt when multi selecting
+	# $3 for notification
+	# $4 for prompt if it is dangerous
+	actioncmd=$1
+	multiprompt=$2
+	notifymessage=$3
+	dangerousmessage=$4
+	HERE=
+	multilist=
+	Generate_action_menu "$multiprompt" "#33691e" || return && allowmulti="NotAllowed"
+	while [ -n "$multiselection" ]; do
+		Generate_action_menu "$multiprompt" "#33691e" || return && allowmulti="NotAllowed"
+		HERE=$multilist
+		allowmulti="NotAllowed"
+	done
+
+	HERE=$(printf '%s' "$HERE" | cut -b2- | tr ':' '\n' | uniq)
+	allowmulti="NotAllowed"
+
+	[ "$actCHOICE" = "$ENDSELECTION" ] && printf '%s' "$HERE" | verticalprompt "Selected files (Enter to continue): " "#33691e"
+
+	[ "$actCHOICE" = "$ENDSELECTION" ] && [ -n "$dangerousmessage" ] && dangerprompt "$dangerousmessage" || return
+	case $actioncmd in
+		"RMM")
+			for selection in $(printf '%s' "$HERE"); do
+				rm -rf "$selection"
+			done && [ -n "$notifymessage" ] && notifyprompt "$notifymessage"
+			;;
+		"TRH")
+			for selection in $(printf '%s' "$HERE"); do
+				mv "$selection" "$DMENUFM_TRASH_PATH"
+			done && [ -n "$notifymessage" ] && notifyprompt "$notifymessage"
+			;;
+		*)
+			return
+			;;
+	esac
+}
+
 # Actions that for dmenufm
 # Note: Use `[ -n "$VAR" ]` after each menu to check whether the menu is correctly execute.
 # 	If not, then the later command will not execute.
@@ -258,45 +318,58 @@ dmenufm_action (){
 			rename=
 			;;
 		"$FM_RM")
+			# Allow multiple files to be selected
+			allowmulti="Bulk Remove"
 			# Choose file/directory in current directory to remove
-			Generate_action_menu "Remove file / directory: " "#33691e" || return
-			# Check the chosen on is directory or not
-			[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
-			if [ -n "$HERE" ] && dangerprompt "Remove all files and/or subdirectories in $name?" && rm -rf "$HERE"; then
-				# If chosen one is directory, send notification and cd to parent directory
-				if [ $result -eq 0 ]; then
-					notifyprompt "$name removed." || return
-					cd "../" || return
-					# Reset result value
-					result=
-				else
-					# If not, just send notification.
-					notifyprompt "$name removed." || return
-				fi
+			Generate_action_menu "Remove file / directory: " "#33691e" || return && allowmulti="NotAllowed"
+			if [ -n "$multiselection" ]; then
+				dmenufm_multiselect "RMM" "Select files / directories " "Selected files deleted" "Are you sure you would like to delete all selected files?"
 			else
-				return
+			allowmulti="NotAllowed"
+			# Check the chosen on is directory or not
+				[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
+				if [ -n "$HERE" ] && dangerprompt "Remove all files and/or subdirectories in $name?" && rm -rf "$HERE"; then
+					# If chosen one is directory, send notification and cd to parent directory
+					if [ "$result" = "0" ]; then
+						notifyprompt "$name removed." || return
+						cd "../" || return
+						# Reset result value
+						result=
+					else
+						# If not, just send notification.
+						notifyprompt "$name removed." || return
+					fi
+				else
+					return
+				fi
 			fi
-
 			;;
 		"$FM_TRASH")
+			# Allow multiple files to be selected
+			allowmulti="Bulk Trash"
 			[ ! -d "$DMENUFM_TRASH_PATH" ] && mkdir -p "$DMENUFM_TRASH_PATH"
 			trashmenu=$(printf '%s\n' "Move to trash" "Go to trash" "Empty trash" | sed "/^$/ d" | verticalprompt "Dmenufm Trash" "#005577")
 			case $trashmenu in
 				"Move to trash")
-					Generate_action_menu "Move file/directory to trash: " "#33691e" || return
-					# Check the chosen on is directory or not
-					[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
-					# Say yes in dangerprompt, and send notification. Or do nothing.
-					if [ -n "$HERE" ] && dangerprompt "Move all files and/or subdirectories in $name to trash?" && mv "$HERE" "$DMENUFM_TRASH_PATH"; then
-						if [ $result -eq 0 ]; then
-							notifyprompt "$name moved to trash." || return
-							cd "../" || return
-							result=
-						else
-							notifyprompt "$name moved to trash." || return
-						fi
+					Generate_action_menu "Move file/directory to trash: " "#33691e" || return && allowmulti="NotAllowed"
+					if [ -n "$multiselection" ]; then
+						dmenufm_multiselect "TRH" "Select files / directories " "Selected files moved to trash" "Are you sure you would like to move all selected files to trash?"
 					else
-						return
+						allowmulti="NotAllowed"
+						# Check the chosen on is directory or not
+						[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
+						# Say yes in dangerprompt, and send notification. Or do nothing.
+						if [ -n "$HERE" ] && dangerprompt "Move all files and/or subdirectories in $name to trash?" && mv "$HERE" "$DMENUFM_TRASH_PATH"; then
+							if [ $result -eq 0 ]; then
+								notifyprompt "$name moved to trash." || return
+								cd "../" || return
+								result=
+							else
+								notifyprompt "$name moved to trash." || return
+							fi
+						else
+							return
+						fi
 					fi
 					;;
 				"Go to trash")
