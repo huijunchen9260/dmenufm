@@ -283,7 +283,7 @@ dmenufm_action () {
 			;;
 		"$FM_MVR"|"$FM_CP")
 			cmd="mv" && cmdname="moved" && allowmulti="Bulk move"
-			[ "$move" = "$FM_CP" ] && cmd="cp" && cmdname="copied" && allowmulti="Bulk copy"
+			[ "$move" = "$FM_CP" ] && cmd="cp -R" && cmdname="copied" && allowmulti="Bulk copy"
 			Generate_action_menu "Source: " "#33691e" || return && allowmulti="NotAllowed"
 			if [ -n "$multiselection" ]; then
 				# Multi-selection mode
@@ -291,9 +291,11 @@ dmenufm_action () {
 				dmenufm_multiselect "Select files / directories " ""
 				[ -n "$SELECTED" ] && Generate_action_menu "Destination: " "#FF8C00" || return && rename= && allowmulti="NotAllowed"
 				[ -n "$HERE" ] && destination="$HERE" && destname="$name"
-				[ -n "$destination" ] && for selection in $(printf '%s' "$SELECTED"); do
-					$cmd "$selection" "$destination"
-				done && notifyprompt "Selected files $cmdname to $destname"
+				if [ -n "$destination" ]; then
+					for selection in $(printf '%s' "$SELECTED"); do
+						$cmd "$selection" "$destination"
+					done && notifyprompt "Selected files $cmdname to $destname"
+				fi
 			else
 				# Single-selection mode
 				[ -n "$HERE" ] && start="$HERE" && startname="$name" && rename="true"
