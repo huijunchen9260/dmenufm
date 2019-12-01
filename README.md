@@ -23,7 +23,7 @@ Put `dmenufm` in your `$PATH`.
 
 # Usage
 
-1. Type `dmenufm` to launch, or assign `dmenufm` to your favorite hot key.
+1. Type `dmenufm` to launch, or assign `dmenufm` to your favorite hot key. You may supply a directory as an argument to start dmenufm in the specified directory.
 2. `../` to go back to parent directory.
 3. `./` to open your file manager in currend working directory (determined by `xdg-open`)
 4. Choices with `/` are directory; choices without `/` are files.
