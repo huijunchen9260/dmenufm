@@ -29,6 +29,7 @@ actCHOICE="placeholder"
 TARGET="./"
 BACKWARD="../"
 ENDSELECTION="End Selection"
+allowmulti="NotAllowed"
 ACTION="Actions"
 TERM="Terminal"
 FM_CP_PATH="PCP - Copy path"
@@ -142,6 +143,7 @@ update_menu () {
 # Generate menu for action choice, only for current directory.
 # $1 is the prompt, $2 is the selected background color
 Generate_action_menu () {
+	echo "DEBUG1: $actCHOICE"
 	while [ -n "$actCHOICE" ]; do
 		update_menu
 		# Default menu list if no arguments given
@@ -149,10 +151,12 @@ Generate_action_menu () {
 		# Generate menu with/without arguments
 		# Show only the current directory and one level of parent directory
 		twopwd=$(printf '%s' "$PWD" | awk -F '/' '{print $(NF-1)"/"$NF}')
+		echo "DEBUG2: $multiselection"
 		if [ -n "$multiselection" ]; then
 			actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ENDSELECTION" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
 		else
-			if [ -n "$allowmulti" ]; then
+			echo "DEBUG3: $allowmulti"
+			if [ "$allowmulti" != "NotAllowed" ]; then
 				actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$allowmulti" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
 			else
 				actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
@@ -185,6 +189,7 @@ Generate_action_menu () {
 		else
 			HERE=
 			name=
+			multiselection=
 			actCHOICE="placeholder"
 			break
 		fi
@@ -255,18 +260,21 @@ dmenufm_multiselect () {
 	dangerousmessage=$4
 	HERE=
 	multilist=
-	Generate_action_menu "$multiprompt" "#33691e" || return && allowmulti=
+	Generate_action_menu "$multiprompt" "#33691e" || return && allowmulti="NotAllowed"
 	while [ -n "$multiselection" ]; do
-		Generate_action_menu "$multiprompt" "#33691e" || return && allowmulti=
+		Generate_action_menu "$multiprompt" "#33691e" || return && allowmulti="NotAllowed"
 		HERE=$multilist
+		echo "DEBUG4: 1,$actCHOICE 2,$multiselection 3,$allowmulti"
+		multiselection=
+		allowmulti="NotAllowed"
 	done
 
 	HERE=$(printf '%s' "$HERE" | cut -b2- | tr ':' '\n' | uniq)
-	allowmulti=
+	allowmulti="NotAllowed"
 
-	printf '%s' "$HERE" | verticalprompt "Selected files (Enter to continue): " "#33691e" || return
+	[ "$actCHOICE" = "$ENDSELECTION" ] && printf '%s' "$HERE" | verticalprompt "Selected files (Enter to continue): " "#33691e"
 
-	[ -n "$dangerousmessage" ] && dangerprompt "$dangerousmessage" || return
+	[ "$actCHOICE" = "$ENDSELECTION" ] && [ -n "$dangerousmessage" ] && dangerprompt "$dangerousmessage" || return
 	for selection in $(printf '%s' "$HERE"); do
 		$actioncmd "$selection"
 	done && [ -n "$notifymessage" ] && notifyprompt "$notifymessage"
@@ -306,7 +314,7 @@ dmenufm_action (){
 			# Allow multiple files to be selected
 			allowmulti="Bulk Remove"
 			# Choose file/directory in current directory to remove
-			Generate_action_menu "Remove file / directory: " "#33691e" || return && allowmulti=
+			Generate_action_menu "Remove file / directory: " "#33691e" || return && allowmulti="NotAllowed"
 			if [ -n "$multiselection" ]; then
 				dmenufm_multiselect "rm -rf" "Select files / directories " "Selected files deleted" "Are you sure you would like to delete all selected files?"
 			else
