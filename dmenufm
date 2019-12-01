@@ -163,6 +163,7 @@ Generate_action_menu () {
 		if [ "$actCHOICE" = "$TARGET" ]; then
 			HERE=$(printf '%s' "$PWD")
 			name=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
+			[ -n "$multiselection" ] && multilist="$multilist:$HERE" && cd "../"
 			break
 		elif [ "$actCHOICE" = "$BACKWARD" ]; then
 			cd "../" || return
