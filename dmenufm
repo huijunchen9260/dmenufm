@@ -28,7 +28,6 @@ CHOICE="placeholder"
 actCHOICE="placeholder"
 TARGET="./"
 BACKWARD="../"
-MULTISELECT="Multi Select"
 ENDSELECTION="End Selection"
 ACTION="Actions"
 TERM="Terminal"
@@ -154,7 +153,7 @@ Generate_action_menu () {
 			actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ENDSELECTION" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
 		else
 			if [ -n "$allowmulti" ]; then
-				actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$MULTISELECT" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
+				actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$allowmulti" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
 			else
 				actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
 			fi
@@ -171,7 +170,7 @@ Generate_action_menu () {
 		elif [ "$actCHOICE" = "$ENDSELECTION" ]; then
 			multiselection=
 			break
-		elif [ "$actCHOICE" = "$MULTISELECT" ]; then
+		elif [ "$actCHOICE" = "$allowmulti" ]; then
 			multiselection="true"
 			break
 		elif [ -d "$actCHOICE" ]; then
@@ -303,7 +302,7 @@ dmenufm_action (){
 			;;
 		"$FM_RM")
 			# Allow multiple files to be selected
-			allowmulti="true"
+			allowmulti="Bulk Remove"
 			# Choose file/directory in current directory to remove
 			Generate_action_menu "Remove file / directory: " "#33691e" || return && allowmulti=
 			if [ -n "$multiselection" ]; then
