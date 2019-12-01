@@ -276,6 +276,11 @@ dmenufm_multiselect () {
 				rm -rf "$selection"
 			done && [ -n "$notifymessage" ] && notifyprompt "$notifymessage"
 			;;
+		"TRH")
+			for selection in $(printf '%s' "$HERE"); do
+				mv "$selection" "$DMENUFM_TRASH_PATH"
+			done && [ -n "$notifymessage" ] && notifyprompt "$notifymessage"
+			;;
 		*)
 			return
 			;;
@@ -320,6 +325,7 @@ dmenufm_action (){
 			if [ -n "$multiselection" ]; then
 				dmenufm_multiselect "RMM" "Select files / directories " "Selected files deleted" "Are you sure you would like to delete all selected files?"
 			else
+			allowmulti="NotAllowed"
 			# Check the chosen on is directory or not
 				[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 				if [ -n "$HERE" ] && dangerprompt "Remove all files and/or subdirectories in $name?" && rm -rf "$HERE"; then
@@ -339,24 +345,31 @@ dmenufm_action (){
 			fi
 			;;
 		"$FM_TRASH")
+			# Allow multiple files to be selected
+			allowmulti="Bulk Trash"
 			[ ! -d "$DMENUFM_TRASH_PATH" ] && mkdir -p "$DMENUFM_TRASH_PATH"
 			trashmenu=$(printf '%s\n' "Move to trash" "Go to trash" "Empty trash" | sed "/^$/ d" | verticalprompt "Dmenufm Trash" "#005577")
 			case $trashmenu in
 				"Move to trash")
-					Generate_action_menu "Move file/directory to trash: " "#33691e" || return
-					# Check the chosen on is directory or not
-					[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
-					# Say yes in dangerprompt, and send notification. Or do nothing.
-					if [ -n "$HERE" ] && dangerprompt "Move all files and/or subdirectories in $name to trash?" && mv "$HERE" "$DMENUFM_TRASH_PATH"; then
-						if [ $result -eq 0 ]; then
-							notifyprompt "$name moved to trash." || return
-							cd "../" || return
-							result=
-						else
-							notifyprompt "$name moved to trash." || return
-						fi
+					Generate_action_menu "Move file/directory to trash: " "#33691e" || return && allowmulti="NotAllowed"
+					if [ -n "$multiselection" ]; then
+						dmenufm_multiselect "TRH" "Select files / directories " "Selected files moved to trash" "Are you sure you would like to move all selected files to trash?"
 					else
-						return
+						allowmulti="NotAllowed"
+						# Check the chosen on is directory or not
+						[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
+						# Say yes in dangerprompt, and send notification. Or do nothing.
+						if [ -n "$HERE" ] && dangerprompt "Move all files and/or subdirectories in $name to trash?" && mv "$HERE" "$DMENUFM_TRASH_PATH"; then
+							if [ $result -eq 0 ]; then
+								notifyprompt "$name moved to trash." || return
+								cd "../" || return
+								result=
+							else
+								notifyprompt "$name moved to trash." || return
+							fi
+						else
+							return
+						fi
 					fi
 					;;
 				"Go to trash")
