@@ -8,6 +8,7 @@
 ### OPTIONS AND VARIABLES
 
 ## OPTIONS
+# FILES LOCATION
 [ -n "$DMENUFM_PATH" ] || DMENUFM_PATH="$HOME/.config/dmenufm"
 [ -n "$DMENUFM_TRASH_PATH" ] || DMENUFM_TRASH_PATH="$DMENUFM_PATH/trash"
 [ -n "$DMENUFM_BMKFILE" ] || DMENUFM_BMKFILE="$DMENUFM_PATH/dmenufm_bookmark"
@@ -16,15 +17,13 @@
 [ -n "$DMENUFM_LAST_PATH_FILE" ] || DMENUFM_LAST_PATH_FILE="$DMENUFM_PATH/dmenufm_lastpath"
 [ -n "$DMENUFM_MAX_HIS_LENGTH" ] || DMENUFM_MAX_HIS_LENGTH=5000
 [ -n "$DMENUFM_BULK_RENAMEFILE" ] || DMENUFM_BULK_RENAMEFILE="$DMENUFM_PATH/dmenufm_bulk_rename"
-XDGDIR1="/usr/share/applications"
-XDGDIR2="/usr/local/share/applications"
-# FONT
+# FONTS
 [ -n "$DMENUFM_GENERIC_FONT" ] || DMENUFM_GENERIC_FONT="Monospace-15"
 [ -n "$DMENUFM_NOTIF_FONT" ] || DMENUFM_NOTIF_FONT="Monospace-25"
 [ -n "$DMENUFM_DANGER_FONT" ] || DMENUFM_DANGER_FONT="Monospace-20"
 
-
-
+XDGDIR1="/usr/share/applications"
+XDGDIR2="/usr/local/share/applications"
 
 ## GLOBAL VARIABLES
 CHOICE="placeholder"
@@ -39,14 +38,13 @@ FM_CP_PATH="PCP - Copy path"
 FM_NEW="NEW - Create new file / directory"
 FM_RM="RMM - Remove files / directory"
 FM_MVR="MVR - Move files"
-FM_CP="CPP - Copy files"
+FM_YANK="YAK - Copy files"
 FM_RENAME="REM - Rename files"
 FM_TRASH="TRH - Trash of dmenufm"
 FM_HIST="HIS - History of dmenufm"
 FM_BMARK="BMK - Bookmark for dmenufm"
 FM_COMMAND="CMD - Frequently used command"
-ACTLIST="$FM_CP_PATH:$FM_NEW:$FM_MVR:$FM_CP:$FM_RM:$FM_TRASH:$FM_RENAME:$FM_HIST:$FM_BMARK:$FM_COMMAND"
-
+ACTLIST="$FM_CP_PATH:$FM_NEW:$FM_MVR:$FM_YANK:$FM_RM:$FM_TRASH:$FM_RENAME:$FM_HIST:$FM_BMARK:$FM_COMMAND"
 
 
 ### FUNCTIONS
@@ -80,36 +78,40 @@ executecmd () {
 # To edit default applications in xdg-open,
 # sudo $EDITOR /usr/share/applications/mimeinfo.cache
 open () {
-case "$1" in
-	*.tar.bz2|*.tar.xz|*.tbz2) extraction "tar xvjf" "$1" ;;
-	*.tar.gz|*.tgz) extraction "tar xvzf" "$1" ;;
-	*.lzma) extraction "unlzma" "$1" ;;
-	*.bz2) extraction "bunzip2" "$1" ;;
-	*.rar) extraction "unrar x -ad" "$1" ;;
-	*.gz) extraction "gunzip" "$1" ;;
-	*.tar) extraction "tar xvf" "$1" ;;
-	*.zip) extraction "unzip" "$1" ;;
-	*.Z) extraction "uncompress" "$1" ;;
-	*.7z) extraction "7z x" "$1" ;;
-	*.xz) extraction "unxz" "$1" ;;
-	*.exe) extraction "cabextract" "$1" ;;
-	text/*|*x-empty*|*json*)
-		# Text file opened in $EDITOR or default opener
-		if [ -n "$TERMINAL" ] && [ -n "$EDITOR" ]; then
-			$TERMINAL -e $EDITOR "$1"
-		else
-			${DMENUFM_OPENER:-xdg-open} "$1"
-		fi
-		;;
-	*)
-		appdesktop=$(xdg-mime query filetype "$1" | xargs -I {} xdg-mime query default "{}")
-		if < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" grep "Terminal=false"; then
-			${DMENUFM_OPENER:-xdg-open} "$1"
-		else
-			$TERMINAL -e ${DMENUFM_OPENER:-xdg-open} "$1"
-		fi
-		;;
-esac
+	mimetype=$(xdg-mime query filetype "$1")
+	case "$1" in
+		*.tar.bz2|*.tar.xz|*.tbz2) extraction "tar xvjf" "$1" ;;
+		*.tar.gz|*.tgz) extraction "tar xvzf" "$1" ;;
+		*.lzma) extraction "unlzma" "$1" ;;
+		*.bz2) extraction "bunzip2" "$1" ;;
+		*.rar) extraction "unrar x -ad" "$1" ;;
+		*.gz) extraction "gunzip" "$1" ;;
+		*.tar) extraction "tar xvf" "$1" ;;
+		*.zip) extraction "unzip" "$1" ;;
+		*.Z) extraction "uncompress" "$1" ;;
+		*.7z) extraction "7z x" "$1" ;;
+		*.xz) extraction "unxz" "$1" ;;
+		*.exe) extraction "cabextract" "$1" ;;
+		*)
+			case "$mimetype" in
+				text/*|*x-empty*|*json*)
+					# Text file opened in $EDITOR or default opener
+					if [ -n "$TERMINAL" ] && [ -n "$EDITOR" ]; then
+						$TERMINAL -e $EDITOR "$1"
+					else
+						${DMENUFM_OPENER:-xdg-open} "$1"
+					fi
+					;;
+				*)
+					appdesktop=$(xdg-mime query default "$mimetype")
+					if < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" grep "Terminal=false"; then
+						${DMENUFM_OPENER:-xdg-open} "$1"
+					else
+						$TERMINAL -e ${DMENUFM_OPENER:-xdg-open} "$1"
+					fi
+					;;
+			esac
+	esac
 }
 
 
@@ -304,9 +306,9 @@ dmenufm_action () {
 				:>"$name" && notifyprompt "File $name created."
 			fi
 			;;
-		"$FM_MVR"|"$FM_CP")
+		"$FM_MVR"|"$FM_YANK")
 			cmd="mv" && cmdname="moved" && allowmulti="Bulk move" && allselection="Bulk move all"
-			[ "$move" = "$FM_CP" ] && cmd="cp -R" && cmdname="copied" && allowmulti="Bulk copy" && allselection="Bulk copy all"
+			[ "$move" = "$FM_YANK" ] && cmd="cp -R" && cmdname="copied" && allowmulti="Bulk copy" && allselection="Bulk copy all"
 			Generate_action_menu "Source: " "#33691e" || return && allowmulti="NotAllowed"
 			if [ -n "$multiselection" ]; then
 				# Multi-selection mode
@@ -355,9 +357,11 @@ dmenufm_action () {
 			if [ -n "$multiselection" ]; then
 				# Multi-selection mode
 				dmenufm_multiselect "Select files / directories " "Are you sure you would like to delete all selected files?"
-				for selection in $(printf '%s' "$SELECTED"); do
-					rm -rf "$selection"
-				done && notifyprompt "Selected removed."
+				if [ $(echo $?) -eq 0 ]; then
+					for selection in $(printf '%s' "$SELECTED"); do
+						rm -rf "$selection"
+					done && notifyprompt "Selected removed."
+				fi
 			elif [ "$actCHOICE" = "$allselection" ]; then
 				SELECTED=$(printf '%s' "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d; s=^=$PWD/=g")
 				if dangerprompt "Remove all the files / directories in $name?"; then
@@ -398,9 +402,11 @@ dmenufm_action () {
 					if [ -n "$multiselection" ]; then
 						# Multi-selection mode
 						dmenufm_multiselect "Select files / directories " "Are you sure you would like to move all selected files to trash?"
-						for selection in $(printf '%s' "$SELECTED"); do
-							mv "$selection" "$DMENUFM_TRASH_PATH"
-						done && notifyprompt "Selected files moved to trash"
+						if [ $(echo $?) -eq 0 ]; then
+							for selection in $(printf '%s' "$SELECTED"); do
+								mv "$selection" "$DMENUFM_TRASH_PATH"
+							done && notifyprompt "Selected files moved to trash"
+						fi
 					elif [ "$actCHOICE" = "$allselection" ]; then
 						SELECTED=$(printf '%s' "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d; s=^=$PWD/=g")
 						if dangerprompt "Move all the files / directories in $name to trash?"; then
