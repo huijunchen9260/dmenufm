@@ -15,12 +15,15 @@
 [ -n "$DMENUFM_HISFILE" ] || DMENUFM_HISFILE="$DMENUFM_PATH/dmenufm_history"
 [ -n "$DMENUFM_LAST_PATH_FILE" ] || DMENUFM_LAST_PATH_FILE="$DMENUFM_PATH/dmenufm_lastpath"
 [ -n "$DMENUFM_MAX_HIS_LENGTH" ] || DMENUFM_MAX_HIS_LENGTH=5000
+[ -n "$DMENUFM_BULK_RENAMEFILE" ] || DMENUFM_BULK_RENAMEFILE="$DMENUFM_PATH/dmenufm_bulk_rename"
 XDGDIR1="/usr/share/applications"
 XDGDIR2="/usr/local/share/applications"
 # FONT
 [ -n "$DMENUFM_GENERIC_FONT" ] || DMENUFM_GENERIC_FONT="Monospace-15"
 [ -n "$DMENUFM_NOTIF_FONT" ] || DMENUFM_NOTIF_FONT="Monospace-25"
 [ -n "$DMENUFM_DANGER_FONT" ] || DMENUFM_DANGER_FONT="Monospace-20"
+
+
 
 
 ## GLOBAL VARIABLES
@@ -37,16 +40,25 @@ FM_NEW="NEW - Create new file / directory"
 FM_RM="RMM - Remove files / directory"
 FM_MVR="MVR - Move files"
 FM_CP="CPP - Copy files"
+FM_RENAME="REM - Rename files"
 FM_TRASH="TRH - Trash of dmenufm"
 FM_HIST="HIS - History of dmenufm"
 FM_BMARK="BMK - Bookmark for dmenufm"
 FM_COMMAND="CMD - Frequently used command"
-ACTLIST="$FM_CP_PATH:$FM_NEW:$FM_MVR:$FM_CP:$FM_RM:$FM_TRASH:$FM_HIST:$FM_BMARK:$FM_COMMAND"
+ACTLIST="$FM_CP_PATH:$FM_NEW:$FM_MVR:$FM_CP:$FM_RM:$FM_TRASH:$FM_RENAME:$FM_HIST:$FM_BMARK:$FM_COMMAND"
 
 
 
 ### FUNCTIONS
 
+## OS FUNCTION
+
+get_os () {
+	case $OSTYPE in
+		# Mac OS X / macOS.
+		darwin*) DMENUFM_OPENER=open ;;
+	esac
+}
 
 ## OPEN FUNCTIONS
 
@@ -81,12 +93,20 @@ case "$1" in
 	*.7z) extraction "7z x" "$1" ;;
 	*.xz) extraction "unxz" "$1" ;;
 	*.exe) extraction "cabextract" "$1" ;;
+	text/*|*x-empty*|*json*)
+		# Text file opened in $EDITOR or default opener
+		if [ -n "$TERMINAL" ] && [ -n "$EDITOR" ]; then
+			$TERMINAL -e $EDITOR "$1"
+		else
+			${DMENUFM_OPENER:-xdg-open} "$1"
+		fi
+		;;
 	*)
 		appdesktop=$(xdg-mime query filetype "$1" | xargs -I {} xdg-mime query default "{}")
 		if < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" grep "Terminal=false"; then
-			xdg-open "$1"
+			${DMENUFM_OPENER:-xdg-open} "$1"
 		else
-			$TERMINAL -e xdg-open "$1"
+			$TERMINAL -e ${DMENUFM_OPENER:-xdg-open} "$1"
 		fi
 		;;
 esac
@@ -152,12 +172,10 @@ Generate_action_menu () {
 		twopwd=$(printf '%s' "$PWD" | awk -F '/' '{print $(NF-1)"/"$NF}')
 		if [ -n "$multiselection" ]; then
 			actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ENDSELECTION" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
+		elif [ "$allowmulti" != "NotAllowed" ]; then
+			actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$allowmulti" "$allselection" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
 		else
-			if [ "$allowmulti" != "NotAllowed" ]; then
-				actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$allowmulti" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
-			else
-				actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
-			fi
+			actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$1" "$2")
 		fi
 		# Outcome matching
 		if [ "$actCHOICE" = "$TARGET" ]; then
@@ -173,6 +191,11 @@ Generate_action_menu () {
 			break
 		elif [ "$actCHOICE" = "$allowmulti" ]; then
 			multiselection="true"
+			break
+		elif [ "$actCHOICE" = "$allselection" ]; then
+			multiselection=
+			HERE=$(printf '%s' "$PWD")
+			name=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
 			break
 		elif [ -d "$actCHOICE" ]; then
 			cd "$actCHOICE" || exit 1
@@ -282,8 +305,8 @@ dmenufm_action () {
 			fi
 			;;
 		"$FM_MVR"|"$FM_CP")
-			cmd="mv" && cmdname="moved" && allowmulti="Bulk move"
-			[ "$move" = "$FM_CP" ] && cmd="cp -R" && cmdname="copied" && allowmulti="Bulk copy"
+			cmd="mv" && cmdname="moved" && allowmulti="Bulk move" && allselection="Bulk move all"
+			[ "$move" = "$FM_CP" ] && cmd="cp -R" && cmdname="copied" && allowmulti="Bulk copy" && allselection="Bulk copy all"
 			Generate_action_menu "Source: " "#33691e" || return && allowmulti="NotAllowed"
 			if [ -n "$multiselection" ]; then
 				# Multi-selection mode
@@ -294,8 +317,19 @@ dmenufm_action () {
 				if [ -n "$destination" ]; then
 					for selection in $(printf '%s' "$SELECTED"); do
 						$cmd "$selection" "$destination"
-					done && notifyprompt "Selected files $cmdname to $destname"
+					done && notifyprompt "Selected files / directories $cmdname to $destname"
 				fi
+			elif [ "$actCHOICE" = "$allselection" ]; then
+				# All-selection mode
+				SELECTED=$(printf '%s' "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d; s=^=$PWD/=g")
+				[ -n "$SELECTED" ] && Generate_action_menu "Destination: " "#FF8C00" || return && rename= && allowmulti="NotAllowed"
+				[ -n "$HERE" ] && destination="$HERE" && destname="$name"
+				if [ -n "$destination" ]; then
+					for selection in $(printf '%s' "$SELECTED"); do
+						$cmd "$selection" "$destination"
+					done && notifyprompt "All files / directories $cmdname to $destname"
+				fi
+
 			else
 				# Single-selection mode
 				[ -n "$HERE" ] && start="$HERE" && startname="$name" && rename="true"
@@ -306,9 +340,16 @@ dmenufm_action () {
 				rename=
 			fi
 			;;
+		"$FM_RENAME")
+			allowmulti="Bulk rename"
+			Generate_action_menu "Source: " "#33691e" || return && allowmulti="NotAllowed"
+			# TODO
+			return
+			;;
 		"$FM_RM")
 			# Allow multiple files to be selected
 			allowmulti="Bulk Remove"
+			allselection="Bulk Remove all"
 			# Choose file/directory in current directory to remove
 			Generate_action_menu "Remove file / directory: " "#33691e" || return && allowmulti="NotAllowed"
 			if [ -n "$multiselection" ]; then
@@ -317,6 +358,13 @@ dmenufm_action () {
 				for selection in $(printf '%s' "$SELECTED"); do
 					rm -rf "$selection"
 				done && notifyprompt "Selected removed."
+			elif [ "$actCHOICE" = "$allselection" ]; then
+				SELECTED=$(printf '%s' "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d; s=^=$PWD/=g")
+				if dangerprompt "Remove all the files / directories in $name?"; then
+					for selection in $(printf '%s' "$SELECTED"); do
+						rm -rf "$selection"
+					done && notifyprompt "All files / directories removed."
+				fi
 			else
 				# Single-selection mode
 				allowmulti="NotAllowed"
@@ -341,6 +389,7 @@ dmenufm_action () {
 		"$FM_TRASH")
 			# Allow multiple files to be selected
 			allowmulti="Bulk Trash"
+			allselection="Bulk Trash all"
 			[ ! -d "$DMENUFM_TRASH_PATH" ] && mkdir -p "$DMENUFM_TRASH_PATH"
 			trashmenu=$(printf '%s\n' "Move to trash" "Go to trash" "Empty trash" | sed "/^$/ d" | verticalprompt "Dmenufm Trash" "#005577")
 			case $trashmenu in
@@ -352,6 +401,13 @@ dmenufm_action () {
 						for selection in $(printf '%s' "$SELECTED"); do
 							mv "$selection" "$DMENUFM_TRASH_PATH"
 						done && notifyprompt "Selected files moved to trash"
+					elif [ "$actCHOICE" = "$allselection" ]; then
+						SELECTED=$(printf '%s' "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d; s=^=$PWD/=g")
+						if dangerprompt "Move all the files / directories in $name to trash?"; then
+							for selection in $(printf '%s' "$SELECTED"); do
+								mv "$selection" "$DMENUFM_TRASH_PATH"
+							done && notifyprompt "All files / directories moved to trash."
+						fi
 					else
 						# Single-selection mode
 						allowmulti="NotAllowed"
