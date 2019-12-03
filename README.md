@@ -142,6 +142,7 @@ There are many environment variables you can use to conigure dmenufm by exportin
 
 The default options are as follows:
 ```sh
+# FILES LOCATION
 export DMENUFM_PATH="$HOME/.config/dmenufm"
 export DMENUFM_TRASH_PATH="$DMENUFM_PATH/trash"
 export DMENUFM_BMKFILE="$DMENUFM_PATH/dmenufm_bookmark"
@@ -149,9 +150,16 @@ export DMENUFM_CMDFILE="$DMENUFM_PATH/dmenufm_command"
 export DMENUFM_HISFILE="$DMENUFM_PATH/dmenufm_history"
 export DMENUFM_LAST_PATH_FILE="$DMENUFM_PATH/dmenufm_lastpath"
 export DMENUFM_MAX_HIS_LENGTH=5000
+export DMENUFM_BULK_RENAMEFILE="$DMENUFM_PATH/dmenufm_bulk_rename"
+# FONTS
 export DMENUFM_GENERIC_FONT="Monospace-15"
 export DMENUFM_NOTIF_FONT="Monospace-25"
 export DMENUFM_DANGER_FONT="Monospace-20"
+# COLORs
+export DMENUFM_GENERIC_COLOR="#005577"
+export DMENUFM_ACTION_COLOR_LV1="#33691e"
+export DMENUFM_ACTION_COLOR_LV2="#FF8C00"
+export DMENUFM_ACTION_COLOR_BULK="#CB06CB"
 ```
 
 # Note
@@ -218,19 +226,23 @@ So I
 
 and you are all set.
 
-## Dmenu font is too big/small
+## I want to configure the color and font of dmenufm
 
 You can export the following environment variables in your shell or system configuration file:
 
 ```sh
-DMENUFM_GENERIC_FONT="Monospace-20"
-DMENUFM_NOTIF_FONT="Monospace-30"
-DMENUFM_DANGER_FONT="Monospace-30"
+# FONTS
+export DMENUFM_GENERIC_FONT="Monospace-15"
+export DMENUFM_NOTIF_FONT="Monospace-25"
+export DMENUFM_DANGER_FONT="Monospace-20"
+# COLORs
+export DMENUFM_GENERIC_COLOR="#005577"
+export DMENUFM_ACTION_COLOR_LV1="#33691e"
+export DMENUFM_ACTION_COLOR_LV2="#FF8C00"
+export DMENUFM_ACTION_COLOR_BULK="#CB06CB"
 ```
 
-- `DMENUFM_GENERIC_FONT` for general dmenu font size,
-- `DMENUFM_NOTIF_FONT` for notification prompt, and
-- `DMENUFM_DANGER_FONT` for dangerous prompt for further confirmation in `RMM` and `TRH`.
+Change the font / font size / color in the `""` to customize the appearance  of dmenufm.
 
 
 # TODO

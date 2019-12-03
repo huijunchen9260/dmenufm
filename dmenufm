@@ -21,13 +21,20 @@
 [ -n "$DMENUFM_GENERIC_FONT" ] || DMENUFM_GENERIC_FONT="Monospace-15"
 [ -n "$DMENUFM_NOTIF_FONT" ] || DMENUFM_NOTIF_FONT="Monospace-25"
 [ -n "$DMENUFM_DANGER_FONT" ] || DMENUFM_DANGER_FONT="Monospace-20"
+# COLORs
+[ -n "$DMENUFM_GENERIC_COLOR" ] || DMENUFM_GENERIC_COLOR="#005577"
+[ -n "$DMENUFM_ACTION_COLOR_LV1" ] || DMENUFM_ACTION_COLOR_LV1="#33691e"
+[ -n "$DMENUFM_ACTION_COLOR_LV2" ] || DMENUFM_ACTION_COLOR_LV2="#FF8C00"
+[ -n "$DMENUFM_ACTION_COLOR_BULK" ] || DMENUFM_ACTION_COLOR_BULK="#CB06CB"
 
+# xdg-open directories
 XDGDIR1="/usr/share/applications"
 XDGDIR2="/usr/local/share/applications"
 
 ## GLOBAL VARIABLES
 CHOICE="placeholder"
 actCHOICE="placeholder"
+allselection="placeholder"
 TARGET="./"
 BACKWARD="../"
 ENDSELECTION="End Selection"
@@ -213,6 +220,7 @@ Generate_action_menu () {
 			name=
 			multiselection=
 			actCHOICE="placeholder"
+			echo "DEBUG: $HERE"
 			break
 		fi
 	done
@@ -273,9 +281,9 @@ dmenufm_multiselect () {
 	dangerousmessage=$2
 	HERE=
 	multilist=
-	Generate_action_menu "$multiprompt" "#33691e" || return && allowmulti="NotAllowed"
+	Generate_action_menu "$multiprompt" "$DMENUFM_ACTION_COLOR_BULK" || return && allowmulti="NotAllowed"
 	while [ -n "$multiselection" ]; do
-		Generate_action_menu "$multiprompt" "#33691e" || return && allowmulti="NotAllowed"
+		Generate_action_menu "$multiprompt" "$DMENUFM_ACTION_COLOR_BULK" || return && allowmulti="NotAllowed"
 		HERE=$multilist
 		allowmulti="NotAllowed"
 	done
@@ -283,7 +291,7 @@ dmenufm_multiselect () {
 	SELECTED=$(printf '%s' "$HERE" | cut -b2- | tr ':' '\n' | uniq)
 	allowmulti="NotAllowed"
 
-	[ "$actCHOICE" = "$ENDSELECTION" ] && printf '%s' "$SELECTED" | verticalprompt "Selected files (Enter to continue): " "#33691e"
+	[ "$actCHOICE" = "$ENDSELECTION" ] && printf '%s' "$SELECTED" | verticalprompt "Selected files (Enter to continue): " "$DMENUFM_ACTION_COLOR_LV1"
 	[ "$actCHOICE" = "$ENDSELECTION" ] && [ -n "$dangerousmessage" ] && dangerprompt "$dangerousmessage"
 }
 
@@ -291,15 +299,15 @@ dmenufm_multiselect () {
 # Note: Use `[ -n "$VAR" ]` after each menu to check whether the menu is correctly execute.
 # 	If not, then the later command will not execute.
 dmenufm_action () {
-	move=$(printf '%s' "$ACTLIST" | tr ':' '\n' | verticalprompt "Actions:" "#005577")
+	move=$(printf '%s' "$ACTLIST" | tr ':' '\n' | verticalprompt "Actions:" "$DMENUFM_GENERIC_COLOR")
 	case $move in
 		"$FM_CP_PATH")
 			# Copy path to xclip, and send notification.
-			Generate_action_menu "Copy directory/file path: " "#33691e" || return
+			Generate_action_menu "Copy directory/file path: " "$DMENUFM_ACTION_COLOR_LV1" || return
 			[ -n "$HERE" ] && printf '%s' "$HERE" | xclip -selection clipboard && notifyprompt "Path $name copied to clipboard."
 			;;
 		"$FM_NEW")
-			name=$(horizontalprompt "Dir ends w/ slash; File w/o: " "#33691e") || return
+			name=$(horizontalprompt "Dir ends w/ slash; File w/o: " "$DMENUFM_ACTION_COLOR_LV1") || return
 			if [ -n "$( printf "$name" | grep '/')" ]; then
 				mkdir -p "$name" && notifyprompt "Directory $name created."
 			else
@@ -309,12 +317,12 @@ dmenufm_action () {
 		"$FM_MVR"|"$FM_YANK")
 			cmd="mv" && cmdname="moved" && allowmulti="Bulk move" && allselection="Bulk move all"
 			[ "$move" = "$FM_YANK" ] && cmd="cp -R" && cmdname="copied" && allowmulti="Bulk copy" && allselection="Bulk copy all"
-			Generate_action_menu "Source: " "#33691e" || return && allowmulti="NotAllowed"
+			Generate_action_menu "Source: " "$DMENUFM_ACTION_COLOR_LV1" || return && allowmulti="NotAllowed"
 			if [ -n "$multiselection" ]; then
 				# Multi-selection mode
 				# No need for dangerousmessage
 				dmenufm_multiselect "Select files / directories " ""
-				[ -n "$SELECTED" ] && Generate_action_menu "Destination: " "#FF8C00" || return && rename= && allowmulti="NotAllowed"
+				[ "$actCHOICE" = "$ENDSELECTION" ] && Generate_action_menu "Destination: " "$DMENUFM_ACTION_COLOR_LV2" || return && rename= && allowmulti="NotAllowed"
 				[ -n "$HERE" ] && destination="$HERE" && destname="$name"
 				if [ -n "$destination" ]; then
 					for selection in $(printf '%s' "$SELECTED"); do
@@ -324,7 +332,7 @@ dmenufm_action () {
 			elif [ "$actCHOICE" = "$allselection" ]; then
 				# All-selection mode
 				SELECTED=$(printf '%s' "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d; s=^=$PWD/=g")
-				[ -n "$SELECTED" ] && Generate_action_menu "Destination: " "#FF8C00" || return && rename= && allowmulti="NotAllowed"
+				[ -n "$SELECTED" ] && Generate_action_menu "Destination: " "$DMENUFM_ACTION_COLOR_LV2" || return && rename= && allowmulti="NotAllowed"
 				[ -n "$HERE" ] && destination="$HERE" && destname="$name"
 				if [ -n "$destination" ]; then
 					for selection in $(printf '%s' "$SELECTED"); do
@@ -336,7 +344,7 @@ dmenufm_action () {
 				# Single-selection mode
 				[ -n "$HERE" ] && start="$HERE" && startname="$name" && rename="true"
 				[ -d "$start" ] && cd "../"
-				[ -n "$start" ] && Generate_action_menu "Destination / Type new name: " "#FF8C00" || return && rename= && actCHOICE="placeholder"
+				[ -n "$start" ] && Generate_action_menu "Destination / Type new name: " "$DMENUFM_ACTION_COLOR_LV2" || return && rename= && actCHOICE="placeholder"
 				[ -n "$HERE" ] && destination="$HERE" && destname="$name"
 				[ -n "$HERE" ] && $cmd "$start" "$destination" && notifyprompt "$startname $cmdname to $destname"
 				rename=
@@ -344,7 +352,7 @@ dmenufm_action () {
 			;;
 		"$FM_RENAME")
 			allowmulti="Bulk rename"
-			Generate_action_menu "Source: " "#33691e" || return && allowmulti="NotAllowed"
+			Generate_action_menu "Source: " "$DMENUFM_ACTION_COLOR_LV1" || return && allowmulti="NotAllowed"
 			# TODO
 			return
 			;;
@@ -353,7 +361,7 @@ dmenufm_action () {
 			allowmulti="Bulk Remove"
 			allselection="Bulk Remove all"
 			# Choose file/directory in current directory to remove
-			Generate_action_menu "Remove file / directory: " "#33691e" || return && allowmulti="NotAllowed"
+			Generate_action_menu "Remove file / directory: " "$DMENUFM_ACTION_COLOR_LV1" || return && allowmulti="NotAllowed"
 			if [ -n "$multiselection" ]; then
 				# Multi-selection mode
 				dmenufm_multiselect "Select files / directories " "Are you sure you would like to delete all selected files?"
@@ -364,6 +372,7 @@ dmenufm_action () {
 				fi
 			elif [ "$actCHOICE" = "$allselection" ]; then
 				SELECTED=$(printf '%s' "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d; s=^=$PWD/=g")
+				printf '%s' "$SELECTED" | verticalprompt "Selected files (Enter to continue): " "$DMENUFM_ACTION_COLOR_LV1"
 				if dangerprompt "Remove all the files / directories in $name?"; then
 					for selection in $(printf '%s' "$SELECTED"); do
 						rm -rf "$selection"
@@ -395,10 +404,10 @@ dmenufm_action () {
 			allowmulti="Bulk Trash"
 			allselection="Bulk Trash all"
 			[ ! -d "$DMENUFM_TRASH_PATH" ] && mkdir -p "$DMENUFM_TRASH_PATH"
-			trashmenu=$(printf '%s\n' "Move to trash" "Go to trash" "Empty trash" | sed "/^$/ d" | verticalprompt "Dmenufm Trash" "#005577")
+			trashmenu=$(printf '%s\n' "Move to trash" "Go to trash" "Empty trash" | sed "/^$/ d" | verticalprompt "Dmenufm Trash" "$DMENUFM_GENERIC_COLOR")
 			case $trashmenu in
 				"Move to trash")
-					Generate_action_menu "Move file/directory to trash: " "#33691e" || return && allowmulti="NotAllowed"
+					Generate_action_menu "Move file/directory to trash: " "$DMENUFM_ACTION_COLOR_LV1" || return && allowmulti="NotAllowed"
 					if [ -n "$multiselection" ]; then
 						# Multi-selection mode
 						dmenufm_multiselect "Select files / directories " "Are you sure you would like to move all selected files to trash?"
@@ -409,6 +418,7 @@ dmenufm_action () {
 						fi
 					elif [ "$actCHOICE" = "$allselection" ]; then
 						SELECTED=$(printf '%s' "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d; s=^=$PWD/=g")
+						printf '%s' "$SELECTED" | verticalprompt "Selected files (Enter to continue): " "$DMENUFM_ACTION_COLOR_LV1"
 						if dangerprompt "Move all the files / directories in $name to trash?"; then
 							for selection in $(printf '%s' "$SELECTED"); do
 								mv "$selection" "$DMENUFM_TRASH_PATH"
@@ -448,15 +458,15 @@ dmenufm_action () {
 			;;
 		"$FM_HIST")
 			# Use sed command to mimic reverse of cat for POSIX.
-			goto=$(sed '1!G;h;$!d' "$DMENUFM_HISFILE" | verticalprompt "Dmenufm History" "#005577")
+			goto=$(sed '1!G;h;$!d' "$DMENUFM_HISFILE" | verticalprompt "Dmenufm History" "$DMENUFM_GENERIC_COLOR")
 			destination=$(printf '%s' "$goto" | awk -F ' - ' '{print $2}')
 			cd "$destination" || return
 			;;
 		"$FM_BMARK")
-			markmenu=$(printf '%s\n' "$(cat "$DMENUFM_BMKFILE")" "Add BMK" "Delete BMK" | sed "/^$/ d" |  verticalprompt "Dmenufm Bookmark" "#005577")
+			markmenu=$(printf '%s\n' "$(cat "$DMENUFM_BMKFILE")" "Add BMK" "Delete BMK" | sed "/^$/ d" |  verticalprompt "Dmenufm Bookmark" "$DMENUFM_GENERIC_COLOR")
 			case "$markmenu" in
 				"Add BMK")
-					Generate_action_menu "Choose file/directory and add to BMK: " "#33691e" || return
+					Generate_action_menu "Choose file/directory and add to BMK: " "$DMENUFM_ACTION_COLOR_LV1" || return
 					mark=$(printf '%s' "$HERE" | awk -F '/' '{print $NF}')
 					[ -n "$mark" ] && printf '%s\n' "$mark - $HERE" >> "$DMENUFM_BMKFILE"
 					[ -n "$mark" ] && sed "/^$/ d" "$DMENUFM_BMKFILE" >  "$DMENUFM_BMKFILE.backup" && cp "$DMENUFM_BMKFILE.backup" "$DMENUFM_BMKFILE"
@@ -476,11 +486,11 @@ dmenufm_action () {
 			esac
 			;;
 		"$FM_COMMAND")
-			cmdmenu=$(printf '%s\n' "$(cat "$DMENUFM_CMDFILE")" "Add CMD" "Delete CMD" "Type and execute" | sed "/^$/ d" | verticalprompt "Dmenufm Custom Command" "#005577")
+			cmdmenu=$(printf '%s\n' "$(cat "$DMENUFM_CMDFILE")" "Add CMD" "Delete CMD" "Type and execute" | sed "/^$/ d" | verticalprompt "Dmenufm Custom Command" "$DMENUFM_GENERIC_COLOR")
 			case "$cmdmenu" in
 				"Add CMD")
-					addcmd=$(horizontalprompt "Recording your command: " "#33691e") || return
-					desp=$(horizontalprompt "Enter command description: " "#33691e") || return
+					addcmd=$(horizontalprompt "Recording your command: " "$DMENUFM_ACTION_COLOR_LV1") || return
+					desp=$(horizontalprompt "Enter command description: " "$DMENUFM_ACTION_COLOR_LV1") || return
 					[ -n "$addcmd" ] && printf '%s\n' "$addcmd - $desp" >> "$DMENUFM_CMDFILE"
 					[ -n "$addcmd" ] && sed "/^$/ d" "$DMENUFM_CMDFILE" >  "$DMENUFM_CMDFILE.backup" && cp "$DMENUFM_CMDFILE.backup" "$DMENUFM_CMDFILE"
 					;;
@@ -493,7 +503,7 @@ dmenufm_action () {
 					[ -n "$delcmd" ] && sed "\+$delcmd+ d" "$DMENUFM_CMDFILE" > "$DMENUFM_CMDFILE.backup" && cp "$DMENUFM_CMDFILE.backup" "$DMENUFM_CMDFILE"
 					;;
 				"Type and execute")
-					execmd=$(horizontalprompt "Type and execute: " "#33691e")
+					execmd=$(horizontalprompt "Type and execute: " "$DMENUFM_ACTION_COLOR_LV1")
 					[ -n "$execmd" ] && executecmd "$execmd"
 					;;
 				*)
@@ -516,7 +526,7 @@ dmenufm_menu () {
 		# Generate menu with/without arguments
 		# Show only the current directory and one level of parent directory
 		twopwd=$(printf '%s' "$PWD" | awk -F '/' '{print $(NF-1)"/"$NF}')
-		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$twopwd" "#005577")
+		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$list" | tr ':' '\n' | sed "s/'//g; /^$/ d" | verticalprompt "$twopwd" "$DMENUFM_GENERIC_COLOR")
 		# Outcome matching
 		if [ "$CHOICE" = "$TARGET" ]; then
 			open "$PWD"
