@@ -362,14 +362,10 @@ destmenu () {
 		&& destination="$HERE" \
 		&& destname="$name"
 	if [ -n "$destination" ]; then
-		oldIFS=$IFS
-		IFS="
-		"
 		for selection in $(printf '%s' "$SELECTED"); do
 			$cmd "$selection" "$destination"
 		done && notifyprompt \
 			"Selected files / directories $cmdname to $destname"
-		IFS="$oldIFS"
 	fi
 
 }
@@ -547,13 +543,9 @@ dmenufm_action () {
 					| verticalprompt "Selected files (Enter to continue): " \
 					"$FM_ACTION_COLOR_LV1"
 				if dangerprompt "Remove all the files / directories in $name?"; then
-					oldIFS=$IFS
-					IFS="
-					"
 					for selection in $(printf '%s' "$SELECTED"); do
 						rm -rf "$selection"
 					done && notifyprompt "All files / directories removed."
-					IFS="$oldIFS"
 				fi
 			else
 				# Single-selection mode
@@ -602,13 +594,9 @@ dmenufm_action () {
 						dmenufm_multiselect "Select files / directories to move to trash: " \
 							"Are you sure you would like to move all selected files to trash?"
 						if [ $(echo $?) -eq 0 ]; then
-							oldIFS=$IFS
-							IFS="
-							"
 							for selection in $(printf '%s' "$SELECTED"); do
 								mv "$selection" "$FM_TRASH"
 							done && notifyprompt "Selected files moved to trash"
-							IFS="$oldIFS"
 						fi
 					elif [ "$actCHOICE" = "$allselection" ]; then
 						SELECTED=$(printf '%s' "$list" \
@@ -618,13 +606,9 @@ dmenufm_action () {
 							| verticalprompt "Selected files (Enter to continue): " \
 							"$FM_ACTION_COLOR_LV1"
 						if dangerprompt "Move all the files / directories in $name to trash?"; then
-							oldIFS=$IFS
-							IFS="
-							"
 							for selection in $(printf '%s' "$SELECTED"); do
 								mv "$selection" "$FM_TRASH"
 							done && notifyprompt "All files / directories moved to trash."
-							IFS="$oldIFS"
 						fi
 					else
 						# Single-selection mode
