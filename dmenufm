@@ -535,9 +535,9 @@ dmenufm_action () {
 					IFS="
 					"
 					for selection in $(printf '%s' "$SELECTED"); do
+						IFS="$oldIFS"
 						rm -rf "$selection"
 					done && notifyprompt "Selected removed."
-					IFS="$oldIFS"
 				fi
 			elif [ "$actCHOICE" = "$allselection" ]; then
 				SELECTED=$(printf '%s' "$list" \
@@ -606,9 +606,9 @@ dmenufm_action () {
 							IFS="
 							"
 							for selection in $(printf '%s' "$SELECTED"); do
+								IFS="$oldIFS"
 								mv "$selection" "$FM_TRASH"
 							done && notifyprompt "Selected files moved to trash"
-							IFS="$oldIFS"
 						fi
 					elif [ "$actCHOICE" = "$allselection" ]; then
 						SELECTED=$(printf '%s' "$list" \
@@ -622,9 +622,9 @@ dmenufm_action () {
 							IFS="
 							"
 							for selection in $(printf '%s' "$SELECTED"); do
+								IFS="$oldIFS"
 								mv "$selection" "$FM_TRASH"
 							done && notifyprompt "All files / directories moved to trash."
-							IFS="$oldIFS"
 						fi
 					else
 						# Single-selection mode
