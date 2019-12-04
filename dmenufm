@@ -307,42 +307,47 @@ dmenufm_history () {
 
 # Bulk rename function.
 # No argument
+
 bulk_rename () {
-	printf '%s\n' "$SELECTED" \
-		| sed "s=/$==g" \
-		> "$FM_REMFILE.backup"
-	awk -F '/' '{print $NF}' "$FM_REMFILE.backup" \
-		> "$FM_REMFILE"
-	awk -F '/' '{$NF=""; print $0}' "$FM_REMFILE.backup" \
-		| tr ' ' '/' \
-		> "$FM_REMFILE.dirname"
-	open "$FM_REMFILE"
-	if [ $(< "$FM_REMFILE" wc -l) \
-		-ne $(< "$FM_REMFILE.backup" wc -l) ]; then
-		notifyprompt \
-			"ERROR: Lines mismatch in rename file; do nothing." \
-			&& return
+	if [ -n "$SELECTED" ]; then
+		printf '%s\n' "$SELECTED" \
+			| sed "s=/$==g" \
+			> "$FM_REMFILE.backup"
+		awk -F '/' '{print $NF}' "$FM_REMFILE.backup" \
+			> "$FM_REMFILE"
+		awk -F '/' '{$NF=""; print $0}' "$FM_REMFILE.backup" \
+			| tr ' ' '/' \
+			> "$FM_REMFILE.dirname"
+		open "$FM_REMFILE"
+		if [ $(< "$FM_REMFILE" wc -l) \
+			-ne $(< "$FM_REMFILE.backup" wc -l) ]; then
+			notifyprompt \
+				"ERROR: Lines mismatch in rename file; do nothing." \
+				&& return
+		else
+			renamevar=$(paste -d ':' \
+				"$FM_REMFILE.backup" \
+				"$FM_REMFILE.dirname" \
+				"$FM_REMFILE")
+			# Set IFS for for loop as \n
+			oldIFS=$IFS
+			IFS="
+			"
+			for selection in $(printf '%s' "$renamevar"); do
+				start=$(printf '%s' "$selection" \
+					| awk -F ':' '{print $1}')
+				destination=$(printf '%s' "$selection" \
+					| awk -F ':' '{print $2$3}')
+				if [ "$start" = "$destination" ]; then
+					continue
+				else
+					mv "$start" "$destination"
+				fi
+			done && notifyprompt "Selected renamed"
+			IFS="$oldIFS"
+		fi
 	else
-		renamevar=$(paste -d ':' \
-			"$FM_REMFILE.backup" \
-			"$FM_REMFILE.dirname" \
-			"$FM_REMFILE")
-		# Set IFS for for loop as \n
-		oldIFS=$IFS
-		IFS="
-		"
-		for selection in $(printf '%s' "$renamevar"); do
-			start=$(printf '%s' "$selection" \
-				| awk -F ':' '{print $1}')
-			destination=$(printf '%s' "$selection" \
-				| awk -F ':' '{print $2$3}')
-			if [ "$start" = "$destination" ]; then
-				continue
-			else
-				mv "$start" "$destination"
-			fi
-		done && notifyprompt "Selected renamed"
-		IFS="$oldIFS"
+		return
 	fi
 }
 
