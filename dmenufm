@@ -305,6 +305,47 @@ dmenufm_history () {
 	fi
 }
 
+# Bulk rename function.
+# No argument
+bulk_rename () {
+	printf '%s\n' "$SELECTED" \
+		| sed "s=/$==g" \
+		> "$FM_REMFILE.backup"
+	awk -F '/' '{print $NF}' "$FM_REMFILE.backup" \
+		> "$FM_REMFILE"
+	awk -F '/' '{$NF=""; print $0}' "$FM_REMFILE.backup" \
+		| tr ' ' '/' \
+		> "$FM_REMFILE.dirname"
+	open "$FM_REMFILE"
+	if [ $(< "$FM_REMFILE" wc -l) \
+		-ne $(< "$FM_REMFILE.backup" wc -l) ]; then
+		notifyprompt \
+			"ERROR: Lines mismatch in rename file; do nothing." \
+			&& return
+	else
+		renamevar=$(paste -d ':' \
+			"$FM_REMFILE.backup" \
+			"$FM_REMFILE.dirname" \
+			"$FM_REMFILE")
+		# Set IFS for for loop as \n
+		oldIFS=$IFS
+		IFS="
+		"
+		for selection in $(printf '%s' "$renamevar"); do
+			start=$(printf '%s' "$selection" \
+				| awk -F ':' '{print $1}')
+			destination=$(printf '%s' "$selection" \
+				| awk -F ':' '{print $2$3}')
+			if [ "$start" = "$destination" ]; then
+				continue
+			else
+				mv "$start" "$destination"
+			fi
+		done && notifyprompt "Selected renamed"
+		IFS="$oldIFS"
+	fi
+}
+
 # Extract files and make a new directory to contain all the files.
 extraction () {
 	# $1: command to extract compress
@@ -472,49 +513,19 @@ dmenufm_action () {
 				&& allowmulti="NotAllowed"
 			if [ -n "$multiselection" ]; then
 				dmenufm_multiselect "Select files / directories to rename: " ""
-				printf '%s\n' "$SELECTED" > "$FM_REMFILE.backup"
-				awk -F '/' '{print $NF}' "$FM_REMFILE.backup" \
-					> "$FM_REMFILE"
-				awk -F '/' '{$NF=""; print $0}' "$FM_REMFILE.backup" \
-					| tr ' ' '/' \
-					> "$FM_REMFILE.dirname"
-				open "$FM_REMFILE"
-				if [ $(< "$FM_REMFILE" wc -l) \
-					-ne $(< "$FM_REMFILE.backup" wc -l) ]; then
-					notifyprompt \
-						"ERROR: Lines mismatch in rename file; do nothing." \
-						&& return
-				else
-					bulkrename=$(paste -d ':' \
-						"$FM_REMFILE.backup" \
-						"$FM_REMFILE.dirname" \
-						"$FM_REMFILE")
-					# Set IFS for for loop as \n
-					oldIFS=$IFS
-					IFS="
-					"
-					for selection in $(printf '%s' "$bulkrename"); do
-						start=$(printf '%s' "$selection" \
-							| awk -F ':' '{print $1}')
-						destination=$(printf '%s' "$selection" \
-							| awk -F ':' '{print $2$3}')
-						if [ "$start" = "$destination" ]; then
-							continue
-						else
-							mv "$start" "$destination"
-						fi
-					done && notifyprompt "Selected renamed"
-					IFS="$oldIFS"
-				fi
+				bulk_rename
 			elif [ "$actCHOICE" = "$allselection" ]; then
-				return
+				SELECTED=$(printf '%s' "$list" \
+					| tr ':' '\n' \
+					| sed "s/'//g; /^$/ d; s=^=$PWD/=g")
+				[ -n "$SELECTED" ] \
+					&& printf '%s' "$SELECTED" \
+					| verticalprompt "Selected files (Enter to continue): " "$FM_ACTION_COLOR_LV1"
+				bulk_rename
 			else
-				return
+				SELECTED="$HERE"
+				bulk_rename
 			fi
-			# TODO
-			# Code Note:
-			# paste file1 file2
-			return
 			;;
 		"$FM_DEL")
 			# Allow multiple files to be selected

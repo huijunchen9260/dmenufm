@@ -249,6 +249,5 @@ Change the font / font size / color in the `""` to customize the appearance  of 
 # TODO
 
 - Compress directory ~~and extract files~~ to different format.
-- Ranger style bulk rename (partial)
 - Support MacOS (darwin)
 - Multi-choices action
