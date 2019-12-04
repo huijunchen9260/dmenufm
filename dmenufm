@@ -362,6 +362,8 @@ dmenufm_action () {
 					notifyprompt "ERROR: Lines mismatch in rename file; do nothing." && return
 				else
 					bulkrename=$(paste -d ':' "$DMENUFM_BULK_RENAMEFILE.backup" "$DMENUFM_BULK_RENAMEFILE")
+					oldIFS=$IFS
+					IFS=$'\n'
 					for selection in $(printf '%s' "$bulkrename"); do
 						start=$(printf '%s' "$selection" | awk -F ':' '{print $1}')
 						destination=$(printf '%s' "$selection" | awk -F ':' '{print $2}')
@@ -369,6 +371,7 @@ dmenufm_action () {
 						echo "DEBUG: destination is $destination"
 						mv "$start" "$destination"
 					done && notifyprompt "Selected renamed"
+					IFS="$oldIFS"
 				fi
 			elif [ "$actCHOICE" = "$allselection" ]; then
 				return
