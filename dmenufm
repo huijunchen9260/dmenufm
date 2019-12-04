@@ -363,7 +363,8 @@ dmenufm_action () {
 				else
 					bulkrename=$(paste -d ':' "$DMENUFM_BULK_RENAMEFILE.backup" "$DMENUFM_BULK_RENAMEFILE")
 					oldIFS=$IFS
-					IFS=$'\n'
+					IFS="
+					"
 					for selection in $(printf '%s' "$bulkrename"); do
 						start=$(printf '%s' "$selection" | awk -F ':' '{print $1}')
 						destination=$(printf '%s' "$selection" | awk -F ':' '{print $2}')
