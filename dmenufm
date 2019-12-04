@@ -346,6 +346,28 @@ bulk_rename () {
 	fi
 }
 
+destmenu () {
+	Generate_action_menu "Destination: " \
+		"$FM_ACTION_COLOR_LV2" \
+		|| return \
+		&& rename= \
+		&& allowmulti="NotAllowed" \
+		&& actCHOICE="placeholder"
+	[ -n "$HERE" ] \
+		&& destination="$HERE" \
+		&& destname="$name"
+	oldIFS=$IFS
+	IFS="
+	"
+	if [ -n "$destination" ]; then
+		for selection in $(printf '%s' "$SELECTED"); do
+			$cmd "$selection" "$destination"
+		done && notifyprompt \
+			"Selected files / directories $cmdname to $destname"
+	fi
+	IFS="$oldIFS"
+}
+
 # Extract files and make a new directory to contain all the files.
 extraction () {
 	# $1: command to extract compress
@@ -443,20 +465,7 @@ dmenufm_action () {
 				# No need for dangerousmessage
 				dmenufm_multiselect "Select files / directories to $cmdverb: " ""
 				[ "$actCHOICE" = "$ENDSELECTION" ] \
-					&& Generate_action_menu "Destination: " \
-					"$FM_ACTION_COLOR_LV2" \
-					|| return \
-					&& rename= \
-					&& allowmulti="NotAllowed"
-				[ -n "$HERE" ] \
-					&& destination="$HERE" \
-					&& destname="$name"
-				if [ -n "$destination" ]; then
-					for selection in $(printf '%s' "$SELECTED"); do
-						$cmd "$selection" "$destination"
-					done && notifyprompt \
-						"Selected files / directories $cmdname to $destname"
-				fi
+					&& destmenu
 			elif [ "$actCHOICE" = "$allselection" ]; then
 				# All-selection mode
 				SELECTED=$(printf '%s' "$list" \
@@ -466,41 +475,16 @@ dmenufm_action () {
 					&& printf '%s' "$SELECTED" \
 					| verticalprompt "Selected files (Enter to continue): " "$FM_ACTION_COLOR_LV1"
 				[ -n "$SELECTED" ] \
-					&& Generate_action_menu "Destination: " \
-					"$FM_ACTION_COLOR_LV2" \
-					|| return \
-					&& rename= \
-					&& allowmulti="NotAllowed"
-				[ -n "$HERE" ] \
-					&& destination="$HERE" \
-					&& destname="$name"
-				if [ -n "$destination" ]; then
-					for selection in $(printf '%s' "$SELECTED"); do
-						$cmd "$selection" "$destination"
-					done && notifyprompt \
-						"All files / directories $cmdname to $destname"
-				fi
-
+					&& destmenu
 			else
 				# Single-selection mode
 				[ -n "$HERE" ] \
-					&& start="$HERE" \
-					&& startname="$name" \
+					&& SELECTED="$HERE" \
 					&& rename="true"
-				[ -d "$start" ] \
+				[ -d "$SELECTED" ] \
 					&& cd "../"
-				[ -n "$start" ] \
-					&& Generate_action_menu "Destination / Type new name: " \
-					"$FM_ACTION_COLOR_LV2" \
-					|| return \
-					&& rename= \
-					&& actCHOICE="placeholder"
-				[ -n "$HERE" ] \
-					&& destination="$HERE" \
-					&& destname="$name"
-				[ -n "$HERE" ] \
-					&& $cmd "$start" "$destination" \
-					&& notifyprompt "$startname $cmdname to $destname"
+				[ -n "$SELECTED" ] \
+					&& destmenu
 				rename=
 			fi
 			;;
