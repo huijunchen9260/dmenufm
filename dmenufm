@@ -366,10 +366,10 @@ destmenu () {
 		IFS="
 		"
 		for selection in $(printf '%s' "$SELECTED"); do
+			IFS="$oldIFS"
 			$cmd "$selection" "$destination"
 		done && notifyprompt \
 			"Selected files / directories $cmdname to $destname"
-		IFS="$oldIFS"
 	fi
 
 }
