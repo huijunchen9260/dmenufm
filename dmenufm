@@ -127,6 +127,9 @@ open () {
 # Generate directories
 # Variables cannot store multiline string, so transform to ':'
 # Misbehaving due to space in file/directory name, so add ' at beginning and end.
+
+quote () { printf %s\\n "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/" ; }
+
 menudir () {
 	DIRs=$(for dir in *; do [ -d "$dir" ] && printf '%s:' "$dir/"; done | sed "1 s/^/'/; s/$/'/")
 }
@@ -356,19 +359,29 @@ dmenufm_action () {
 			Generate_action_menu "Source: " "$DMENUFM_ACTION_COLOR_LV1" || return && allowmulti="NotAllowed"
 			if [ -n "$multiselection" ]; then
 				dmenufm_multiselect "Select files / directories to rename: " ""
-				printf '%s\n' "$SELECTED" > "$DMENUFM_BULK_RENAMEFILE.backup"  && cp "$DMENUFM_BULK_RENAMEFILE.backup" "$DMENUFM_BULK_RENAMEFILE"
+				printf '%s\n' "$SELECTED" > "$DMENUFM_BULK_RENAMEFILE.backup"
+				awk -F '/' '{print $NF}' "$DMENUFM_BULK_RENAMEFILE.backup" > "$DMENUFM_BULK_RENAMEFILE"
+				awk -F '/' '{$NF=""; print $0}' "$DMENUFM_BULK_RENAMEFILE.backup" | tr ' ' '/' > "$DMENUFM_BULK_RENAMEFILE.dirname"
+				# printf '%s\n' "$SELECTED" > "$DMENUFM_BULK_RENAMEFILE.backup"  && cp "$DMENUFM_BULK_RENAMEFILE.backup" "$DMENUFM_BULK_RENAMEFILE"
 				open "$DMENUFM_BULK_RENAMEFILE"
 				if [ $(< "$DMENUFM_BULK_RENAMEFILE" wc -l) -ne $(< "$DMENUFM_BULK_RENAMEFILE.backup" wc -l) ]; then
 					notifyprompt "ERROR: Lines mismatch in rename file; do nothing." && return
 				else
-					bulkrename=$(paste -d ':' "$DMENUFM_BULK_RENAMEFILE.backup" "$DMENUFM_BULK_RENAMEFILE")
+					bulkrename=$(paste -d ':' "$DMENUFM_BULK_RENAMEFILE.backup" "$DMENUFM_BULK_RENAMEFILE.dirname" "$DMENUFM_BULK_RENAMEFILE")
+					# Set IFS for for loop as \n
+					oldIFS=$IFS
+					IFS="
+					"
 					for selection in $(printf '%s' "$bulkrename"); do
 						start=$(printf '%s' "$selection" | awk -F ':' '{print $1}')
-						destination=$(printf '%s' "$selection" | awk -F ':' '{print $2}')
-						echo "DEBUG: start is $start"
-						echo "DEBUG: destination is $destination"
-						mv "$start" "$destination"
+						destination=$(printf '%s' "$selection" | awk -F ':' '{print $2$3}')
+						if [ "$start" = "$destination" ]; then
+							continue
+						else
+							mv "$start" "$destination"
+						fi
 					done && notifyprompt "Selected renamed"
+					IFS="$oldIFS"
 				fi
 			elif [ "$actCHOICE" = "$allselection" ]; then
 				return
