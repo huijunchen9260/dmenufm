@@ -361,16 +361,13 @@ destmenu () {
 	[ -n "$HERE" ] \
 		&& destination="$HERE" \
 		&& destname="$name"
-	oldIFS=$IFS
-	IFS="
-	"
 	if [ -n "$destination" ]; then
 		for selection in $(printf '%s' "$SELECTED"); do
 			$cmd "$selection" "$destination"
 		done && notifyprompt \
 			"Selected files / directories $cmdname to $destname"
 	fi
-	IFS="$oldIFS"
+
 }
 
 # Extract files and make a new directory to contain all the files.
@@ -530,9 +527,13 @@ dmenufm_action () {
 				dmenufm_multiselect "Select files / directories to remove: " \
 					"Are you sure you would like to delete all selected files?"
 				if [ $(echo $?) -eq 0 ]; then
+					oldIFS=$IFS
+					IFS="
+					"
 					for selection in $(printf '%s' "$SELECTED"); do
 						rm -rf "$selection"
 					done && notifyprompt "Selected removed."
+					IFS="$oldIFS"
 				fi
 			elif [ "$actCHOICE" = "$allselection" ]; then
 				SELECTED=$(printf '%s' "$list" \
