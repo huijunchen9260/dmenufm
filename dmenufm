@@ -46,12 +46,13 @@ FM_NEW="NEW - Create new file / directory"
 FM_DEL="DEL - Delete files / directories"
 FM_MVR="MVR - Move files / directories"
 FM_YAK="YAK - Copy files / directories"
+FM_LNK="LNK - Symbolically link files / directories"
 FM_REM="REM - Rename files / directories"
 FM_TRH="TRH - Trash of dmenufm"
 FM_HIS="HIS - History of dmenufm"
 FM_BMK="BMK - Bookmark for dmenufm"
 FM_CMD="CMD - Frequently used command"
-ACTLIST="$FM_PCP:$FM_NEW:$FM_MVR:$FM_YAK:$FM_DEL:$FM_TRH:$FM_REM:$FM_HIS:$FM_BMK:$FM_CMD"
+ACTLIST="$FM_PCP:$FM_NEW:$FM_MVR:$FM_YAK:$FM_LNK:$FM_DEL:$FM_TRH:$FM_REM:$FM_HIS:$FM_BMK:$FM_CMD"
 
 
 ### FUNCTIONS
@@ -316,9 +317,10 @@ dmenufm_action () {
 				:>"$name" && notifyprompt "File $name created."
 			fi
 			;;
-		"$FM_MVR"|"$FM_YAK")
+		"$FM_MVR"|"$FM_YAK"|"$FM_LNK")
 			cmd="mv" && cmdname="moved" && cmdverb="move" && allowmulti="Bulk move" && allselection="Bulk move all"
 			[ "$move" = "$FM_YAK" ] && cmd="cp -R" && cmdname="copied" && cmdverb="copy" && allowmulti="Bulk copy" && allselection="Bulk copy all"
+			[ "$move" = "$FM_LNK" ] && cmd="ln -s" && cmdname="linked" && cmdverb="link" && allowmulti="Bulk link" && allselection="Bulk link all"
 			Generate_action_menu "Source: " "$DMENUFM_ACTION_COLOR_LV1" || return && allowmulti="NotAllowed"
 			if [ -n "$multiselection" ]; then
 				# Multi-selection mode
