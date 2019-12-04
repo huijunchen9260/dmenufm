@@ -369,7 +369,11 @@ dmenufm_action () {
 						destination=$(printf '%s' "$selection" | awk -F ':' '{print $2}')
 						echo "DEBUG: start is $start"
 						echo "DEBUG: destination is $destination"
-						mv "$start" "$destination"
+						if [ "$start" = "$destination" ]; then
+							continue
+						else
+							mv "$start" "$destination"
+						fi
 					done && notifyprompt "Selected renamed"
 					IFS="$oldIFS"
 				fi
