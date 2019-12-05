@@ -54,7 +54,8 @@ FM_TRH="TRH - Trash of dmenufm"
 FM_HIS="HIS - History of dmenufm"
 FM_BMK="BMK - Bookmark for dmenufm"
 FM_CMD="CMD - Frequently used command"
-ACTLIST="$FM_PCP:$FM_NEW:$FM_MVR:$FM_YAK:$FM_LNK:$FM_DEL:$FM_TRH:$FM_REM:$FM_HIS:$FM_BMK:$FM_CMD"
+FM_ZIP="ZIP - Compress files / directories"
+ACTLIST="$FM_PCP:$FM_NEW:$FM_MVR:$FM_YAK:$FM_LNK:$FM_DEL:$FM_TRH:$FM_REM:$FM_HIS:$FM_BMK:$FM_CMD:$FM_ZIP"
 
 
 ### FUNCTIONS
@@ -74,12 +75,19 @@ get_os () {
 # to match how your terminal execute the command.
 # See README.md for more detail
 executecmd () {
-	software=$(printf '%s' "$1" | awk -F ' ' '{print $1}')
+	cmd=$1
+	software=$(printf '%s' "$cmd" | awk -F ' ' '{print $1}')
 	if < "$(find "$XDGDIR1" "$XDGDIR2" *"$software"*.desktop \
 		| tail -n 1)" grep "Terminal=false"; then
-		printf '%s' "$1" | ${SHELL:-"/bin/sh"}
+		IFS="
+		"
+		printf '%s' "$cmd" | ${SHELL:-"/bin/sh"}
+		unset IFS
 	else
-		$TERMINAL -e $1 | ${SHELL:-"/bin/sh"}
+		IFS="
+		"
+		$TERMINAL -e $cmd | ${SHELL:-"/bin/sh"}
+		unset IFS
 	fi
 }
 
@@ -405,9 +413,7 @@ extraction () {
 
 dmenufm_multiselect () {
 	# $1 for the prompt when multi selecting
-	# $2 for prompt if it is dangerous
 	multiprompt=$1
-	# dangerousmessage=$2
 	HERE=
 	multilist=
 	Generate_action_menu "$multiprompt" "$FM_ACTION_COLOR_BULK" \
@@ -602,9 +608,7 @@ dmenufm_action () {
 						# Single-selection mode
 						allowmulti="NotAllowed"
 						# Check the chosen on is directory or not
-						[ -n "$HERE" ] \
-							&& [ -d "$HERE" ] \
-							&& result=$?
+						[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 						[ -n "$HERE" ] && SELECTED="$HERE" \
 							&& dangermenu "rm -rf" "Remove all the files / directories in $name?" ""
 							[ "$result" = "0" ] && cd "../" && result=
@@ -671,7 +675,7 @@ dmenufm_action () {
 			;;
 		"$FM_CMD")
 			cmdmenu=$(printf '%s\n' "$(cat "$FM_CMDFILE")" \
-				"Add CMD" "Delete CMD" "Type and execute" \
+				"Add CMD" "Delete CMD" "Choose and execute" \
 				| sed "/^$/ d" \
 				| verticalprompt "Dmenufm Custom Command" "$FM_GENERIC_COLOR")
 			case "$cmdmenu" in
@@ -696,17 +700,54 @@ dmenufm_action () {
 					# '=' seems not usable in command
 					# Create backup file and cp to original file.
 					[ -n "$delcmd" ] \
-						&& sed "\+$delcmd+ d" "$FM_CMDFILE" \
+						&& sed "\:$delcmd: d" "$FM_CMDFILE" \
 						> "$FM_CMDFILE.backup" \
 						&& cp "$FM_CMDFILE.backup" "$FM_CMDFILE"
 					;;
-				"Type and execute")
-					execmd=$(horizontalprompt "Type and execute: " "$FM_ACTION_COLOR_LV1")
-					[ -n "$execmd" ] && executecmd "$execmd"
-					;;
 				*)
-					execmd=$(printf '%s' "$cmdmenu" | awk -F ' - ' '{print $1}')
-					executecmd "$execmd"
+					execmd=$(printf '%s' "$cmdmenu" \
+						| awk -F ' - ' '{print $1}')
+					if printf '%s' "$execmd" | grep -e '$'; then
+						allowmulti="Bulk Execute"
+						allselection="Bulk Execute all"
+						Generate_action_menu "Choose and execute: " "$FM_ACTION_COLOR_LV1"
+						if [ -n "$multiselection" ]; then
+							dmenufm_multiselect "Select to execute: "
+							execfile=$(printf '%s' "$SELECTED")
+							execmd=$(printf '%s' "$execmd" | sed "1 s/$.*//")
+							IFS="
+							"
+							for selection in $(printf '%s' "$execfile"); do
+								unset IFS
+								$execmd "$selection"
+							done && notifyprompt "Command executed on selected."
+						elif [ "$actCHOICE" = "$allselection" ]; then
+							SELECTED=$(printf '%s' "$list" \
+								| tr ':' '\n' \
+								| sed "s/'//g; /^$/ d; s=^=$PWD/=g")
+							[ -n "$SELECTED" ] \
+								&& printf '%s' "$SELECTED" \
+								| verticalprompt "Selected files (Enter to continue): " "$FM_ACTION_COLOR_LV1"
+							execfile=$(printf '%s' "$SELECTED")
+							execmd=$(printf '%s' "$execmd" | sed "1 s/$.*//")
+							IFS="
+							"
+							for selection in $(printf '%s' "$execfile"); do
+								unset IFS
+								$execmd "$selection"
+							done && notifyprompt "Command executed on selected."
+						else
+							SELECTED="$HERE"
+							execfile=$(printf '%s' "$SELECTED" \
+								| sed "s/^/'/g; s/$/'/g")
+							execmd=$(printf '%s' "$execmd" | sed "1 s/$.*//")
+							execmd="$execmd $execfile"
+							[ -n "$execmd" ] && executecmd "$execmd" \
+								&& notifyprompt "Command executed"
+						fi
+					else
+						executecmd "$execmd"
+					fi
 					;;
 			esac
 			;;
