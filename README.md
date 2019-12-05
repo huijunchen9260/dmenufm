@@ -72,17 +72,26 @@ Name with slash will consider as a directory; without as file.
 
 - To move file to destination:
 	- Choose source and destination to move your file. Enter the directory and choose `./` to confirm the destination.
+	- `Bulk Move` for multi-selection
+	- `Bulk Move all` to move all the content in the directory.
 - To rename file:
 	- After choosing source, in the destination, type your new name (No need to add slash even for directory), and press `Shift+Return` to confirm inputed new name.
 	- Note: `Shift+Return` will confirm the input rather than patched menu item.
 
-### `CPP` to copy files to new / existing file
+### `YAK` to copy files
 
 - The usage of this action is the same as `MVR`, but will copy the file instead of moving it.
 
-### `RMM` to remove
+### `LNK` to create symbolic links
 
-Remove one directory or file.
+- The usage of this action is the same as `MVR`, but will create the symbolic link for the file instead of moving it.
+
+### `DEL` to remove
+
+Delete directories or files.
+
+- `Bulk Delete` for multi-selection
+- `Bulk Delete all` to delete all the content in the directory.
 
 ### `TRH` to put in trash.
 
@@ -90,9 +99,16 @@ Remove one directory or file.
 - `Move file to trash` will generate a new dmenu prompt.
 	- Choose any file to move to trash.
 	- To move a directory to trash, enter the directory, and choose `./` to confirm this directory..
+	- `Bulk Trash` for multi-selection
+	- `Bulk Trash all` to delete all the content in the directory.
 - `Go to trash` will move current working directory to trash directory.
 - `Empty trash` will remove all files/directories in trash directory.
 
+### `REM` to rename files / directories
+
+- Open the name of the selected files / directories to your `$EDITOR` / text editor.
+	- `Bulk Rename` for multi-selection
+	- `Bulk Rename all` to delete all the content in the directory.
 
 ### `HIS` to record history
 - history file stored in `$HOME/.config/dmenufm/dmenufm_history`.
@@ -250,4 +266,3 @@ Change the font / font size / color in the `""` to customize the appearance  of 
 
 - Compress directory ~~and extract files~~ to different format.
 - Support MacOS (darwin)
-- Multi-choices action

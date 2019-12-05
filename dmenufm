@@ -10,7 +10,7 @@
 
 ## OPTIONS
 # FILES LOCATION
-[ -n "$FM_PATH" ] || FM_PATH="$HOME/.config/dmenufm"
+[ -n "$FM_PATH" ] ||FM_PATH="$HOME/.config/dmenufm"
 [ -n "$FM_TRASH" ] || FM_TRASH="$FM_PATH/trash"
 [ -n "$FM_BMKFILE" ] || FM_BMKFILE="$FM_PATH/dmenufm_bookmark"
 [ -n "$FM_CMDFILE" ] || FM_CMDFILE="$FM_PATH/dmenufm_command"
@@ -330,7 +330,6 @@ bulk_rename () {
 				"$FM_REMFILE.dirname" \
 				"$FM_REMFILE")
 			# Set IFS for for loop as \n
-			oldIFS=$IFS
 			IFS="
 			"
 			for selection in $(printf '%s' "$renamevar"); do
@@ -344,7 +343,7 @@ bulk_rename () {
 					mv "$start" "$destination"
 				fi
 			done && notifyprompt "Selected renamed"
-			IFS="$oldIFS"
+			unset IFS
 		fi
 	else
 		return
@@ -362,12 +361,33 @@ destmenu () {
 		&& destination="$HERE" \
 		&& destname="$name"
 	if [ -n "$destination" ]; then
+		IFS="
+		"
 		for selection in $(printf '%s' "$SELECTED"); do
+			unset IFS
 			$cmd "$selection" "$destination"
 		done && notifyprompt \
 			"Selected files / directories $cmdname to $destname"
 	fi
 
+}
+
+dangermenu () {
+	cmd=$1
+	dangermessage=$2
+	destination=$3
+	IFS="
+	"
+	if dangerprompt "$dangermessage"; then
+			for selection in $(printf '%s' "$SELECTED"); do
+				unset IFS
+				if [ -z "$destination" ]; then
+					$cmd "$selection"
+				else
+					$cmd "$selection" "$destination"
+				fi
+			done && notifyprompt "Selected removed."
+	fi
 }
 
 # Extract files and make a new directory to contain all the files.
@@ -387,7 +407,7 @@ dmenufm_multiselect () {
 	# $1 for the prompt when multi selecting
 	# $2 for prompt if it is dangerous
 	multiprompt=$1
-	dangerousmessage=$2
+	# dangerousmessage=$2
 	HERE=
 	multilist=
 	Generate_action_menu "$multiprompt" "$FM_ACTION_COLOR_BULK" \
@@ -409,9 +429,6 @@ dmenufm_multiselect () {
 		&& printf '%s' "$SELECTED" \
 		| verticalprompt "Selected files (Enter to continue): " \
 		"$FM_ACTION_COLOR_LV1"
-	[ "$actCHOICE" = "$ENDSELECTION" ] \
-		&& [ -n "$dangerousmessage" ] \
-		&& dangerprompt "$dangerousmessage"
 }
 
 # Actions that for dmenufm
@@ -443,29 +460,36 @@ dmenufm_action () {
 			fi
 			;;
 		"$FM_MVR"|"$FM_YAK"|"$FM_LNK")
-			cmd="mv" && cmdname="moved" \
-				&& cmdverb="move" \
-				&& allowmulti="Bulk move" \
-				&& allselection="Bulk move all"
-			[ "$move" = "$FM_YAK" ] \
-				&& cmd="cp -R" \
-				&& cmdname="copied" \
-				&& cmdverb="copy" \
-				&& allowmulti="Bulk copy" \
-				&& allselection="Bulk copy all"
-			[ "$move" = "$FM_LNK" ] \
-				&& cmd="ln -s" \
-				&& cmdname="linked" \
-				&& cmdverb="link" \
-				&& allowmulti="Bulk link" \
-				&& allselection="Bulk link all"
+			case "$move" in
+				"$FM_MVR")
+					cmd="mv"
+					cmdname="moved"
+					cmdverb="move"
+					allowmulti="Bulk Move"
+					allselection="Bulk Move all"
+					;;
+				"$FM_YAK")
+					cmd="cp -R"
+					cmdname="copied"
+					cmdverb="copy"
+					allowmulti="Bulk Copy"
+					allselection="Bulk Copy all"
+					;;
+				"$FM_LNK")
+					cmd="ln -s"
+					cmdname="linked"
+					cmdverb="link"
+					allowmulti="Bulk Link"
+					allselection="Bulk Link all"
+					;;
+			esac
 			Generate_action_menu "Source: " "$FM_ACTION_COLOR_LV1" \
 				|| return \
 				&& allowmulti="NotAllowed"
 			if [ -n "$multiselection" ]; then
 				# Multi-selection mode
 				# No need for dangerousmessage
-				dmenufm_multiselect "Select files / directories to $cmdverb: " ""
+				dmenufm_multiselect "Select files / directories to $cmdverb: "
 				[ "$actCHOICE" = "$ENDSELECTION" ] \
 					&& destmenu
 			elif [ "$actCHOICE" = "$allselection" ]; then
@@ -498,7 +522,7 @@ dmenufm_action () {
 				|| return \
 				&& allowmulti="NotAllowed"
 			if [ -n "$multiselection" ]; then
-				dmenufm_multiselect "Select files / directories to rename: " ""
+				dmenufm_multiselect "Select files / directories to rename: "
 				bulk_rename
 			elif [ "$actCHOICE" = "$allselection" ]; then
 				SELECTED=$(printf '%s' "$list" \
@@ -515,8 +539,8 @@ dmenufm_action () {
 			;;
 		"$FM_DEL")
 			# Allow multiple files to be selected
-			allowmulti="Bulk Remove"
-			allselection="Bulk Remove all"
+			allowmulti="Bulk Delete"
+			allselection="Bulk Delete all"
 			# Choose file/directory in current directory to remove
 			Generate_action_menu "Remove file / directory: " \
 				"$FM_ACTION_COLOR_LV1" \
@@ -524,17 +548,9 @@ dmenufm_action () {
 				&& allowmulti="NotAllowed"
 			if [ -n "$multiselection" ]; then
 				# Multi-selection mode
-				dmenufm_multiselect "Select files / directories to remove: " \
-					"Are you sure you would like to delete all selected files?"
-				if [ $(echo $?) -eq 0 ]; then
-					oldIFS=$IFS
-					IFS="
-					"
-					for selection in $(printf '%s' "$SELECTED"); do
-						rm -rf "$selection"
-					done && notifyprompt "Selected removed."
-					IFS="$oldIFS"
-				fi
+				dmenufm_multiselect "Select files / directories to remove: "
+				[ "$actCHOICE" = "$ENDSELECTION" ] \
+					&& dangermenu "rm -rf" "Delete all selected?" ""
 			elif [ "$actCHOICE" = "$allselection" ]; then
 				SELECTED=$(printf '%s' "$list" \
 					| tr ':' '\n' \
@@ -542,35 +558,15 @@ dmenufm_action () {
 				printf '%s' "$SELECTED" \
 					| verticalprompt "Selected files (Enter to continue): " \
 					"$FM_ACTION_COLOR_LV1"
-				if dangerprompt "Remove all the files / directories in $name?"; then
-					for selection in $(printf '%s' "$SELECTED"); do
-						rm -rf "$selection"
-					done && notifyprompt "All files / directories removed."
-				fi
+				dangermenu "rm -rf" "Delete all selected in $name?" ""
 			else
 				# Single-selection mode
 				allowmulti="NotAllowed"
 				# Check the chosen on is directory or not
-				[ -n "$HERE" ] \
-					&& [ -d "$HERE" ] \
-					&& result=$?
-				if [ -n "$HERE" ] \
-					&& dangerprompt "Remove all files and/or subdirectories in $name?" \
-					&& rm -rf "$HERE"; then
-					# If chosen one is directory,
-					# send notification and cd to parent directory
-					if [ "$result" = "0" ]; then
-						notifyprompt "$name removed." || return
-						cd "../" || return
-						# Reset result value
-						result=
-					else
-						# If not, just send notification.
-						notifyprompt "$name removed." || return
-					fi
-				else
-					return
-				fi
+				[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
+				[ -n "$HERE" ] && SELECTED="$HERE" \
+					&& dangermenu "rm -rf" "Remove all the files / directories in $name?" ""
+					[ "$result" = "0" ] && cd "../" && result=
 			fi
 			;;
 		"$FM_TRH")
@@ -591,13 +587,9 @@ dmenufm_action () {
 						&& allowmulti="NotAllowed"
 					if [ -n "$multiselection" ]; then
 						# Multi-selection mode
-						dmenufm_multiselect "Select files / directories to move to trash: " \
-							"Are you sure you would like to move all selected files to trash?"
-						if [ $(echo $?) -eq 0 ]; then
-							for selection in $(printf '%s' "$SELECTED"); do
-								mv "$selection" "$FM_TRASH"
-							done && notifyprompt "Selected files moved to trash"
-						fi
+						dmenufm_multiselect "Select files / directories to move to trash: "
+						[ "$actCHOICE" = "$ENDSELECTION" ] \
+							&& dangermenu "mv" "Move all selected to trash?" "$FM_TRASH"
 					elif [ "$actCHOICE" = "$allselection" ]; then
 						SELECTED=$(printf '%s' "$list" \
 							| tr ':' '\n' \
@@ -605,11 +597,7 @@ dmenufm_action () {
 						printf '%s' "$SELECTED" \
 							| verticalprompt "Selected files (Enter to continue): " \
 							"$FM_ACTION_COLOR_LV1"
-						if dangerprompt "Move all the files / directories in $name to trash?"; then
-							for selection in $(printf '%s' "$SELECTED"); do
-								mv "$selection" "$FM_TRASH"
-							done && notifyprompt "All files / directories moved to trash."
-						fi
+						dangermenu "rm -rf" "Delete all selected in $name?" ""
 					else
 						# Single-selection mode
 						allowmulti="NotAllowed"
@@ -617,20 +605,9 @@ dmenufm_action () {
 						[ -n "$HERE" ] \
 							&& [ -d "$HERE" ] \
 							&& result=$?
-						# Say yes in dangerprompt, and send notification. Or do nothing.
-						if [ -n "$HERE" ] \
-							&& dangerprompt "Move all files and/or subdirectories in $name to trash?" \
-							&& mv "$HERE" "$FM_TRASH"; then
-							if [ $result -eq 0 ]; then
-								notifyprompt "$name moved to trash." || return
-								cd "../" || return
-								result=
-							else
-								notifyprompt "$name moved to trash." || return
-							fi
-						else
-							return
-						fi
+						[ -n "$HERE" ] && SELECTED="$HERE" \
+							&& dangermenu "rm -rf" "Remove all the files / directories in $name?" ""
+							[ "$result" = "0" ] && cd "../" && result=
 					fi
 					;;
 				"Go to trash")
