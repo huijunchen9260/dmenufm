@@ -330,10 +330,10 @@ bulk_compress () {
 		unset IFS
 		cp -R "$file" "$FM_COMPRESSPATH"
 	done
-	cd "$FM_COMPRESSPATH" && cd ../
+	mv "$FM_COMPRESSPATH" "./placeholder"
 	archive_name="placeholder_archive.$compression_type"
-	$cmd $archive_name compression # TODO: Use variable name to make sure that user defined paths will work, not just this hardcoded one.
-	rm -rf $FM_COMPRESSPATH
+	$cmd $archive_name ./placeholder # TODO: Use variable name to make sure that user defined paths will work, not just this hardcoded one.
+	rm -rf ./placeholder
 }
 
 # Bulk rename function.
