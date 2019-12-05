@@ -10,7 +10,7 @@
 
 ## OPTIONS
 # FILES LOCATION
-[ -n "$FM_PATH" ] ||FM_PATH="$HOME/.config/dmenufm"
+[ -n "$FM_PATH" ] || FM_PATH="$HOME/.config/dmenufm"
 [ -n "$FM_TRASH" ] || FM_TRASH="$FM_PATH/trash"
 [ -n "$FM_BMKFILE" ] || FM_BMKFILE="$FM_PATH/dmenufm_bookmark"
 [ -n "$FM_CMDFILE" ] || FM_CMDFILE="$FM_PATH/dmenufm_command"
