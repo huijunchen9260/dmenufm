@@ -16,6 +16,7 @@
 [ -n "$FM_CMDFILE" ] || FM_CMDFILE="$FM_PATH/dmenufm_command"
 [ -n "$FM_HISFILE" ] || FM_HISFILE="$FM_PATH/dmenufm_history"
 [ -n "$FM_LASTPATH" ] || FM_LASTPATH="$FM_PATH/dmenufm_lastpath"
+[ -n "$FM_COMPRESSPATH" ] || FM_COMPRESSPATH="$FM_PATH/compression/"
 [ -n "$FM_REMFILE" ] || FM_REMFILE="$FM_PATH/dmenufm_bulk_rename"
 # Max number for history
 [ -n "$FM_MAX_HIS_LENGTH" ] || FM_MAX_HIS_LENGTH=5000
@@ -321,16 +322,18 @@ bulk_compress () {
 			cmd="tar -cjvf"
 			;;
 	esac
+	[ -d "$FM_COMPRESSPATH" ] && rm -rf "$FM_COMPRESSPATH"
+	mkdir "$FM_COMPRESSPATH"
 	IFS="
 	"
 	for file in $SELECTED; do
 		unset IFS
-		compress_files="$compress_files $file"
+		cp -R "$file" "$FM_COMPRESSPATH"
 	done
-	compress_files=$(printf '%s' "$compress_files" \
-	| cut -b2-)
-	archive_name="placeholder_name.$compression_type"
-	$cmd $archive_name $compress_files
+	cd "$FM_COMPRESSPATH" && cd ../
+	archive_name="placeholder_archive.$compression_type"
+	$cmd $archive_name compression # TODO: Use variable name to make sure that user defined paths will work, not just this hardcoded one.
+	rm -rf $FM_COMPRESSPATH
 }
 
 # Bulk rename function.
