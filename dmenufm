@@ -49,12 +49,14 @@ FM_DEL="DEL - Delete files / directories"
 FM_MVR="MVR - Move files / directories"
 FM_YAK="YAK - Copy files / directories"
 FM_LNK="LNK - Symbolically link files / directories"
+FM_CMP="CMP - Compress files / directories"
 FM_REM="REM - Rename files / directories"
 FM_TRH="TRH - Trash of dmenufm"
 FM_HIS="HIS - History of dmenufm"
 FM_BMK="BMK - Bookmark for dmenufm"
 FM_CMD="CMD - Frequently used command"
-ACTLIST="$FM_PCP:$FM_NEW:$FM_MVR:$FM_YAK:$FM_LNK:$FM_DEL:$FM_TRH:$FM_REM:$FM_HIS:$FM_BMK:$FM_CMD"
+ACTLIST="$FM_PCP:$FM_NEW:$FM_MVR:$FM_YAK:$FM_LNK:$FM_CMP:$FM_DEL:$FM_TRH:$FM_REM:$FM_HIS:$FM_BMK:$FM_CMD"
+COMPRESSIONLIST="tar.gz:tar.bz2:tar.xz:"
 
 
 ### FUNCTIONS
@@ -305,6 +307,32 @@ dmenufm_history () {
 	fi
 }
 
+# Bulk compression
+
+bulk_compress () {
+	case $compression_type in
+		"tar.gz")
+			cmd="tar -czvf"
+			;;
+		"tar.xz")
+			cmd="tar -cJvf"
+			;;
+		"tar.bz2")
+			cmd="tar -cjvf"
+			;;
+	esac
+	IFS="
+	"
+	for file in $SELECTED; do
+		unset IFS
+		compress_files="$compress_files $file"
+	done
+	compress_files=$(printf '%s' "$compress_files" \
+	| cut -b2-)
+	archive_name="placeholder_name.$compression_type"
+	$cmd $archive_name $compress_files
+}
+
 # Bulk rename function.
 # No argument
 
@@ -512,6 +540,33 @@ dmenufm_action () {
 				[ -n "$SELECTED" ] \
 					&& destmenu
 				rename=
+			fi
+			;;
+		"$FM_CMP")
+			allowmulti="Bulk Compress"
+			allselection="Bulk Compress all"
+			compression_type=$(printf '%s' "$COMPRESSIONLIST" \
+				| tr ':' '\n' \
+				| verticalprompt "Compression type: " "$FM_ACTION_COLOR_LV1" \
+				|| return \
+				&& allowmulti="NotAllowed")
+			Generate_action_menu "Source: " "$FM_ACTION_COLOR_LV1" \
+				|| return \
+				&& allowmulti="NotAllowed"
+			if [ -n "$multiselection" ]; then
+				dmenufm_multiselect "Select files / directories to compress: "
+				bulk_compress
+			elif [ "$actCHOICE" = "$allselection" ]; then
+				SELECTED=$(printf '%s' "$list" \
+					| tr ':' '\n' \
+					| sed "s/'//g; /^$/ d; s=^=$PWD/=g")
+				[ -n "$SELECTED" ] \
+					&& printf '%s' "$SELECTED" \
+					| verticalprompt "Selected files (Enter to continue): " "$FM_ACTION_COLOR_LV1"
+				bulk_compress
+			else
+				SELECTED="$HERE"
+				bulk_compress
 			fi
 			;;
 		"$FM_REM")
