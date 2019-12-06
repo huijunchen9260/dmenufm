@@ -17,6 +17,7 @@
 [ -n "$FM_HISFILE" ] || FM_HISFILE="$FM_PATH/dmenufm_history"
 [ -n "$FM_LASTPATH" ] || FM_LASTPATH="$FM_PATH/dmenufm_lastpath"
 [ -n "$FM_REMFILE" ] || FM_REMFILE="$FM_PATH/dmenufm_bulk_rename"
+[ -n "$FM_ZIPATH" ] || FM_ZIPATH="$FM_PATH/compression/"
 # Max number for history
 [ -n "$FM_MAX_HIS_LENGTH" ] || FM_MAX_HIS_LENGTH=5000
 # FONTS
@@ -56,6 +57,7 @@ FM_BMK="BMK - Bookmark for dmenufm"
 FM_CMD="CMD - Frequently used command"
 FM_ZIP="ZIP - Compress files / directories"
 ACTLIST="$FM_PCP:$FM_NEW:$FM_MVR:$FM_YAK:$FM_LNK:$FM_DEL:$FM_TRH:$FM_REM:$FM_HIS:$FM_BMK:$FM_CMD:$FM_ZIP"
+COMPRESSIONLIST="tar.gz:tar.bz2:tar.xz:"
 
 
 ### FUNCTIONS
@@ -77,17 +79,11 @@ get_os () {
 executecmd () {
 	cmd=$1
 	software=$(printf '%s' "$cmd" | awk -F ' ' '{print $1}')
-	if < "$(find "$XDGDIR1" "$XDGDIR2" *"$software"*.desktop \
-		| tail -n 1)" grep "Terminal=false"; then
-		IFS="
-		"
+	appdesktop=$(find "$XDGDIR1" "$XDGDIR2" -name "*$software*.desktop" | tail -n 1)
+	if [ -n "$appdesktop" ] && grep 'Terminal=false' "$appdesktop"; then
 		printf '%s' "$cmd" | ${SHELL:-"/bin/sh"}
-		unset IFS
 	else
-		IFS="
-		"
 		$TERMINAL -e $cmd | ${SHELL:-"/bin/sh"}
-		unset IFS
 	fi
 }
 
@@ -142,7 +138,7 @@ open () {
 # Misbehaving due to space in file/directory name,
 # so add ' at beginning and end.
 
-quote () { printf %s\\n "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/" ; }
+quote () { printf '%s\n' "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/" ; }
 
 menudir () {
 	DIRs=$(for dir in *; do [ -d "$dir" ] \
@@ -297,6 +293,16 @@ dangerprompt () {
 
 ## TOOL FUNCTIONS
 
+
+bulk_all_list () {
+	SELECTED=$(printf '%s' "$list" \
+		| tr ':' '\n' \
+		| sed "s/'//g; /^$/ d; s=^=$PWD/=g")
+	[ -n "$SELECTED" ] \
+		&& printf '%s' "$SELECTED" \
+		| verticalprompt "Selected files (Enter to continue): " "$FM_ACTION_COLOR_LV1"
+}
+
 # Store every move between directories into history
 dmenufm_history () {
 	[ ! -d "$FM_PATH" ] \
@@ -312,6 +318,7 @@ dmenufm_history () {
 			&& cp "$FM_HISFILE.backup" "$FM_HISFILE"
 	fi
 }
+
 
 # Bulk rename function.
 # No argument
@@ -356,6 +363,17 @@ bulk_rename () {
 	else
 		return
 	fi
+}
+
+bulk_command () {
+	execfile=$(printf '%s' "$SELECTED")
+	execmd=$(printf '%s' "$execmd" | sed "1 s/$.*//")
+	IFS="
+	"
+	for selection in $(printf '%s' "$execfile"); do
+		unset IFS
+		$execmd "$selection"
+	done && notifyprompt "Command executed on selected."
 }
 
 destmenu () {
@@ -500,12 +518,7 @@ dmenufm_action () {
 					&& destmenu
 			elif [ "$actCHOICE" = "$allselection" ]; then
 				# All-selection mode
-				SELECTED=$(printf '%s' "$list" \
-					| tr ':' '\n' \
-					| sed "s/'//g; /^$/ d; s=^=$PWD/=g")
-				[ -n "$SELECTED" ] \
-					&& printf '%s' "$SELECTED" \
-					| verticalprompt "Selected files (Enter to continue): " "$FM_ACTION_COLOR_LV1"
+				bulk_all_list
 				[ -n "$SELECTED" ] \
 					&& destmenu
 			else
@@ -531,12 +544,7 @@ dmenufm_action () {
 				dmenufm_multiselect "Select files / directories to rename: "
 				bulk_rename
 			elif [ "$actCHOICE" = "$allselection" ]; then
-				SELECTED=$(printf '%s' "$list" \
-					| tr ':' '\n' \
-					| sed "s/'//g; /^$/ d; s=^=$PWD/=g")
-				[ -n "$SELECTED" ] \
-					&& printf '%s' "$SELECTED" \
-					| verticalprompt "Selected files (Enter to continue): " "$FM_ACTION_COLOR_LV1"
+				bulk_all_list
 				bulk_rename
 			else
 				SELECTED="$HERE"
@@ -558,12 +566,7 @@ dmenufm_action () {
 				[ "$actCHOICE" = "$ENDSELECTION" ] \
 					&& dangermenu "rm -rf" "Delete all selected?" ""
 			elif [ "$actCHOICE" = "$allselection" ]; then
-				SELECTED=$(printf '%s' "$list" \
-					| tr ':' '\n' \
-					| sed "s/'//g; /^$/ d; s=^=$PWD/=g")
-				printf '%s' "$SELECTED" \
-					| verticalprompt "Selected files (Enter to continue): " \
-					"$FM_ACTION_COLOR_LV1"
+				bulk_all_list
 				dangermenu "rm -rf" "Delete all selected in $name?" ""
 			else
 				# Single-selection mode
@@ -597,12 +600,7 @@ dmenufm_action () {
 						[ "$actCHOICE" = "$ENDSELECTION" ] \
 							&& dangermenu "mv" "Move all selected to trash?" "$FM_TRASH"
 					elif [ "$actCHOICE" = "$allselection" ]; then
-						SELECTED=$(printf '%s' "$list" \
-							| tr ':' '\n' \
-							| sed "s/'//g; /^$/ d; s=^=$PWD/=g")
-						printf '%s' "$SELECTED" \
-							| verticalprompt "Selected files (Enter to continue): " \
-							"$FM_ACTION_COLOR_LV1"
+						bulk_all_list
 						dangermenu "rm -rf" "Delete all selected in $name?" ""
 					else
 						# Single-selection mode
@@ -707,43 +705,19 @@ dmenufm_action () {
 				*)
 					execmd=$(printf '%s' "$cmdmenu" \
 						| awk -F ' - ' '{print $1}')
-					if printf '%s' "$execmd" | grep -e '$'; then
+					if printf '%s' "$execmd" | grep '\$'; then
 						allowmulti="Bulk Execute"
 						allselection="Bulk Execute all"
 						Generate_action_menu "Choose and execute: " "$FM_ACTION_COLOR_LV1"
 						if [ -n "$multiselection" ]; then
 							dmenufm_multiselect "Select to execute: "
-							execfile=$(printf '%s' "$SELECTED")
-							execmd=$(printf '%s' "$execmd" | sed "1 s/$.*//")
-							IFS="
-							"
-							for selection in $(printf '%s' "$execfile"); do
-								unset IFS
-								$execmd "$selection"
-							done && notifyprompt "Command executed on selected."
+							bulk_command
 						elif [ "$actCHOICE" = "$allselection" ]; then
-							SELECTED=$(printf '%s' "$list" \
-								| tr ':' '\n' \
-								| sed "s/'//g; /^$/ d; s=^=$PWD/=g")
-							[ -n "$SELECTED" ] \
-								&& printf '%s' "$SELECTED" \
-								| verticalprompt "Selected files (Enter to continue): " "$FM_ACTION_COLOR_LV1"
-							execfile=$(printf '%s' "$SELECTED")
-							execmd=$(printf '%s' "$execmd" | sed "1 s/$.*//")
-							IFS="
-							"
-							for selection in $(printf '%s' "$execfile"); do
-								unset IFS
-								$execmd "$selection"
-							done && notifyprompt "Command executed on selected."
+							bulk_all_list
+							bulk_command
 						else
 							SELECTED="$HERE"
-							execfile=$(printf '%s' "$SELECTED" \
-								| sed "s/^/'/g; s/$/'/g")
-							execmd=$(printf '%s' "$execmd" | sed "1 s/$.*//")
-							execmd="$execmd $execfile"
-							[ -n "$execmd" ] && executecmd "$execmd" \
-								&& notifyprompt "Command executed"
+							bulk_command
 						fi
 					else
 						executecmd "$execmd"
