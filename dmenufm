@@ -337,10 +337,15 @@ bulk_compress () {
 		unset IFS
 		cp -R "$file" "$FM_COMPRESSPATH"
 	done
-	mv "$FM_COMPRESSPATH" "./placeholder"
-	archive_name="placeholder_archive.$compression_type"
-	$cmd $archive_name ./placeholder # TODO: Use variable name to make sure that user defined paths will work, not just this hardcoded one.
-	rm -rf ./placeholder
+	archive_name=$(echo "" \
+		| verticalprompt "Please insert archive name: " "$FM_ACTION_COLOR_LV2" \
+		| cut -d'.' -f1)
+	compressdir_name="$archive_name"
+	archive_name="$archive_name.$compression_type"
+	mv "$FM_COMPRESSPATH" "./$compressdir_name"
+	$cmd $archive_name ./$compressdir_name
+	rm -rf ./$compressdir_name
+	## TODO: Add error handling
 }
 
 # Bulk rename function.
