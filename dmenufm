@@ -550,7 +550,7 @@ dmenufm_action () {
 				rename=
 			fi
 			;;
-		"$FM_CMP")
+		"$FM_ZIP")
 			allowmulti="Bulk Compress"
 			allselection="Bulk Compress all"
 			compression_type=$(printf '%s' "$COMPRESSIONLIST" \
