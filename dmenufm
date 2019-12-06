@@ -339,13 +339,14 @@ bulk_compress () {
 	done
 	archive_name=$(echo "" \
 		| verticalprompt "Please insert archive name: " "$FM_ACTION_COLOR_LV2" \
-		| cut -d'.' -f1)
+		| cut -d'.' -f1) || return
 	compressdir_name="$archive_name"
 	archive_name="$archive_name.$compression_type"
 	mv "$FM_COMPRESSPATH" "./$compressdir_name"
 	$cmd $archive_name ./$compressdir_name
 	rm -rf ./$compressdir_name
 	## TODO: Add error handling
+	## TODO: Make sure you can escape out of all ZIP commands
 }
 
 # Bulk rename function.
@@ -563,6 +564,11 @@ dmenufm_action () {
 				| verticalprompt "Compression type: " "$FM_ACTION_COLOR_LV1" \
 				|| return \
 				&& allowmulti="NotAllowed")
+			if echo "$compression_type" | grep 'tar'; then
+				continue
+			else
+				allowmulti="NotAllowed"
+			fi
 			Generate_action_menu "Source: " "$FM_ACTION_COLOR_LV1" \
 				|| return \
 				&& allowmulti="NotAllowed"
