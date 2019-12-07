@@ -57,7 +57,7 @@ FM_BMK="BMK - Bookmark for dmenufm"
 FM_CMD="CMD - Frequently used command"
 FM_ZIP="ZIP - Compress files / directories"
 ACTLIST="$FM_PCP:$FM_NEW:$FM_MVR:$FM_YAK:$FM_LNK:$FM_DEL:$FM_TRH:$FM_REM:$FM_HIS:$FM_BMK:$FM_CMD:$FM_ZIP"
-COMPRESSIONLIST="tar.gz:tar.bz2:tar.xz:"
+COMPRESSIONLIST="tar.gz:tar.bz2:tar.xz:xz:lzma:gz:bz2"
 
 
 ### FUNCTIONS
@@ -332,22 +332,46 @@ bulk_compress () {
 		"tar.bz2")
 			cmd="tar -cjvf"
 			;;
+		"gz")
+			cmd="gzip -k"
+			;;
+		"bz2")
+			cmd="bzip2 -k"
+			;;
+		"xz")
+			cmd="xz -k"
+			;;
+		"lzma")
+			cmd="lzma -k"
+			;;
+		*)
+			return
+			;;
 	esac
-	[ -d "$FM_ZIPATH" ] && rm -rf "$FM_ZIPATH"
-	mkdir "$FM_ZIPATH"
-	IFS="
-	"
-	for file in $SELECTED; do
-		unset IFS
-		cp -R "$file" "$FM_ZIPATH"
-	done
-	archive_name=$(horizontalprompt "Please insert archive name: " "$FM_ACTION_COLOR_LV2" \
-		| cut -d'.' -f1) || return
-	compressdir_name="$archive_name"
-	archive_name="$archive_name.$compression_type"
-	mv "$FM_ZIPATH" "./$compressdir_name"
-	$cmd $archive_name ./$compressdir_name
-	rm -rf ./$compressdir_name
+	if echo "$compression_type" | grep 'tar'; then
+		[ -d "$FM_ZIPATH" ] && rm -rf "$FM_ZIPATH"
+		mkdir "$FM_ZIPATH"
+		IFS="
+		"
+		for file in $SELECTED; do
+			unset IFS
+			cp -R "$file" "$FM_ZIPATH"
+		done
+		archive_name=$(horizontalprompt "Please insert archive name: " "$FM_ACTION_COLOR_LV2" \
+			| cut -d'.' -f1) || return
+		compressdir_name="$archive_name"
+		archive_name="$archive_name.$compression_type"
+		mv "$FM_ZIPATH" "./$compressdir_name"
+		$cmd $archive_name ./$compressdir_name
+		rm -rf ./$compressdir_name
+	else
+		IFS="
+		"
+		for file in $SELECTED; do
+			unset IFS
+			$cmd "$file"
+		done
+	fi
 	## TODO: Add error handling
 	## TODO: Make sure you can escape out of all ZIP commands
 }
