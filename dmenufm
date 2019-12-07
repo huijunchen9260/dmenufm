@@ -348,7 +348,9 @@ bulk_compress () {
 		archive_name="$archive_name.$compression_type"
 		mv "$FM_ZIPATH" "./$compressdir_name"
 		$cmd $archive_name ./$compressdir_name/* \
-			&& notifyprompt "Compressed to $archive_name" rm -rf ./$compressdir_name else
+			&& notifyprompt "Compressed to $archive_name" 
+		rm -rf ./$compressdir_name 
+	else
 		IFS="
 		"
 		for file in $SELECTED; do
