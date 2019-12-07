@@ -57,7 +57,7 @@ FM_BMK="BMK - Bookmark for dmenufm"
 FM_CMD="CMD - Frequently used command"
 FM_ZIP="ZIP - Compress files / directories"
 ACTLIST="$FM_PCP:$FM_NEW:$FM_MVR:$FM_YAK:$FM_LNK:$FM_DEL:$FM_TRH:$FM_REM:$FM_HIS:$FM_BMK:$FM_CMD:$FM_ZIP"
-COMPRESSIONLIST="tar.gz:tar.bz2:tar.xz:xz:lzma:gz:bz2"
+COMPRESSIONLIST="tar.gz:tar.bz2:tar.xz:xz:lzma:gz:bz2:7z"
 
 
 ### FUNCTIONS
@@ -344,11 +344,14 @@ bulk_compress () {
 		"lzma")
 			cmd="lzma -k"
 			;;
+		"7z")
+			cmd="7z a"
+			;;
 		*)
 			return
 			;;
 	esac
-	if echo "$compression_type" | grep -E '^tar|^zip'; then
+	if echo "$compression_type" | grep -E '^tar|^zip|^7z'; then
 		[ -d "$FM_ZIPATH" ] && rm -rf "$FM_ZIPATH"
 		mkdir "$FM_ZIPATH"
 		IFS="
@@ -597,7 +600,7 @@ dmenufm_action () {
 				| verticalprompt "Compression type: " "$FM_ACTION_COLOR_LV1" \
 				|| return \
 				&& allowmulti="NotAllowed")
-			if echo "$compression_type" | grep 'tar'; then
+			if echo "$compression_type" | grep -E '^tar|^zip|^7z'; then
 				continue
 			else
 				allowmulti="NotAllowed"
