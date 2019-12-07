@@ -586,12 +586,7 @@ dmenufm_action () {
 				dmenufm_multiselect "Select files / directories to compress: "
 				bulk_compress
 			elif [ "$actCHOICE" = "$allselection" ]; then
-				SELECTED=$(printf '%s' "$list" \
-					| tr ':' '\n' \
-					| sed "s/'//g; /^$/ d; s=^=$PWD/=g")
-				[ -n "$SELECTED" ] \
-					&& printf '%s' "$SELECTED" \
-					| verticalprompt "Selected files (Enter to continue): " "$FM_ACTION_COLOR_LV1"
+				bulk_all_list
 				bulk_compress
 			else
 				SELECTED="$HERE"
