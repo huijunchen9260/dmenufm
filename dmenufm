@@ -333,19 +333,19 @@ bulk_compress () {
 			cmd="tar -cjvf"
 			;;
 	esac
-	[ -d "$FM_COMPRESSPATH" ] && rm -rf "$FM_COMPRESSPATH"
-	mkdir "$FM_COMPRESSPATH"
+	[ -d "$FM_ZIPATH" ] && rm -rf "$FM_ZIPATH"
+	mkdir "$FM_ZIPATH"
 	IFS="
 	"
 	for file in $SELECTED; do
 		unset IFS
-		cp -R "$file" "$FM_COMPRESSPATH"
+		cp -R "$file" "$FM_ZIPATH"
 	done
 	archive_name=$(horizontalprompt "Please insert archive name: " "$FM_ACTION_COLOR_LV2" \
 		| cut -d'.' -f1) || return
 	compressdir_name="$archive_name"
 	archive_name="$archive_name.$compression_type"
-	mv "$FM_COMPRESSPATH" "./$compressdir_name"
+	mv "$FM_ZIPATH" "./$compressdir_name"
 	$cmd $archive_name ./$compressdir_name
 	rm -rf ./$compressdir_name
 	## TODO: Add error handling
