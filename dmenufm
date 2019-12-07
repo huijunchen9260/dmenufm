@@ -348,7 +348,7 @@ bulk_compress () {
 			return
 			;;
 	esac
-	if echo "$compression_type" | grep 'tar'; then
+	if echo "$compression_type" | grep -E '^tar|^zip'; then
 		[ -d "$FM_ZIPATH" ] && rm -rf "$FM_ZIPATH"
 		mkdir "$FM_ZIPATH"
 		IFS="
@@ -362,7 +362,7 @@ bulk_compress () {
 		compressdir_name="$archive_name"
 		archive_name="$archive_name.$compression_type"
 		mv "$FM_ZIPATH" "./$compressdir_name"
-		$cmd $archive_name ./$compressdir_name
+		$cmd $archive_name ./$compressdir_name/*
 		rm -rf ./$compressdir_name
 	else
 		IFS="
