@@ -341,8 +341,7 @@ bulk_compress () {
 		unset IFS
 		cp -R "$file" "$FM_COMPRESSPATH"
 	done
-	archive_name=$(echo "" \
-		| verticalprompt "Please insert archive name: " "$FM_ACTION_COLOR_LV2" \
+	archive_name=$(horizontalprompt "Please insert archive name: " "$FM_ACTION_COLOR_LV2" \
 		| cut -d'.' -f1) || return
 	compressdir_name="$archive_name"
 	archive_name="$archive_name.$compression_type"
