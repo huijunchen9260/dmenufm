@@ -333,7 +333,7 @@ bulk_compress () {
 		"zip") cmd="zip -r" ;;
 		*) return ;;
 	esac
-	if echo "$compression_type" | grep -E '^tar|^zip|^7z'; then
+	if echo "$compression_type" | grep -E '^tar|^zip'; then
 		[ -d "$FM_ZIPATH" ] && rm -rf "$FM_ZIPATH"
 		mkdir "$FM_ZIPATH"
 		IFS="
@@ -348,8 +348,8 @@ bulk_compress () {
 		archive_name="$archive_name.$compression_type"
 		mv "$FM_ZIPATH" "./$compressdir_name"
 		$cmd $archive_name ./$compressdir_name/* \
-			&& notifyprompt "Compressed to $archive_name" 
-		rm -rf ./$compressdir_name 
+			&& notifyprompt "Compressed to $archive_name"
+		rm -rf ./$compressdir_name
 	else
 		IFS="
 		"
@@ -586,7 +586,7 @@ dmenufm_action () {
 				| verticalprompt "Compression type: " "$FM_ACTION_COLOR_LV1" \
 				|| return \
 				&& allowmulti="NotAllowed")
-			if echo "$compression_type" | grep -E '^tar|^zip|^7z'; then
+			if echo "$compression_type" | grep -E '^tar|^zip'; then
 				continue
 			else
 				allowmulti="NotAllowed"
