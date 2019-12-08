@@ -41,7 +41,7 @@ allselection="placeholder"
 TARGET="./"
 BACKWARD="../"
 ENDSELECTION="End Selection"
-allowmulti="NotAllowed"
+allowbulk="NotAllowed"
 ACTION="Actions"
 TERM="Terminal"
 FM_PCP="PCP - Copy path"
@@ -61,8 +61,9 @@ COMPRESSIONLIST="tar.gz:tar.bz2:tar.xz:xz:lzma:gz:bz2:7z:zip"
 
 ### FUNCTIONS
 
-## OS FUNCTION
+## PRE-DETERMINATION FUNCTION
 
+# Check os
 get_os () {
 	case $OSTYPE in
 		# Mac OS X / macOS.
@@ -140,31 +141,40 @@ open () {
 quote () { printf '%s\n' "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/" ; }
 
 menudir () {
+	IFS="
+	"
 	DIRs=$(for dir in *; do [ -d "$dir" ] \
-		&& printf '%s:' "$dir/"; done \
-		| sed "1 s/^/'/; s/$/'/")
+		&& printf '%s:' "$dir/"; done)
+	unset IFS
 }
 
 # Generate dotdirectories
 # Delete extra ./ and ../ (Need use = as sed delimiter)
 menudotdir () {
+	IFS="
+	"
 	DOTDIRs=$(for dir in .*; do [ -d "$dir" ] \
 		&& printf '%s:' "$dir/"; done \
-		| sed "1 s/^/'/; s/$/'/; s=./==; s=../==")
+		| sed "s=./==; s=../==")
+	unset IFS
 }
 
 # Generate files
 menufile () {
+	IFS="
+	"
 	FILEs=$(for file in *; do [ -f "$file" ] \
-		&& printf '%s:' "$file"; done \
-		| sed "1 s/^/'/; s/$/'/")
+		&& printf '%s:' "$file"; done)
+	unset IFS
 }
 
 # Generate dotfiles
 menudotfile () {
+	IFS="
+	"
 	DOTFILEs=$(for file in .*; do [ -f "$file" ] && \
-		printf '%s:' "$file"; done \
-		| sed "1 s/^/'/; s/$/'/")
+		printf '%s:' "$file"; done)
+	unset IFS
 }
 
 # Generate default menu
@@ -189,6 +199,7 @@ update_menu () {
 	done
 }
 
+				# | sed "s/'//g; /^$/ d" \
 # Generate menu for action choice, only for current directory.
 # $1 is the prompt, $2 is the selected background color
 Generate_action_menu () {
@@ -201,22 +212,22 @@ Generate_action_menu () {
 		# Show only the current directory and one level of parent directory
 		twopwd=$(printf '%s' "$PWD" \
 			| awk -F '/' '{print $(NF-1)"/"$NF}')
-		if [ -n "$multiselection" ]; then
+		if [ -n "$bulkselection" ]; then
 			actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" \
 				"$ENDSELECTION" "$list" \
 				| tr ':' '\n' \
-				| sed "s/'//g; /^$/ d" \
+				| sed "/^$/ d" \
 				| verticalprompt "$1" "$2")
-		elif [ "$allowmulti" != "NotAllowed" ]; then
+		elif [ "$allowbulk" != "NotAllowed" ]; then
 			actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" \
-				"$allowmulti" "$allselection" "$list" \
+				"$allowbulk" "$allselection" "$list" \
 				| tr ':' '\n' \
-				| sed "s/'//g; /^$/ d" \
+				| sed "/^$/ d" \
 				| verticalprompt "$1" "$2")
 		else
 			actCHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" "$list" \
 				| tr ':' '\n' \
-				| sed "s/'//g; /^$/ d" \
+				| sed "/^$/ d" \
 				| verticalprompt "$1" "$2")
 		fi
 		# Outcome matching
@@ -224,21 +235,21 @@ Generate_action_menu () {
 			HERE=$(printf '%s' "$PWD")
 			name=$(printf '%s' "$HERE" \
 				| awk -F '/' '{print $NF}')
-			[ -n "$multiselection" ] \
-				&& multilist="$multilist:$HERE" \
+			[ -n "$bulkselection" ] \
+				&& bulklist="$bulklist:$HERE" \
 				&& cd "../"
 			break
 		elif [ "$actCHOICE" = "$BACKWARD" ]; then
 			cd "../" || return
 			dmenufm_history
 		elif [ "$actCHOICE" = "$ENDSELECTION" ]; then
-			multiselection=
+			bulkselection=
 			break
-		elif [ "$actCHOICE" = "$allowmulti" ]; then
-			multiselection="true"
+		elif [ "$actCHOICE" = "$allowbulk" ]; then
+			bulkselection="true"
 			break
 		elif [ "$actCHOICE" = "$allselection" ]; then
-			multiselection=
+			bulkselection=
 			HERE=$(printf '%s' "$PWD")
 			name=$(printf '%s' "$HERE" \
 				| awk -F '/' '{print $NF}')
@@ -251,13 +262,13 @@ Generate_action_menu () {
 			HERE=$(printf '%s' "$PWD/$actCHOICE")
 			name=$(printf '%s' "$HERE" \
 				| awk -F '/' '{print $NF}')
-			[ -n "$multiselection" ] \
-				&& multilist="$multilist:$HERE"
+			[ -n "$bulkselection" ] \
+				&& bulklist="$bulklist:$HERE"
 			break
 		else
 			HERE=
 			name=
-			multiselection=
+			bulkselection=
 			actCHOICE="placeholder"
 			break
 		fi
@@ -296,7 +307,7 @@ dangerprompt () {
 bulk_all_list () {
 	SELECTED=$(printf '%s' "$list" \
 		| tr ':' '\n' \
-		| sed "s/'//g; /^$/ d; s=^=$PWD/=g")
+		| sed "/^$/ d; s=^=$PWD/=g")
 	[ -n "$SELECTED" ] \
 		&& printf '%s' "$SELECTED" \
 		| verticalprompt "Selected files (Enter to continue): " "$FM_ACTION_COLOR_LV1"
@@ -426,7 +437,7 @@ destmenu () {
 		"$FM_ACTION_COLOR_LV2" \
 		|| return \
 		&& rename= \
-		&& allowmulti="NotAllowed" \
+		&& allowbulk="NotAllowed" \
 		&& actCHOICE="placeholder"
 	[ -n "$HERE" ] \
 		&& destination="$HERE" \
@@ -474,25 +485,25 @@ extraction () {
 	notifyprompt "$CHOICE extracted to $dirname"
 }
 
-dmenufm_multiselect () {
+bulk_mode () {
 	# $1 for the prompt when multi selecting
-	multiprompt=$1
+	bulkprompt=$1
 	HERE=
-	multilist=
-	Generate_action_menu "$multiprompt" "$FM_ACTION_COLOR_BULK" \
-		|| return && allowmulti="NotAllowed"
-	while [ -n "$multiselection" ]; do
-		Generate_action_menu "$multiprompt" "$FM_ACTION_COLOR_BULK" \
-			|| return && allowmulti="NotAllowed"
-		HERE=$multilist
-		allowmulti="NotAllowed"
+	bulklist=
+	Generate_action_menu "$bulkprompt" "$FM_ACTION_COLOR_BULK" \
+		|| return && allowbulk="NotAllowed"
+	while [ -n "$bulkselection" ]; do
+		Generate_action_menu "$bulkprompt" "$FM_ACTION_COLOR_BULK" \
+			|| return && allowbulk="NotAllowed"
+		HERE=$bulklist
+		allowbulk="NotAllowed"
 	done
 
 	SELECTED=$(printf '%s' "$HERE" \
 		| cut -b2- \
 		| tr ':' '\n' \
 		| uniq)
-	allowmulti="NotAllowed"
+	allowbulk="NotAllowed"
 
 	[ "$actCHOICE" = "$ENDSELECTION" ] \
 		&& printf '%s' "$SELECTED" \
@@ -534,31 +545,31 @@ dmenufm_action () {
 					cmd="mv"
 					cmdname="moved"
 					cmdverb="move"
-					allowmulti="Bulk Move"
+					allowbulk="Bulk Move"
 					allselection="Bulk Move all"
 					;;
 				"$FM_YAK")
 					cmd="cp -R"
 					cmdname="copied"
 					cmdverb="copy"
-					allowmulti="Bulk Copy"
+					allowbulk="Bulk Copy"
 					allselection="Bulk Copy all"
 					;;
 				"$FM_LNK")
 					cmd="ln -s"
 					cmdname="linked"
 					cmdverb="link"
-					allowmulti="Bulk Link"
+					allowbulk="Bulk Link"
 					allselection="Bulk Link all"
 					;;
 			esac
 			Generate_action_menu "Source: " "$FM_ACTION_COLOR_LV1" \
 				|| return \
-				&& allowmulti="NotAllowed"
-			if [ -n "$multiselection" ]; then
+				&& allowbulk="NotAllowed"
+			if [ -n "$bulkselection" ]; then
 				# Multi-selection mode
 				# No need for dangerousmessage
-				dmenufm_multiselect "Select files / directories to $cmdverb: "
+				bulk_mode "Select files / directories to $cmdverb: "
 				[ "$actCHOICE" = "$ENDSELECTION" ] \
 					&& destmenu
 			elif [ "$actCHOICE" = "$allselection" ]; then
@@ -579,24 +590,24 @@ dmenufm_action () {
 			fi
 			;;
 		"$FM_ZIP")
-			allowmulti="Bulk Compress"
+			allowbulk="Bulk Compress"
 			allselection="Bulk Compress all"
 			compression_type=$(printf '%s' "$COMPRESSIONLIST" \
 				| tr ':' '\n' \
 				| verticalprompt "Compression type: " "$FM_ACTION_COLOR_LV1" \
 				|| return \
-				&& allowmulti="NotAllowed")
+				&& allowbulk="NotAllowed")
 			if echo "$compression_type" | grep -E '^tar|^zip'; then
 				continue
 			else
-				allowmulti="NotAllowed"
+				allowbulk="NotAllowed"
 			fi
 			[ -n "$compression_type" ] \
 				&& Generate_action_menu "Source: " "$FM_ACTION_COLOR_LV1" \
 				|| return \
-				&& allowmulti="NotAllowed"
-			if [ -n "$multiselection" ]; then
-				dmenufm_multiselect "Select files / directories to compress: "
+				&& allowbulk="NotAllowed"
+			if [ -n "$bulkselection" ]; then
+				bulk_mode "Select files / directories to compress: "
 				[ "$actCHOICE" = "$ENDSELECTION" ] && bulk_compress
 			elif [ "$actCHOICE" = "$allselection" ]; then
 				bulk_all_list
@@ -607,14 +618,14 @@ dmenufm_action () {
 			fi
 			;;
 		"$FM_REM")
-			allowmulti="Bulk Rename"
+			allowbulk="Bulk Rename"
 			allselection="Bulk Rename all"
 			Generate_action_menu "Source: " \
 				"$FM_ACTION_COLOR_LV1" \
 				|| return \
-				&& allowmulti="NotAllowed"
-			if [ -n "$multiselection" ]; then
-				dmenufm_multiselect "Select files / directories to rename: "
+				&& allowbulk="NotAllowed"
+			if [ -n "$bulkselection" ]; then
+				bulk_mode "Select files / directories to rename: "
 				[ -n "$SELECTED" ] && bulk_rename
 			elif [ "$actCHOICE" = "$allselection" ]; then
 				bulk_all_list
@@ -627,16 +638,16 @@ dmenufm_action () {
 			;;
 		"$FM_DEL")
 			# Allow multiple files to be selected
-			allowmulti="Bulk Delete"
+			allowbulk="Bulk Delete"
 			allselection="Bulk Delete all"
 			# Choose file/directory in current directory to remove
 			Generate_action_menu "Remove file / directory: " \
 				"$FM_ACTION_COLOR_LV1" \
 				|| return \
-				&& allowmulti="NotAllowed"
-			if [ -n "$multiselection" ]; then
+				&& allowbulk="NotAllowed"
+			if [ -n "$bulkselection" ]; then
 				# Multi-selection mode
-				dmenufm_multiselect "Select files / directories to remove: "
+				bulk_mode "Select files / directories to remove: "
 				[ "$actCHOICE" = "$ENDSELECTION" ] \
 					&& dangermenu "rm -rf" "Delete all selected?" ""
 			elif [ "$actCHOICE" = "$allselection" ]; then
@@ -644,7 +655,7 @@ dmenufm_action () {
 				dangermenu "rm -rf" "Delete all selected in $name?" ""
 			else
 				# Single-selection mode
-				allowmulti="NotAllowed"
+				allowbulk="NotAllowed"
 				# Check the chosen on is directory or not
 				[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 				[ -n "$HERE" ] && SELECTED="$HERE" \
@@ -654,7 +665,7 @@ dmenufm_action () {
 			;;
 		"$FM_TRH")
 			# Allow multiple files to be selected
-			allowmulti="Bulk Trash"
+			allowbulk="Bulk Trash"
 			allselection="Bulk Trash all"
 			[ ! -d "$FM_TRASH" ] \
 				&& mkdir -p "$FM_TRASH"
@@ -667,10 +678,10 @@ dmenufm_action () {
 					Generate_action_menu "Move file/directory to trash: " \
 						"$FM_ACTION_COLOR_LV1" \
 						|| return \
-						&& allowmulti="NotAllowed"
-					if [ -n "$multiselection" ]; then
+						&& allowbulk="NotAllowed"
+					if [ -n "$bulkselection" ]; then
 						# Multi-selection mode
-						dmenufm_multiselect "Select files / directories to move to trash: "
+						bulk_mode "Select files / directories to move to trash: "
 						[ "$actCHOICE" = "$ENDSELECTION" ] \
 							&& dangermenu "mv" "Move all selected to trash?" "$FM_TRASH"
 					elif [ "$actCHOICE" = "$allselection" ]; then
@@ -678,7 +689,7 @@ dmenufm_action () {
 						dangermenu "rm -rf" "Delete all selected in $name?" ""
 					else
 						# Single-selection mode
-						allowmulti="NotAllowed"
+						allowbulk="NotAllowed"
 						# Check the chosen on is directory or not
 						[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 						[ -n "$HERE" ] && SELECTED="$HERE" \
@@ -780,11 +791,11 @@ dmenufm_action () {
 					execmd=$(printf '%s' "$cmdmenu" \
 						| awk -F ' - ' '{print $1}')
 					if printf '%s' "$execmd" | grep '\$'; then
-						allowmulti="Bulk Execute"
+						allowbulk="Bulk Execute"
 						allselection="Bulk Execute all"
 						Generate_action_menu "Choose and execute: " "$FM_ACTION_COLOR_LV1"
-						if [ -n "$multiselection" ]; then
-							dmenufm_multiselect "Select to execute: "
+						if [ -n "$bulkselection" ]; then
+							bulk_mode "Select to execute: "
 							bulk_command
 						elif [ "$actCHOICE" = "$allselection" ]; then
 							bulk_all_list
@@ -819,7 +830,7 @@ dmenufm_menu () {
 		CHOICE=$(printf '%s:' "$BACKWARD" "$TARGET" \
 			"$ACTION" "$TERM" "$list" \
 			| tr ':' '\n' \
-			| sed "s/'//g; /^$/ d" \
+			| sed "/^$/ d" \
 			| verticalprompt "$twopwd" "$FM_GENERIC_COLOR")
 		# Outcome matching
 		if [ "$CHOICE" = "$TARGET" ]; then
