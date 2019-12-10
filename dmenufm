@@ -1,9 +1,14 @@
 #!/bin/sh
 
 # Dmenu-based directory browser
-# Dependency: dmenu; xclip
-# Dependency on extraction: tar; unlzma; bunzip2; unrar;
-# 			    unzip; uncompress; 7z; unxz; cabextract.
+#
+# Dependency:
+#
+#   dmenu, xclip, xdg-mime
+#
+# Dependency on extraction:
+#
+#   tar, unlzma, bunzip2, unrar, unzip, uncompress, 7z, unxz, cabextract
 
 
 ### OPTIONS AND VARIABLES
@@ -18,12 +23,15 @@
 [ -n "$FM_LASTPATH" ] || FM_LASTPATH="$FM_PATH/dmenufm_lastpath"
 [ -n "$FM_REMFILE" ] || FM_REMFILE="$FM_PATH/dmenufm_bulk_rename"
 [ -n "$FM_ZIPATH" ] || FM_ZIPATH="$FM_PATH/compression/"
+
 # Max number for history
 [ -n "$FM_MAX_HIS_LENGTH" ] || FM_MAX_HIS_LENGTH=5000
+
 # FONTS
 [ -n "$FM_GENERIC_FONT" ] || FM_GENERIC_FONT="Monospace-15"
 [ -n "$FM_NOTIF_FONT" ] || FM_NOTIF_FONT="Monospace-25"
 [ -n "$FM_DANGER_FONT" ] || FM_DANGER_FONT="Monospace-20"
+
 # COLORs
 [ -n "$FM_GENERIC_COLOR" ] || FM_GENERIC_COLOR="#005577"
 [ -n "$FM_ACTION_COLOR_LV1" ] || FM_ACTION_COLOR_LV1="#33691e"
@@ -78,7 +86,7 @@ get_os () {
 # See README.md for more detail
 executecmd () {
 	cmd=$1
-	software=$(printf '%s' "$cmd" | awk -F ' ' '{print $1}')
+	software=$(printf '%s' "${cmd%% *}")
 	appdesktop=$(find "$XDGDIR1" "$XDGDIR2" -name "*$software*.desktop" | tail -n 1)
 	if [ -n "$appdesktop" ] && grep 'Terminal=false' "$appdesktop"; then
 		printf '%s' "$cmd" | ${SHELL:-"/bin/sh"}
