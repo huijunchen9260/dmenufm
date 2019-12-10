@@ -69,6 +69,16 @@ COMPRESSIONLIST="tar.gz:tar.bz2:tar.xz:xz:lzma:gz:bz2:7z:zip"
 
 ### FUNCTIONS
 
+linecount () { # Usage: [CMD |] linecount [< FILE]
+	Count=0
+	while read -r CurLine; do
+		Count=$((Count + 1))
+	done < /dev/stdin
+	printf "%d\n" $Count
+
+	unset CurLine Count
+}
+
 ## PRE-DETERMINATION FUNCTION
 
 # Check os
@@ -127,6 +137,7 @@ open () {
 					;;
 				*)
 					appdesktop=$(xdg-mime query default "$mimetype")
+
 					if < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" \
 						| tail -n 1)" grep "Terminal=false"; then
 						${FM_OPENER:-xdg-open} "$1"
@@ -146,13 +157,12 @@ open () {
 # Misbehaving due to space in file/directory name,
 # so add ' at beginning and end.
 
-quote () { printf '%s\n' "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/" ; }
+quote () { printf "'%s'\n" "$1"; }
 
 menudir () {
 	IFS="
 	"
-	DIRs=$(for dir in *; do [ -d "$dir" ] \
-		&& printf '%s:' "$dir/"; done)
+	DIRs=$(for dir in *; do [ -d "$dir" ] && printf '%s:' "$dir/"; done)
 	unset IFS
 }
 
@@ -323,18 +333,19 @@ bulk_all_list () {
 
 # Store every move between directories into history
 dmenufm_history () {
-	[ ! -d "$FM_PATH" ] \
-		&& mkdir -p "$FM_PATH"
-	dirmark=$(printf '%s' "$PWD" \
-		| awk -F '/' '{print $NF}')
-	printf '%s\n' "$dirmark - $PWD" \
-		| sed "/^$/ d" >> "$FM_HISFILE"
+	[ ! -d "$FM_PATH" ] && mkdir -p "$FM_PATH"
+	printf '%s - %s\n' "${dirmark##*/}" "$PWD" >> "$FM_HISFILE"
+
 	# Limit the max number of history
-	hisnum=$(wc -l "$FM_HISFILE" | awk '{print $1}')
-	if [ "$hisnum" -ge "$FM_MAX_HIS_LENGTH" ]; then
-		sed "1d" "$FM_HISFILE" > "$FM_HISFILE.backup" \
-			&& cp "$FM_HISFILE.backup" "$FM_HISFILE"
+	hisnum_line=$(linecount < "$FM_HISFILE")
+
+	if [ "${hisnum_line%% *}" -ge "$FM_MAX_HIS_LENGTH" ]; then
+		sed '1d' "$FM_HISFILE" > "$FM_HISFILE.backup" && {
+			cp "$FM_HISFILE.backup" "$FM_HISFILE"
+		}
 	fi
+
+	unset dirmark hisnum_line
 }
 
 # Bulk compression
@@ -866,22 +877,22 @@ dmenufm_menu () {
 
 while [ -n "$1" ]; do
 	case $1 in
-		"-d"|"--directory" )
+		-d|--directory )
 			keeplist="${keeplist} DIRs"
 			;;
-		"-f"|"--file" )
+		-f|--file )
 			keeplist="${keeplist} FILEs"
 			;;
-		"-D"|"--dotdirectory" )
+		-D|--dotdirectory )
 			keeplist="${keeplist} DOTDIRs"
 			;;
-		"-F"|"--dotfile" )
+		-F|--dotfile )
 			keeplist="${keeplist} DOTFILEs"
 			;;
-		"-p"|"--lastpath" )
+		-p|--lastpath )
 			outputpath="placeholder"
 			;;
-		"-h"|"--help" )
+		-h|--help )
 			printf " Optional arguments for custom usage:
 			-d | --directory: only directories
 			-f | --file: only show files
