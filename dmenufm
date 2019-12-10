@@ -102,7 +102,7 @@ executecmd () {
 # sudo $EDITOR /usr/share/applications/mimeinfo.cache
 open () {
 	mimetype=$(xdg-mime query filetype "$1")
-	case "$1" in
+	case $1 in
 		*.tar.bz2|*.tar.xz|*.tbz2) extraction "tar xvjf" "$1" ;;
 		*.tar.gz|*.tgz) extraction "tar xvzf" "$1" ;;
 		*.lzma) extraction "unlzma" "$1" ;;
@@ -116,7 +116,7 @@ open () {
 		*.xz) extraction "unxz" "$1" ;;
 		*.cab) extraction "cabextract" "$1" ;;
 		*)
-			case "$mimetype" in
+			case $mimetype in
 				text/*|*x-empty*|*json*)
 					# Text file opened in $EDITOR or default opener
 					if [ -n "$TERMINAL" ] && [ -n "$EDITOR" ]; then
@@ -548,7 +548,7 @@ dmenufm_action () {
 			fi
 			;;
 		"$FM_MVR"|"$FM_YAK"|"$FM_LNK")
-			case "$move" in
+			case $move in
 				"$FM_MVR")
 					cmd="mv"
 					cmdname="moved"
@@ -732,7 +732,7 @@ dmenufm_action () {
 				"Add BMK" "Delete BMK" \
 				| sed "/^$/ d" \
 				|  verticalprompt "Dmenufm Bookmark" "$FM_GENERIC_COLOR")
-			case "$markmenu" in
+			case $markmenu in
 				"Add BMK")
 					Generate_action_menu "Choose file / directory and add to BMK: " \
 						"$FM_ACTION_COLOR_LV1" || return
@@ -769,7 +769,7 @@ dmenufm_action () {
 				"Add CMD" "Delete CMD" "Choose and execute" \
 				| sed "/^$/ d" \
 				| verticalprompt "Dmenufm Custom Command" "$FM_GENERIC_COLOR")
-			case "$cmdmenu" in
+			case $cmdmenu in
 				"Add CMD")
 					addcmd=$(horizontalprompt "Recording your command: " \
 						"$FM_ACTION_COLOR_LV1") || return
