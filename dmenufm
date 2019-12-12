@@ -77,14 +77,12 @@ COMPRESSIONLIST='tar.gz tar.bz2 tar.xz xz lzma gz bz2 7z zip'
 # You may need to modify executecmd
 # to match how your terminal execute the command.
 # See README.md for more detail
-executecmd () {
-	cmd=$1
-	software=${cmd%% *}
-	appdesktop=$(find "$XDGDIR1" "$XDGDIR2" -name "*$software*.desktop" | tail -n 1)
+executecmd () { # Usage executecmd [CMD]
+	appdesktop=$(find "$XDGDIR1" "$XDGDIR2" -name "*${1%% *}*.desktop" | tail -n 1)
 	if [ -n "$appdesktop" ] && grep 'Terminal=false' "$appdesktop"; then
-		printf '%s' "$cmd" | ${SHELL:-"/bin/sh"}
+		printf '%s' "$1" | ${SHELL:-/bin/sh}
 	else
-		$TERMINAL -e $cmd | ${SHELL:-"/bin/sh"}
+		$TERMINAL -e $1 | ${SHELL:-/bin/sh}
 	fi
 }
 
