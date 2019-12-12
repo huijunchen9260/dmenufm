@@ -104,6 +104,19 @@ executecmd () { # Usage executecmd [CMD]
 # file extension. Use extraction to put content in a new directory. To edit default
 # applications in xdg-open: sudo $EDITOR /usr/share/applications/mimeinfo.cache
 open () {
+	# Extract files and make a new directory to contain all the files.
+	extraction () {
+		# $1: command to extract compress
+		# $2: compression name
+		# Example: extraction "unzip" "$HOME/filename.zip"
+		dirname=$(printf '%s' "$2" \
+			| awk -F '/' '{printf $NF}' \
+			| awk -F '.' '{print $1}')
+		mkdir -p "$dirname" && cd "$dirname" || exit
+		$1 "$2"
+		notifyprompt "$CHOICE extracted to $dirname"
+	}
+
 	mimetype=$(xdg-mime query filetype "$1")
 	case $1 in
 		*.tar.bz2|*.tar.xz|*.tbz2) extraction 'tar xvjf' "$1" ;;
@@ -478,19 +491,6 @@ dangermenu () {
 				fi
 			done && notifyprompt 'Selected removed.'
 	fi
-}
-
-# Extract files and make a new directory to contain all the files.
-extraction () {
-	# $1: command to extract compress
-	# $2: compression name
-	# Example: extraction "unzip" "$HOME/filename.zip"
-	dirname=$(printf '%s' "$2" \
-		| awk -F '/' '{printf $NF}' \
-		| awk -F '.' '{print $1}')
-	mkdir -p "$dirname" && cd "$dirname" || exit
-	$1 "$2"
-	notifyprompt "$CHOICE extracted to $dirname"
 }
 
 bulk_mode () {
