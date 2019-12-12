@@ -172,25 +172,34 @@ open () {
 
 ## MENUFUNCTIONS
 
-# Generate directories. Variables can't store multiline string, so change to ':'.
-# Misbehaving due to space in file/directory name, so add ' at beginning and end.
+# Variables can't store multiline string, so change to ':'. Misbehaving due to
+# space in file/directory name, so add ' at beginning and end.
 #quote () { printf '%s\n' "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/" ; }
+
+# Generate directories.
 menudir () {
 	IFS='
 	'
-	DIRs=$(for dir in *; do [ -d "$dir" ] \
-		&& printf '%s:' "$dir/"; done)
+
+	DIRs=$(
+		for dir in *; do
+			[ -d "$dir" ] && printf '%s:' "$dir/"
+		done
+	)
+
 	unset IFS
 }
 
-# Generate dotdirectories
-# Delete extra ./ and ../ (Need use = as sed delimiter)
+# Generate dotdirectories. Delete extra ./ and ../
 menudotdir () {
 	IFS='
 	'
-	DOTDIRs=$(for dir in .*; do [ -d "$dir" ] \
-		&& printf '%s:' "$dir/"; done \
-		| sed 's=./==; s=../==')
+
+	DOTDIRs=$(
+		for dir in .*; do
+			[ -d "$dir" ] && printf '%s:' "$dir/"
+		done | sed 's|./||; s|../||')
+
 	unset IFS
 }
 
@@ -198,8 +207,13 @@ menudotdir () {
 menufile () {
 	IFS='
 	'
-	FILEs=$(for file in *; do [ -f "$file" ] \
-		&& printf '%s:' "$file"; done)
+
+	FILEs=$(
+		for file in *; do
+			[ -f "$file" ] && printf '%s:' "$file"
+		done
+	)
+
 	unset IFS
 }
 
@@ -207,8 +221,13 @@ menufile () {
 menudotfile () {
 	IFS='
 	'
-	DOTFILEs=$(for file in .*; do [ -f "$file" ] && \
-		printf '%s:' "$file"; done)
+
+	DOTFILEs=$(
+		for file in .*; do
+			[ -f "$file" ] && printf '%s:' "$file"
+		done
+	)
+
 	unset IFS
 }
 
@@ -222,14 +241,13 @@ menu () {
 
 # Update menu in each move
 update_menu () {
-	list=
 	# Rebuild list in every move
 	for element in $keeplist; do
 		case $element in
-			DIRs) menudir && list=$list$DIRs ;;
-			FILEs) menufile && list=$list$FILEs ;;
-			DOTDIRs) menudotdir && list=$list$DOTDIRs ;;
-			DOTFILEs) menudotfile && list=$list$DOTFILEs ;;
+			DIRs) menudir && list="$list$DIRs" ;;
+			FILEs) menufile && list="$list$FILEs" ;;
+			DOTDIRs) menudotdir && list="$list$DOTDIRs" ;;
+			DOTFILEs) menudotfile && list="$list$DOTFILEs" ;;
 		esac
 	done
 }
