@@ -101,36 +101,53 @@ executecmd () { # Usage executecmd [CMD]
 }
 
 # Open files with xdg-open, if not compression. Compressions are extracted by its
-# file extension. Use extraction to put content in a new directory. To edit default
+# file extension. Use Extract to put content in a new directory. To edit default
 # applications in xdg-open: sudo $EDITOR /usr/share/applications/mimeinfo.cache
 open () {
 	# Extract files and make a new directory to contain all the files.
-	extraction () {
-		# $1: command to extract compress
-		# $2: compression name
-		# Example: extraction "unzip" "$HOME/filename.zip"
-		dirname=$(printf '%s' "$2" \
-			| awk -F '/' '{printf $NF}' \
-			| awk -F '.' '{print $1}')
-		mkdir -p "$dirname" && cd "$dirname" || exit
-		$1 "$2"
-		notifyprompt "$CHOICE extracted to $dirname"
+	Extract () { # Usage: Extract [CMD] [FILE]
+		BaseName=${2##*/}
+
+		CheckDeps "$1"
+
+		if mkdir -p $BaseName; then
+			cd "$BaseName"
+
+			$1 "$2"
+
+			notifyprompt "$Choice extracted to $BaseName"
+		else
+			exit 0
+		fi
 	}
 
 	mimetype=$(xdg-mime query filetype "$1")
+
 	case $1 in
-		*.tar.bz2|*.tar.xz|*.tbz2) extraction 'tar xvjf' "$1" ;;
-		*.tar.gz|*.tgz) extraction 'tar xvzf' "$1" ;;
-		*.lzma) extraction 'unlzma' "$1" ;;
-		*.bz2) extraction 'bunzip2' "$1" ;;
-		*.rar) extraction 'unrar x -ad' "$1" ;;
-		*.gz) extraction 'gunzip' "$1" ;;
-		*.tar) extraction 'tar xvf' "$1" ;;
-		*.zip) extraction 'unzip' "$1" ;;
-		*.Z) extraction 'uncompress' "$1" ;;
-		*.7z) extraction '7z x' "$1" ;;
-		*.xz) extraction 'unxz' "$1" ;;
-		*.cab) extraction 'cabextract' "$1" ;;
+		*.tar.bz2|*.tar.xz|*.tbz2)
+			Extract 'tar xvjf' "$1" ;;
+		*.tar.gz|*.tgz)
+			Extract 'tar xvzf' "$1" ;;
+		*.lzma)
+			Extract 'unlzma' "$1" ;;
+		*.bz2)
+			Extract 'bunzip2' "$1" ;;
+		*.rar)
+			Extract 'unrar x -ad' "$1" ;;
+		*.gz)
+			Extract 'gunzip' "$1" ;;
+		*.tar)
+			Extract 'tar xvf' "$1" ;;
+		*.zip)
+			Extract 'unzip' "$1" ;;
+		*.Z)
+			Extract 'uncompress' "$1" ;;
+		*.7z)
+			Extract '7z x' "$1" ;;
+		*.xz)
+			Extract 'unxz' "$1" ;;
+		*.cab)
+			Extract 'cabextract' "$1" ;;
 		*)
 			case $mimetype in
 				text/*|*x-empty*|*json*)
@@ -139,8 +156,7 @@ open () {
 						$TERMINAL -e $EDITOR "$1"
 					else
 						${FM_OPENER:-xdg-open} "$1"
-					fi
-					;;
+					fi ;;
 				*)
 					appdesktop=$(xdg-mime query default "$mimetype")
 					if < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" \
@@ -148,9 +164,8 @@ open () {
 						${FM_OPENER:-xdg-open} "$1"
 					else
 						$TERMINAL -e ${FM_OPENER:-xdg-open} "$1"
-					fi
-					;;
-			esac
+					fi ;;
+			esac ;;
 	esac
 }
 
@@ -160,7 +175,6 @@ open () {
 # Generate directories. Variables can't store multiline string, so change to ':'.
 # Misbehaving due to space in file/directory name, so add ' at beginning and end.
 #quote () { printf '%s\n' "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/" ; }
-
 menudir () {
 	IFS='
 	'
