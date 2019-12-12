@@ -848,10 +848,35 @@ dmenufm_menu () {
 	done
 }
 
+UsageInfo () {
+	while read -r CurLine; do
+		printf "%b\n" "$CurLine"
+	done <<-EOF
+		\r            DMENUFM (Ideally, version here; what version am I!?)
+		\r            Written by huijunchen9260 <your E-Mail here>
+		\r
+		\r            Your short description goes here.
+		\r
+		\rSYNTAX:     dmenufm [OPTS]
+		\r
+		\rOPTS:       --help|-h               - Show this usage information.
+		\r            --directory|-d          - Only directories.
+		\r            --file|-f               - Only show files.
+		\r            --dotdirectory|-D       - Only show hidden directories.
+		\r            --dotfile|-F            - Only show hidden files.
+		\r            --lastpath|-p           - Opens in last working directory. (cd on exit)
+	EOF
+
+	unset CurLine
+}
+
+
 ### ARGUMENTS
 
 while [ -n "$1" ]; do
 	case $1 in
+		-h|--help)
+			UsageInfo; exit 0 ;;
 		-d|--directory)
 			keeplist="${keeplist} DIRs" ;;
 		-f|--file)
@@ -862,20 +887,11 @@ while [ -n "$1" ]; do
 			keeplist="${keeplist} DOTFILEs" ;;
 		-p|--lastpath)
 			outputpath='placeholder' ;;
-		-h|--help)
-			printf ' Optional arguments for custom usage:
-			-d | --directory: only directories
-			-f | --file: only show files
-			-D | --dotdirectory: only show hidden directories
-			-F | --dotfile: only show hidden files
-			-p | --lastpath: opens in last working directory (cd on exit)
-			-h | --help: Show this message\n'
-			exit 0 ;;
 		*)
 			if [ -d "$1" ]; then
 				cd "$1"
 			else
-				printf '%s\n' "Invalid option"
+				printf 'ERROR: Invalid argument(s) provided.\n' 1>&2
 				exit 1
 			fi ;;
 	esac
