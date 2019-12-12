@@ -717,7 +717,7 @@ dmenufm_action () {
 				| awk -F ' - ' '{print $2}')
 			cd "$destination" || return ;;
 		"$FM_BMK")
-			markmenu=$(printf '%s\n' "$(cat "$FM_BMKFILE")" \
+			markmenu=$(printf '%s\n' "$(cat -u "$FM_BMKFILE")" \
 				'Add BMK' 'Delete BMK' \
 				| sed '/^$/d' \
 				|  verticalprompt 'Dmenufm Bookmark' "$FM_GENERIC_COLOR")
@@ -751,7 +751,7 @@ dmenufm_action () {
 					fi
 			esac ;;
 		"$FM_CMD")
-			cmdmenu=$(printf '%s\n' "$(cat "$FM_CMDFILE")" \
+			cmdmenu=$(printf '%s\n' "$(cat -u "$FM_CMDFILE")" \
 				'Add CMD' 'Delete CMD' 'Choose and execute' \
 				| sed '/^$/ d' \
 				| verticalprompt "Dmenufm Custom Command" "$FM_GENERIC_COLOR")
@@ -881,7 +881,7 @@ done
 ### RUN THE MAIN FUNCTION
 
 # --lastpath option:
-[ -n "$outputpath" ] && cd "$(cat "$FM_LASTPATH")"
+[ -n "$outputpath" ] && cd "$(cat -u "$FM_LASTPATH")"
 
 dmenufm_menu
 
