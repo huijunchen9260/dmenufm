@@ -77,7 +77,7 @@ CheckDeps () {
 	unset CurDep DepCount
 }
 
-CheckDeps find tail xdg-mime xdg-open sed awk grep wc cp mv rm
+CheckDeps find tail xdg-mime xdg-open sed awk grep wc cp mv rm paste
 
 # Disabled, since it's not used and is invalid anyway.
 # Check os
