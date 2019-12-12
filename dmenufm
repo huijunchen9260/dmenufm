@@ -696,11 +696,9 @@ dmenufm_action () {
 						[ -n "$HERE" ] && SELECTED=$HERE \
 							&& dangermenu 'rm -rf' "Remove all the files / directories in $name?" ''
 							[ $result -eq 0 ] && cd ../ && result=
-					fi
-					;;
+					fi ;;
 				'Go to trash')
-					cd "$FM_TRASH" || return
-					;;
+					cd "$FM_TRASH" || return ;;
 				'Empty trash')
 					# Lesson: You cannot quote a wildcard. No quote on *.
 					if dangerprompt 'Remove all files and/or directory in trash?' \
@@ -708,8 +706,7 @@ dmenufm_action () {
 						notifyprompt 'Trash is empty.' || return
 					else
 						return
-					fi
-					;;
+					fi ;;
 			esac
 			;;
 		"$FM_HIS")
@@ -718,8 +715,7 @@ dmenufm_action () {
 				| verticalprompt "Dmenufm History" "$FM_GENERIC_COLOR")
 			destination=$(printf '%s' "$goto" \
 				| awk -F ' - ' '{print $2}')
-			cd "$destination" || return
-			;;
+			cd "$destination" || return ;;
 		"$FM_BMK")
 			markmenu=$(printf '%s\n' "$(cat "$FM_BMKFILE")" \
 				'Add BMK' 'Delete BMK' \
@@ -735,8 +731,7 @@ dmenufm_action () {
 					[ -n "$mark" ] \
 						&& sed '/^$/d' "$FM_BMKFILE" \
 						> "$FM_BMKFILE.backup" \
-						&& cp "$FM_BMKFILE.backup" "$FM_BMKFILE"
-					;;
+						&& cp "$FM_BMKFILE.backup" "$FM_BMKFILE" ;;
 				'Delete BMK')
 					delbmk=$(< "$FM_BMKFILE" \
 						verticalprompt 'Delete chosen bmk: ' 'darkred') \
@@ -747,16 +742,14 @@ dmenufm_action () {
 					[ -n "$delbmk" ] \
 						&& sed "\=$delbmk= d" "$FM_BMKFILE" \
 						> "$FM_BMKFILE.backup" \
-						&& cp "$FM_BMKFILE.backup" "$FM_BMKFILE"
-					;;
+						&& cp "$FM_BMKFILE.backup" "$FM_BMKFILE" ;;
 				*)
 					destination=$(printf '%s' "$markmenu" \
 						| awk -F ' - ' '{print $2}')
 					if [ -n "$destination" ]; then
 						cd "$destination" || open "$destination"
 					fi
-			esac
-			;;
+			esac ;;
 		"$FM_CMD")
 			cmdmenu=$(printf '%s\n' "$(cat "$FM_CMDFILE")" \
 				'Add CMD' 'Delete CMD' 'Choose and execute' \
@@ -774,8 +767,7 @@ dmenufm_action () {
 					[ -n "$addcmd" ] \
 						&& sed "/^$/ d" "$FM_CMDFILE" \
 						> "$FM_CMDFILE.backup" \
-						&& cp "$FM_CMDFILE.backup" "$FM_CMDFILE"
-					;;
+						&& cp "$FM_CMDFILE.backup" "$FM_CMDFILE" ;;
 				'Delete CMD')
 					delcmd=$(< "$FM_CMDFILE" \
 						verticalprompt 'Delete chosen command: ' 'darkred')
@@ -786,8 +778,7 @@ dmenufm_action () {
 					[ -n "$delcmd" ] \
 						&& sed "\:$delcmd: d" "$FM_CMDFILE" \
 						> "$FM_CMDFILE.backup" \
-						&& cp "$FM_CMDFILE.backup" "$FM_CMDFILE"
-					;;
+						&& cp "$FM_CMDFILE.backup" "$FM_CMDFILE" ;;
 				*)
 					execmd=$(printf '%s' "$cmdmenu" \
 						| awk -F ' - ' '{print $1}')
@@ -807,10 +798,8 @@ dmenufm_action () {
 						fi
 					else
 						executecmd "$execmd"
-					fi
-					;;
-			esac
-			;;
+					fi ;;
+			esac ;;
 	esac
 	dmenufm_menu
 }
@@ -860,20 +849,15 @@ dmenufm_menu () {
 while [ -n "$1" ]; do
 	case $1 in
 		-d|--directory)
-			keeplist="${keeplist} DIRs"
-			;;
+			keeplist="${keeplist} DIRs" ;;
 		-f|--file)
-			keeplist="${keeplist} FILEs"
-			;;
+			keeplist="${keeplist} FILEs" ;;
 		-D|--dotdirectory)
-			keeplist="${keeplist} DOTDIRs"
-			;;
+			keeplist="${keeplist} DOTDIRs" ;;
 		-F|--dotfile)
-			keeplist="${keeplist} DOTFILEs"
-			;;
+			keeplist="${keeplist} DOTFILEs" ;;
 		-p|--lastpath)
-			outputpath='placeholder'
-			;;
+			outputpath='placeholder' ;;
 		-h|--help)
 			printf ' Optional arguments for custom usage:
 			-d | --directory: only directories
@@ -882,16 +866,14 @@ while [ -n "$1" ]; do
 			-F | --dotfile: only show hidden files
 			-p | --lastpath: opens in last working directory (cd on exit)
 			-h | --help: Show this message\n'
-			exit 0
-			;;
+			exit 0 ;;
 		*)
 			if [ -d "$1" ]; then
 				cd "$1"
 			else
 				printf '%s\n' "Invalid option"
 				exit 1
-			fi
-			;;
+			fi ;;
 	esac
 	shift
 done
