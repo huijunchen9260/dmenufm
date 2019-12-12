@@ -661,7 +661,7 @@ dmenufm_action () {
 				[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 				[ -n "$HERE" ] && SELECTED=$HERE \
 					&& dangermenu 'rm -rf' "Remove all the files / directories in $name?" ''
-					[ "$result" = 0 ] && cd ../ && result=
+					[ $result -eq 0 ] && cd ../ && result=
 			fi
 			;;
 		"$FM_TRH")
@@ -695,7 +695,7 @@ dmenufm_action () {
 						[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 						[ -n "$HERE" ] && SELECTED=$HERE \
 							&& dangermenu 'rm -rf' "Remove all the files / directories in $name?" ''
-							[ $result = 0 ] && cd ../ && result=
+							[ $result -eq 0 ] && cd ../ && result=
 					fi
 					;;
 				'Go to trash')
