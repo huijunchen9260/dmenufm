@@ -63,13 +63,14 @@ COMPRESSIONLIST='tar.gz:tar.bz2:tar.xz:xz:lzma:gz:bz2:7z:zip'
 
 ## PRE-DETERMINATION FUNCTION
 
+# Disabled, since it's not used and is invalid anyway.
 # Check os
-get_os () {
-	case $OSTYPE in
-		# Mac OS X / macOS.
-		darwin*) FM_OPENER=open ;;
-	esac
-}
+#get_os () {
+#	case $OSTYPE in
+#		# Mac OS X / macOS.
+#		darwin*) FM_OPENER=open ;;
+#	esac
+#}
 
 ## OPEN FUNCTIONS
 
