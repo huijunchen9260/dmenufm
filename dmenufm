@@ -63,6 +63,22 @@ COMPRESSIONLIST='tar.gz tar.bz2 tar.xz xz lzma gz bz2 7z zip'
 
 ## PRE-DETERMINATION FUNCTION
 
+CheckDeps () {
+	DepCount=0
+	for CurDep in "$@"; do
+		if ! command -v "$CurDep" 1> /dev/null 2>&1; then
+			DepCount=$((DepCount + 1))
+			printf "ERROR: Dependency '$CurDep' not met." 1>&2
+		fi
+	done
+
+	[ $DepCount -eq 0 ] || exit 1
+
+	unset CurDep DepCount
+}
+
+CheckDeps find tail xdg-mime xdg-open sed awk grep wc cp mv rm
+
 # Disabled, since it's not used and is invalid anyway.
 # Check os
 #get_os () {
