@@ -57,7 +57,7 @@ FM_BMK='BMK - Bookmark for dmenufm'
 FM_CMD='CMD - Frequently used command'
 FM_ZIP='ZIP - Compress files / directories'
 ACTLIST="$FM_PCP:$FM_NEW:$FM_MVR:$FM_YAK:$FM_LNK:$FM_DEL:$FM_TRH:$FM_REM:$FM_HIS:$FM_BMK:$FM_CMD:$FM_ZIP"
-COMPRESSIONLIST="tar.gz:tar.bz2:tar.xz:xz:lzma:gz:bz2:7z:zip"
+COMPRESSIONLIST='tar.gz:tar.bz2:tar.xz:xz:lzma:gz:bz2:7z:zip'
 
 ### FUNCTIONS
 
@@ -94,7 +94,7 @@ executecmd () {
 # sudo $EDITOR /usr/share/applications/mimeinfo.cache
 open () {
 	mimetype=$(xdg-mime query filetype "$1")
-	case "$1" in
+	case $1 in
 		*.tar.bz2|*.tar.xz|*.tbz2) extraction 'tar xvjf' "$1" ;;
 		*.tar.gz|*.tgz) extraction 'tar xvzf' "$1" ;;
 		*.lzma) extraction 'unlzma' "$1" ;;
@@ -108,7 +108,7 @@ open () {
 		*.xz) extraction 'unxz' "$1" ;;
 		*.cab) extraction 'cabextract' "$1" ;;
 		*)
-			case "$mimetype" in
+			case $mimetype in
 				text/*|*x-empty*|*json*)
 					# Text file opened in $EDITOR or default opener
 					if [ -n "$TERMINAL" ] && [ -n "$EDITOR" ]; then
@@ -191,10 +191,10 @@ update_menu () {
 	# Rebuild list in every move
 	for element in $keeplist; do
 		case $element in
-			DIRs) menudir && list="$list$DIRs" ;;
-			FILEs) menufile && list="$list$FILEs" ;;
-			DOTDIRs) menudotdir && list="$list$DOTDIRs" ;;
-			DOTFILEs) menudotfile && list="$list$DOTFILEs" ;;
+			DIRs) menudir && list=$list$DIRs ;;
+			FILEs) menufile && list=$list$FILEs ;;
+			DOTDIRs) menudotdir && list=$list$DOTDIRs ;;
+			DOTFILEs) menudotfile && list=$list$DOTFILEs ;;
 		esac
 	done
 }
@@ -355,7 +355,7 @@ bulk_compress () {
 		done
 		archive_name=$(horizontalprompt "Please insert archive name: " "$FM_ACTION_COLOR_LV2" \
 			| cut -d'.' -f1) || return
-		compressdir_name="$archive_name"
+		compressdir_name=$archive_name
 		archive_name="$archive_name.$compression_type"
 		mv "$FM_ZIPATH" "./$compressdir_name"
 		$cmd $archive_name ./$compressdir_name/* \
@@ -401,8 +401,8 @@ bulk_rename () {
 				"$FM_REMFILE.dirname" \
 				"$FM_REMFILE")
 			# Set IFS for for loop as \n
-			IFS="
-			"
+			IFS='
+			'
 			for selection in $(printf '%s' "$renamevar"); do
 				start=$(printf '%s' "$selection" \
 					| awk -F ':' '{print $1}')
@@ -440,11 +440,11 @@ destmenu () {
 		&& allowbulk='NotAllowed' \
 		&& actCHOICE='placeholder'
 	[ -n "$HERE" ] \
-		&& destination="$HERE" \
-		&& destname="$name"
+		&& destination=$HERE \
+		&& destname=$name
 	if [ -n "$destination" ]; then
-		IFS="
-		"
+		IFS='
+		'
 		for selection in $(printf '%s' "$SELECTED"); do
 			unset IFS
 			$cmd "$selection" "$destination"
@@ -477,9 +477,9 @@ extraction () {
 	# $1: command to extract compress
 	# $2: compression name
 	# Example: extraction "unzip" "$HOME/filename.zip"
-	dirname="$(printf '%s' "$2" \
+	dirname=$(printf '%s' "$2" \
 		| awk -F '/' '{printf $NF}' \
-		| awk -F '.' '{print $1}')"
+		| awk -F '.' '{print $1}')
 	mkdir -p "$dirname" && cd "$dirname" || exit
 	$1 "$2"
 	notifyprompt "$CHOICE extracted to $dirname"
@@ -491,10 +491,10 @@ bulk_mode () {
 	HERE=
 	bulklist=
 	Generate_action_menu "$bulkprompt" "$FM_ACTION_COLOR_BULK" \
-		|| return && allowbulk="NotAllowed"
+		|| return && allowbulk='NotAllowed'
 	while [ -n "$bulkselection" ]; do
 		Generate_action_menu "$bulkprompt" "$FM_ACTION_COLOR_BULK" \
-			|| return && allowbulk="NotAllowed"
+			|| return && allowbulk='NotAllowed'
 		HERE=$bulklist
 		allowbulk='NotAllowed'
 	done
@@ -540,7 +540,7 @@ dmenufm_action () {
 			fi
 			;;
 		"$FM_MVR"|"$FM_YAK"|"$FM_LNK")
-			case "$move" in
+			case $move in
 				"$FM_MVR")
 					cmd='mv'
 					cmdname='moved'
@@ -580,7 +580,7 @@ dmenufm_action () {
 			else
 				# Single-selection mode
 				[ -n "$HERE" ] \
-					&& SELECTED="$HERE" \
+					&& SELECTED=$HERE \
 					&& rename='true'
 				[ -d "$SELECTED" ] \
 					&& cd ../
@@ -613,7 +613,7 @@ dmenufm_action () {
 				bulk_all_list
 				bulk_compress
 			else
-				SELECTED="$HERE"
+				SELECTED=$HERE
 				[ -n "$SELECTED" ] && bulk_compress
 			fi
 			;;
@@ -632,7 +632,7 @@ dmenufm_action () {
 				bulk_rename
 			else
 
-				SELECTED="$HERE"
+				SELECTED=$HERE
 				[ -n "$SELECTED" ] && bulk_rename
 			fi
 			;;
@@ -658,7 +658,7 @@ dmenufm_action () {
 				allowbulk='NotAllowed'
 				# Check the chosen on is directory or not
 				[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
-				[ -n "$HERE" ] && SELECTED="$HERE" \
+				[ -n "$HERE" ] && SELECTED=$HERE \
 					&& dangermenu 'rm -rf' "Remove all the files / directories in $name?" ''
 					[ "$result" = 0 ] && cd ../ && result=
 			fi
@@ -692,7 +692,7 @@ dmenufm_action () {
 						allowbulk='NotAllowed'
 						# Check the chosen on is directory or not
 						[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
-						[ -n "$HERE" ] && SELECTED="$HERE" \
+						[ -n "$HERE" ] && SELECTED=$HERE \
 							&& dangermenu 'rm -rf' "Remove all the files / directories in $name?" ''
 							[ $result = 0 ] && cd ../ && result=
 					fi
@@ -724,7 +724,7 @@ dmenufm_action () {
 				'Add BMK' 'Delete BMK' \
 				| sed '/^$/d' \
 				|  verticalprompt 'Dmenufm Bookmark' "$FM_GENERIC_COLOR")
-			case "$markmenu" in
+			case $markmenu in
 				'Add BMK')
 					Generate_action_menu 'Choose file / directory and add to BMK: ' \
 						"$FM_ACTION_COLOR_LV1" || return
@@ -761,7 +761,7 @@ dmenufm_action () {
 				'Add CMD' 'Delete CMD' 'Choose and execute' \
 				| sed '/^$/ d' \
 				| verticalprompt "Dmenufm Custom Command" "$FM_GENERIC_COLOR")
-			case "$cmdmenu" in
+			case $cmdmenu in
 				'Add CMD')
 					addcmd=$(horizontalprompt 'Recording your command: ' \
 						"$FM_ACTION_COLOR_LV1") || return
@@ -871,7 +871,7 @@ while [ -n "$1" ]; do
 			keeplist="${keeplist} DOTFILEs"
 			;;
 		-p|--lastpath)
-			outputpath="placeholder"
+			outputpath='placeholder'
 			;;
 		-h|--help)
 			printf ' Optional arguments for custom usage:
