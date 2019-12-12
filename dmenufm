@@ -334,15 +334,15 @@ dmenufm_history () {
 
 bulk_compress () {
 	case $compression_type in
-		'tar.gz') cmd='tar -czvf' ;;
-		'tar.xz') cmd='tar -cJvf' ;;
+		 'tar.gz') cmd='tar -czvf' ;;
+		 'tar.xz') cmd='tar -cJvf' ;;
 		'tar.bz2') cmd='tar -cjvf' ;;
-		'gz') cmd='gzip -k' ;;
-		'bz2') cmd='bzip2 -k' ;;
-		'xz') cmd='xz -k' ;;
-		'lzma') cmd='lzma -k' ;;
-		'7z') cmd='7z a' ;;
-		'zip') cmd='zip -r' ;;
+		     'gz') cmd='gzip -k' ;;
+		    'bz2') cmd='bzip2 -k' ;;
+		     'xz') cmd='xz -k' ;;
+		   'lzma') cmd='lzma -k' ;;
+		     '7z') cmd='7z a' ;;
+		    'zip') cmd='zip -r' ;;
 		*) return ;;
 	esac
 	if echo "$compression_type" | grep -E '^tar|^zip'; then
@@ -527,19 +527,16 @@ dmenufm_action () {
 				"$FM_ACTION_COLOR_LV1" || return
 			[ -n "$HERE" ] && printf '%s' "$HERE" \
 				| xclip -selection clipboard \
-				&& notifyprompt "Path $name copied to clipboard."
-			;;
+				&& notifyprompt "Path $name copied to clipboard." ;;
 		"$FM_NEW")
 			name=$(horizontalprompt 'Dir ends w/ slash; File w/o: ' \
 				"$FM_ACTION_COLOR_LV1") || return
+
 			if [ -n "$( printf "$name" | grep '/')" ]; then
-				mkdir -p "$name" \
-					&& notifyprompt "Directory $name created."
+				mkdir -p "$name" && notifyprompt "Directory $name created."
 			else
-				:>"$name" \
-					&& notifyprompt "File $name created."
-			fi
-			;;
+				1> "$name" && notifyprompt "File $name created."
+			fi ;;
 		"$FM_MVR"|"$FM_YAK"|"$FM_LNK")
 			case $move in
 				"$FM_MVR")
