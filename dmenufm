@@ -74,9 +74,7 @@ COMPRESSIONLIST='tar.gz tar.bz2 tar.xz xz lzma gz bz2 7z zip'
 
 ## OPEN FUNCTIONS
 
-# You may need to modify executecmd
-# to match how your terminal execute the command.
-# See README.md for more detail
+# May need changes to match how your terminal executes the command. See: README.md
 executecmd () { # Usage executecmd [CMD]
 	appdesktop=$(find "$XDGDIR1" "$XDGDIR2" -name "*${1%% *}*.desktop" | tail -n 1)
 	if [ -n "$appdesktop" ] && grep 'Terminal=false' "$appdesktop"; then
@@ -86,11 +84,9 @@ executecmd () { # Usage executecmd [CMD]
 	fi
 }
 
-# Open files with xdg-open, if not compression.
-# Compressions are extracted by its file extension.
-# Use extraction to put content in a new directory.
-# To edit default applications in xdg-open,
-# sudo $EDITOR /usr/share/applications/mimeinfo.cache
+# Open files with xdg-open, if not compression. Compressions are extracted by its
+# file extension. Use extraction to put content in a new directory. To edit default
+# applications in xdg-open: sudo $EDITOR /usr/share/applications/mimeinfo.cache
 open () {
 	mimetype=$(xdg-mime query filetype "$1")
 	case $1 in
@@ -132,12 +128,9 @@ open () {
 
 ## MENUFUNCTIONS
 
-# Generate directories
-# Variables cannot store multiline string, so transform to ':'
-# Misbehaving due to space in file/directory name,
-# so add ' at beginning and end.
-
-quote () { printf '%s\n' "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/" ; }
+# Generate directories. Variables can't store multiline string, so change to ':'.
+# Misbehaving due to space in file/directory name, so add ' at beginning and end.
+#quote () { printf '%s\n' "$1" | sed "s/'/'\\\\''/g;1s/^/'/;\$s/\$/'/" ; }
 
 menudir () {
 	IFS='
