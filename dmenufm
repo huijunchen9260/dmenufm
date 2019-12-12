@@ -79,7 +79,7 @@ COMPRESSIONLIST='tar.gz tar.bz2 tar.xz xz lzma gz bz2 7z zip'
 # See README.md for more detail
 executecmd () {
 	cmd=$1
-	software=$(printf '%s' "$cmd" | awk -F ' ' '{print $1}')
+	software=${cmd%% *}
 	appdesktop=$(find "$XDGDIR1" "$XDGDIR2" -name "*$software*.desktop" | tail -n 1)
 	if [ -n "$appdesktop" ] && grep 'Terminal=false' "$appdesktop"; then
 		printf '%s' "$cmd" | ${SHELL:-"/bin/sh"}
