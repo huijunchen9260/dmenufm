@@ -1,7 +1,9 @@
 #!/bin/sh
 
 # Dmenu-based directory browser
-# Dependency: dmenu; xclip Dependency on extraction: tar; unlzma; bunzip2; unrar; unzip; uncompress; 7z; unxz; cabextract.
+# Dependency: dmenu; xclip
+# Dependency on extraction: tar; unlzma; bunzip2; unrar;
+# 			    unzip; uncompress; 7z; unxz; cabextract.
 
 
 
@@ -346,6 +348,8 @@ dmenufm_history () {
 	[ ! -d "$FM_PATH" ] \
 		&& mkdir -p "$FM_PATH"
 	dirmark="${PWD##*/}"
+	printf '%s\n' "$dirmark - $PWD" \
+		| sed "/^$/ d" >> "$FM_HISFILE"
 	# Limit the max number of history
 	TMP=$(wc -l "$FM_HISFILE")
 	hisnum=${TMP%% *}
