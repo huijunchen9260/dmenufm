@@ -264,5 +264,5 @@ Change the font / font size / color in the `""` to customize the appearance  of 
 
 # TODO
 
-- Compress directory ~~and extract files~~ to different format.
-- Support MacOS (darwin)
+See `Issues`.
+
