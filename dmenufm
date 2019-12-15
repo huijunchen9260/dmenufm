@@ -178,7 +178,7 @@ MenuDotDir () {
 	DOTDIRs=$(
 		for dir in .*; do
 			[ -d "$dir" ] && printf '%s\n' "$dir/"
-		done | sed "s=^./$==; s=^../$=="
+		done | sed "\|^./$| d; \|^../$| d"
 	)
 	unset IFS
 }
