@@ -39,6 +39,7 @@ Optional arguments for custom usage:
 -F | --dotfile: dmenufm only hidden files
 -p | --lastpath: dmenufm open on last working directory (cd on exit)
 -r | --rollingmenu: rolling menu based on selected files.
+-t | --termpath: print out path for file / directory instead of open it.
 -h | --help: Show this message
 ```
 

@@ -26,8 +26,7 @@
 # COLORs
 [ -n "$FM_GENERIC_COLOR" ] || FM_GENERIC_COLOR="#005577"
 [ -n "$FM_ACTION_COLOR_LV1" ] || FM_ACTION_COLOR_LV1="#33691e"
-[ -n "$FM_ACTION_COLOR_LV2" ] || FM_ACTION_COLOR_LV2="#FF8C00"
-[ -n "$FM_ACTION_COLOR_BULK" ] || FM_ACTION_COLOR_BULK="#CB06CB"
+[ -n "$FM_ACTION_COLOR_LV2" ] || FM_ACTION_COLOR_LV2="#FF8C00" [ -n "$FM_ACTION_COLOR_BULK" ] || FM_ACTION_COLOR_BULK="#CB06CB"
 
 # xdg-open directories
 XDGDIR1="/usr/share/applications"
@@ -253,12 +252,17 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 		fi
 		# Outcome matching
 		if [ "$actCHOICE" = "$TARGET" ]; then
-			HERE=$(printf '%s' "$PWD")
-			name=$(printf '%s' "${PWD##*/}")
-			[ -n "$bulkselection" ] \
-				&& bulklist=$(printf '%s\n' "$bulklist" "$HERE") \
-				&& cd "../"
-			break
+			if [ "$termpath" = "true" ]; then
+				printf "$PWD" && actCHOICE=""
+				break
+			else
+				HERE=$(printf '%s' "$PWD")
+				name=$(printf '%s' "${PWD##*/}")
+				[ -n "$bulkselection" ] \
+					&& bulklist=$(printf '%s\n' "$bulklist" "$HERE") \
+					&& cd "../"
+				break
+			fi
 		elif [ "$actCHOICE" = "$BACKWARD" ]; then
 			cd "../" || return
 			History
@@ -278,11 +282,16 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 			History
 			continue
 		elif [ -f "$actCHOICE" ]; then
-			HERE=$(printf '%s' "$PWD/$actCHOICE")
-			name=$(printf '%s' "${PWD##*/}")
-			[ -n "$bulkselection" ] \
-				&& bulklist=$(printf '%s\n' "$bulklist" "$HERE")
-			break
+			if [ "$termpath" = "true" ]; then
+				printf "$PWD/$actCHOICE" && actCHOICE=""
+				break
+			else
+				HERE=$(printf '%s' "$PWD/$actCHOICE")
+				name=$(printf '%s' "${PWD##*/}")
+				[ -n "$bulkselection" ] \
+					&& bulklist=$(printf '%s\n' "$bulklist" "$HERE")
+				break
+			fi
 		else
 			HERE=
 			name=
@@ -817,7 +826,12 @@ MainMenu () {
 			| yprompt "$TwoPWD" "$FM_GENERIC_COLOR")
 		# Outcome matching
 		if [ "$CHOICE" = "$TARGET" ]; then
-			FileOpen "$PWD"
+			if [ "$termpath" = "true" ]; then
+				printf "$PWD" && CHOICE=""
+				break
+			else
+				FileOpen "$PWD"
+			fi
 		elif [ "$CHOICE" = "$BACKWARD" ]; then
 			cd "../"
 			History
@@ -830,7 +844,12 @@ MainMenu () {
 			History
 			continue
 		elif [ -f "$CHOICE" ]; then
-			FileOpen "$PWD/$CHOICE"
+			if [ "$termpath" = "true" ]; then
+				printf "$PWD/$CHOICE" && CHOICE=""
+				break
+			else
+				FileOpen "$PWD/$CHOICE"
+			fi
 		else
 			break
 		fi
@@ -856,6 +875,7 @@ UsageInfo () {
 		\r            -F | --dotfile            - Only show hidden files.
 		\r            -p | --lastpath           - Opens in last working directory. (cd on exit)
 		\r            -r | --rollingmenu        - Rolling menu based on selected files.
+		\r            -t | --textpath           - Print out the path of file / directory.
 	EOF
 
 	unset CurLine
@@ -872,6 +892,7 @@ while [ -n "$1" ]; do
 		"-F"|"--dotfile" ) keeplist="${keeplist} DOTFILEs" ;;
 		"-p"|"--lastpath" ) outputpath="placeholder" ;;
 		"-r"|"--rollingmenu") rollingmenu="true" ;;
+		"-t"|"--termpath") termpath="true" ;;
 		"-h"|"--help" ) UsageInfo; exit 0; ;;
 		*)
 			if [ -d "$1" ]; then
