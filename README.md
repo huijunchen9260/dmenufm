@@ -38,6 +38,7 @@ Optional arguments for custom usage:
 -D | --dotdirectory: dmenufm only show hidden directories
 -F | --dotfile: dmenufm only hidden files
 -p | --lastpath: dmenufm open on last working directory (cd on exit)
+-r | --rollingmenu: rolling menu based on selected files.
 -h | --help: Show this message
 ```
 

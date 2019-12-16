@@ -5,8 +5,6 @@
 # Dependency on extraction: tar; unlzma; bunzip2; unrar;
 # 			    unzip; uncompress; 7z; unxz; cabextract.
 
-
-
 ### OPTIONS AND VARIABLES
 
 ## OPTIONS
@@ -77,8 +75,6 @@ CheckDeps () {
 }
 
 CheckDeps find tail xdg-mime xdg-open sed awk grep wc cp mv rm paste
-
-
 
 
 # # Check os
@@ -237,9 +233,9 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 		UpdateMenu # Default menu list if no arguments given
 		[ -z "$keeplist" ] && Menu \
 			&& list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
-		TMP="$(printf '%s' "${PWD%%/${PWD##*/}}")"
-		TwoPWD="$(printf '%s' "${TMP##*/}/${PWD##*/}")"
-		unset TMP
+		if [ "$rollingmenu" = "true" ] && [ -f "$actCHOICE" ]; then
+			list=$(printf '%s\n' "$actCHOICE" "${list##*$actCHOICE}" "${list%%$actCHOICE*}" | sed "/^$/ d")
+		fi
 		if [ -n "$bulkselection" ]; then
 			actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" \
 				"$ENDSELECTION" "$list" \
@@ -809,6 +805,9 @@ MainMenu () {
 			&& list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
 		# Generate menu with/without arguments
 		# Show only the current directory and one level of parent directory
+		if [ "$rollingmenu" = "true" ] && [ -f "$CHOICE" ]; then
+			list=$(printf '%s\n' "$CHOICE" "${list##*$CHOICE}" "${list%%$CHOICE*}" | sed "/^$/ d")
+		fi
 		TMP="$(printf '%s' "${PWD%%/${PWD##*/}}")"
 		TwoPWD="$(printf '%s' "${TMP##*/}/${PWD##*/}")"
 		unset TMP
@@ -856,6 +855,7 @@ UsageInfo () {
 		\r            --dotdirectory|-D       - Only show hidden directories.
 		\r            --dotfile|-F            - Only show hidden files.
 		\r            --lastpath|-p           - Opens in last working directory. (cd on exit)
+		\r            --rollingmenu|-r        - Rolling menu based on selected files.
 	EOF
 
 	unset CurLine
@@ -871,10 +871,13 @@ while [ -n "$1" ]; do
 		"-D"|"--dotdirectory" ) keeplist="${keeplist} DOTDIRs" ;;
 		"-F"|"--dotfile" ) keeplist="${keeplist} DOTFILEs" ;;
 		"-p"|"--lastpath" ) outputpath="placeholder" ;;
+		"-r"|"--rollingmenu") rollingmenu="true" ;;
 		"-h"|"--help" ) UsageInfo; exit 0; ;;
 		*)
 			if [ -d "$1" ]; then
 				cd "$1"
+			elif [ -f "$1" ]; then
+				FileOpen "$1"
 			else
 				printf '%s\n' "Invalid option. Use -h to read help"
 				exit 1
