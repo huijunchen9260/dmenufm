@@ -579,7 +579,7 @@ FM_Action () {
 			else
 				# Single-selection mode
 				[ -n "$HERE" ] \
-					&& SELECTED="$HERE" \
+					&& SELECTED="$HERE"
 				[ -d "$SELECTED" ] \
 					&& cd "../"
 				[ -n "$SELECTED" ] \
@@ -876,7 +876,7 @@ UsageInfo () {
 		\r            -F | --dotfile            - Only show hidden files.
 		\r            -p | --lastpath           - Opens in last working directory. (cd on exit)
 		\r            -r | --rollingmenu        - Rolling menu based on selected files.
-		\r            -t | --textpath           - Print out the path of file / directory.
+		\r            -t | --termpath           - Print out the path of file / directory.
 	EOF
 
 	unset CurLine
