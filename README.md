@@ -19,7 +19,9 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 
 # Installation
 
-Put `dmenufm` in your `$PATH`.
+`cd` into the `Makefile` directory, and type `sudo make install` in terminal to install dmenufm.
+
+To uninstall dmenufm, type `sudo make uninstall` in terminal.
 
 # Usage
 
@@ -68,15 +70,12 @@ Example:
 Name with slash will consider as a directory; without as file.
 - Example: Type `dirname/` to create new directory, and `filename` to create new file.
 
-### `MVR` to move / rename file
+### `MVV` to move file
 
 - To move file to destination:
 	- Choose source and destination to move your file. Enter the directory and choose `./` to confirm the destination.
 	- `Bulk Move` for multi-selection
 	- `Bulk Move all` to move all the content in the directory.
-- To rename file:
-	- After choosing source, in the destination, type your new name (No need to add slash even for directory), and press `Shift+Return` to confirm inputed new name.
-	- Note: `Shift+Return` will confirm the input rather than patched menu item.
 
 ### `YAK` to copy files
 
@@ -101,7 +100,7 @@ Delete directories or files.
 	- To move a directory to trash, enter the directory, and choose `./` to confirm this directory..
 	- `Bulk Trash` for multi-selection
 	- `Bulk Trash all` to delete all the content in the directory.
-- `Go to trash` will move current working directory to trash directory.
+- `Go to trash` will `cd` to trash directory.
 - `Empty trash` will remove all files/directories in trash directory.
 
 ### `REM` to rename files / directories
@@ -125,8 +124,9 @@ Delete directories or files.
 
 - Choose "Add CMD" to add both the command and command description in `$HOME/.config/dmenufm/dmenufm_command`.
 - Choose "Delete CMD" to delete any command in `$HOME/.config/dmenufm/dmenufm_command`.
-- Choose "Type and execute" to type and execute command.
 - Choose any stored command to execute.
+	- If your command is a single command with no argument, e.g. `ncdu`, then dmenufm will open a terminal to run this command.
+	- If your command has arguments, e.g. `chmod +x $1`, you only need to write one argument (`$1` part), and dmenufm will open a bulk mode, which allows you to choose files to execute.
 
 #### `CMD` Notes:
 
@@ -205,7 +205,7 @@ This is because `sxiv.desktop` has no `Terminal=false` entry.
 To fix this, use
 
 ```sh
-< $(locate sxiv.desktop | tail -n 1) sudo $EDITOR
+< $(locate sxiv.desktop | tail -n 1) sudo ${EDITOR:-vi}
 ```
 
 to open `.desktop` file in your editor, and add
