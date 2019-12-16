@@ -31,8 +31,8 @@ To uninstall dmenufm, type `sudo make uninstall` in terminal.
 4. Choices with `/` are directory; choices without `/` are files.
 
 
-```sh
 Optional arguments for custom usage:
+```sh
 -d | --directory: dmenufm only show directories
 -f | --file: dmenufm only show files
 -D | --dotdirectory: dmenufm only show hidden directories
@@ -53,6 +53,38 @@ Use `-p` option:
 
 ```sh
 dmenufm -p
+```
+
+## Rolling menu
+
+Use `-r` option for rolling menu based on the file that you opened:
+
+```sh
+dmenufm -r
+```
+
+For example, the original list is
+```sh
+../
+./
+Actions
+Terminal
+file1
+file2
+file3
+file4
+```
+
+You open `file3`. After you close `file3`, the menu would be
+```sh
+../
+./
+Actions
+Terminal
+file3
+file4
+file1
+file2
 ```
 
 ## Actions

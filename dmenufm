@@ -849,13 +849,13 @@ UsageInfo () {
 		\r
 		\rSYNTAX:     dmenufm [OPTS]
 		\r
-		\rOPTS:       --help|-h               - Show this usage information.
-		\r            --directory|-d          - Only directories.
-		\r            --file|-f               - Only show files.
-		\r            --dotdirectory|-D       - Only show hidden directories.
-		\r            --dotfile|-F            - Only show hidden files.
-		\r            --lastpath|-p           - Opens in last working directory. (cd on exit)
-		\r            --rollingmenu|-r        - Rolling menu based on selected files.
+		\rOPTS:       -h | --help               - Show this usage information.
+		\r            -d | --directory          - Only directories.
+		\r            -f | --file               - Only show files.
+		\r            -D | --dotdirectory       - Only show hidden directories.
+		\r            -F | --dotfile            - Only show hidden files.
+		\r            -p | --lastpath           - Opens in last working directory. (cd on exit)
+		\r            -r | --rollingmenu        - Rolling menu based on selected files.
 	EOF
 
 	unset CurLine
