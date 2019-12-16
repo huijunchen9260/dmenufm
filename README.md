@@ -2,20 +2,36 @@
 
 A simple dmenu file manager written in POSIX-compliant shell script.
 
-[![Distrotube introduce my project better than me.](https://img.youtube.com/vi/EyW6pRlWv6Q/0.jpg)](https://www.youtube.com/watch?v=EyW6pRlWv6Q)
+[![Distrotube introduced my project much better than I would](https://img.youtube.com/vi/EyW6pRlWv6Q/0.jpg)](https://www.youtube.com/watch?v=EyW6pRlWv6Q)
 
-[Distrotube](https://www.youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg) introduce my project much better than I do.
+[Distrotube](https://www.youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg) introduced my project much better than I would.
 
-# Some gifs
+# Preview
 
 ![Dmenufm Introduction 1](./figure/dmenufm_1.gif)
 ![Dmenufm Introduction 2](./figure/dmenufm_2.gif)
 
-# Dependency
+# Dependencies
 
-- `awk`, `sed`, `cat`, `wc -l`, `rm`, `mkdir`, `touch` in their POSIX-compliant version.
-- `xclip` as clipboard
-- `tar`; `unlzma`; `bunzip2`; `unrar`; `unzip`; `uncompress`; `7z`; `unxz`; `cabextract` for extraction.
+With POSIX-compliance in mind, dmenufm makes use of and requires (or recommends) the below utilities.
+
+- `awk`, `sed`, grep
+- `xclip`, `find`, `
+- `cat`, `wc`, `cp`, `mv`, `rm`, `mkdir`, `touch` (GNU coreutils) 
+- `tar`, `unlzma`, `bunzip2`, `unrar`, `unzip`, `uncompress`, `7z`, `unxz`, `cabextract`
+
+In Debian- or Ubuntu-based distributions of Linux, the packages needed (versions are a guideline) are listed below, at least as is the case in Ubuntu 16.04 (Xenial).
+
+- bzip2                  >= 1.0.6-8
+- findutils              >= 4.6.0+git+20160126-2
+- grep                   >= 2.25-1~16.04.1
+- gzip                   >= 1.6-4
+- sed                    >= 4.2.2-7
+- suckless-tools         >= 42-1
+- tar                    >= 1.28-2.1
+- unzip                  >= 6.0-20
+- xclip                  >= 0.12+svn84-4
+- xz-utils               >= 5.1.1alpha+20120614-2
 
 # Installation
 
@@ -30,17 +46,25 @@ To uninstall dmenufm, type `sudo make uninstall` in terminal.
 3. `./` to open your file manager in currend working directory (determined by `xdg-open`)
 4. Choices with `/` are directory; choices without `/` are files.
 
+Usage output (as of 2019-12-16) showing optional arguments for custom usage:
 
-Optional arguments for custom usage:
-```sh
--d | --directory: dmenufm only show directories
--f | --file: dmenufm only show files
--D | --dotdirectory: dmenufm only show hidden directories
--F | --dotfile: dmenufm only hidden files
--p | --lastpath: dmenufm open on last working directory (cd on exit)
--r | --rollingmenu: rolling menu based on selected files.
--t | --termpath: print out path for file / directory instead of open it.
--h | --help: Show this message
+```
+$ dmenufm --help
+            DMENUFM
+            Written by huijunchen9260 <chen.9260@osu.edu>
+
+            Simple file manager using dmenu
+
+SYNTAX:     dmenufm [OPTS]
+
+OPTS:       -h | --help               - Show this usage information.
+            -d | --directory          - Only directories.
+            -f | --file               - Only show files.
+            -D | --dotdirectory       - Only show hidden directories.
+            -F | --dotfile            - Only show hidden files.
+            -p | --lastpath           - Opens in last working directory. (cd on exit)
+            -r | --rollingmenu        - Rolling menu based on selected files.
+            -t | --textpath           - Print out the path of file / directory.
 ```
 
 ## Terminal
@@ -48,24 +72,24 @@ Optional arguments for custom usage:
 `Terminal` to open terminal in currend working directory. Should define terminal by adding
 `export TERMINAL=<your terminal>` to the end of your `.bashrc` file (or any other system configuration file, like `.profile`, `zshrc`, etc).
 
-## CD on exit
+## CD on Exit
 
-Use `-p` option:
+Use `-p | --lastpath` option:
 
-```sh
+```
 dmenufm -p
 ```
 
-## Rolling menu
+## Rolling Menu
 
 Use `-r` option for rolling menu based on the file that you opened:
 
-```sh
+```
 dmenufm -r
 ```
 
 For example, the original list is
-```sh
+```
 ../
 ./
 Actions
@@ -77,7 +101,7 @@ file4
 ```
 
 You open `file3`. After you close `file3`, the menu would be
-```sh
+```
 ../
 ./
 Actions
@@ -96,12 +120,13 @@ file2
 
 Example:
 
-- current working directory is `$HOME`, if press `ESC` to leave dmenufm, then `$HOME` will be copied into `xclip`.
-- You can browse into the any directory. Inside that directory, choose `./`, and current working directory will be copied.
+- current working directory is `$HOME` (your user's own home directory), if `ESC` is pressd to leave dmenufm, then `$HOME` will be copied into `xclip`.
+- You can browse into the directory; inside that directory, choose `./`, and the current working directory will be copied.
 
 ### `NEW` to make new file / directory
 
 Name with slash will consider as a directory; without as file.
+
 - Example: Type `dirname/` to create new directory, and `filename` to create new file.
 
 ### `MVV` to move file
@@ -144,12 +169,14 @@ Delete directories or files.
 	- `Bulk Rename all` to delete all the content in the directory.
 
 ### `HIS` to record history
+
 - history file stored in `$HOME/.config/dmenufm/dmenufm_history`.
 - The maximum number of history is 5000.
 
 ### `BMK` to store as bookmarks
+
 - Choose the listed bookmark to enter that directory. Bookmarks are stored in `$HOME/.config/dmenufm/dmenufm_bookmark`
-- Choose "Add BMK" to browse between directories using new dmenu prompt.
+- Choose `Add BMK` to browse between directories using new dmenu prompt.
 	- To add file to bookmark, choose files in new dmenu prompt.
 	- To add directory to bookmark, enter the directory and choose `./` to confirm.
 - Choose "Delete BMK" to delete one file/directory in bookmark.
@@ -167,6 +194,7 @@ Delete directories or files.
 GUI application will open only one windows, and terminal application will open a terminal for this command.
 
 If there is no terminal opened for your terminal application, you need to modify `executecmd` function in `dmenufm`.
+
 ```sh
 executecmd () {
 	software=$(printf '%s' "$1" | awk -F ' ' '{print $1}')
@@ -184,14 +212,15 @@ executecmd () {
 
 Files are opened using `xdg-open`. If you have any trouble, go to [troubleshooting on xdg-open](#why-files-do-not-open-in-the-right-application)
 
-For compressions, now you can choose the compression, and it will extract into a new directory named by the compression.
+For compression, now you can choose the compression, and it will extract into a new directory named by the compression.
 
 # Configuration
 
-There are many environment variables you can use to conigure dmenufm by exporting them in your system or shell configuration file.
+There are many environment variables you can use to configure dmenufm by exporting them in your system or shell configuration file.
 
 The default options are as follows:
-```sh
+
+```
 # FILES LOCATION
 export FM_PATH="$HOME/.config/dmenufm"
 export FM_TRASH="$FM_PATH/trash"
