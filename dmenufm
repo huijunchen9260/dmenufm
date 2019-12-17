@@ -9,29 +9,29 @@
 
 ## OPTIONS
 # FILES LOCATION
-[ -n "$FM_PATH" ] || FM_PATH="$HOME/.config/dmenufm"
-[ -n "$FM_TRASH" ] || FM_TRASH="$FM_PATH/trash"
-[ -n "$FM_BMKFILE" ] || FM_BMKFILE="$FM_PATH/dmenufm_bookmark"
-[ -n "$FM_CMDFILE" ] || FM_CMDFILE="$FM_PATH/dmenufm_command"
-[ -n "$FM_HISFILE" ] || FM_HISFILE="$FM_PATH/dmenufm_history"
-[ -n "$FM_LASTPATH" ] || FM_LASTPATH="$FM_PATH/dmenufm_lastpath"
-[ -n "$FM_REMFILE" ] || FM_REMFILE="$FM_PATH/dmenufm_bulk_rename"
-[ -n "$FM_ZIPATH" ] || FM_ZIPATH="$FM_PATH/compression/"
+FM_PATH="${FM_PATH:-$HOME/.config/dmenufm}"
+FM_TRASH="${FM_TRASH:-$FM_PATH/trash}"
+FM_BMKFILE="${FM_BMKFILE:-$FM_PATH/dmenufm_bookmark}"
+FM_CMDFILE="${FM_CMDFILE:-$FM_PATH/dmenufm_command}"
+FM_HISFILE="${FM_HISFILE:-$FM_PATH/dmenufm_history}"
+FM_LASTPATH="${FM_LASTPATH:-$FM_PATH/dmenufm_lastpath}"
+FM_REMFILE="${FM_REMFILE:-$FM_PATH/dmenufm_bulk_rename}"
+FM_ZIPATH="${FM_ZIPATH:-$FM_PATH/compression/}"
 # Max number for history
-[ -n "$FM_MAX_HIS_LENGTH" ] || FM_MAX_HIS_LENGTH=5000
+FM_MAX_HIS_LENGTH="${FM_MAX_HIS_LENGTH:-5000}"
 # FONTS
-[ -n "$FM_GENERIC_FONT" ] || FM_GENERIC_FONT="Monospace-15"
-[ -n "$FM_NOTIF_FONT" ] || FM_NOTIF_FONT="Monospace-25"
-[ -n "$FM_DANGER_FONT" ] || FM_DANGER_FONT="Monospace-20"
+FM_GENERIC_FONT="${FM_GENERIC_FONT:-Monospace-15}"
+FM_NOTIF_FONT="${FM_NOTIF_FONT:-Monospace-25}"
+FM_DANGER_FONT="${FM_DANGER_FONT:-Monospace-20}"
 # COLORs
-[ -n "$FM_GENERIC_COLOR" ] || FM_GENERIC_COLOR="#005577"
-[ -n "$FM_ACTION_COLOR_LV1" ] || FM_ACTION_COLOR_LV1="#33691e"
-[ -n "$FM_ACTION_COLOR_LV2" ] || FM_ACTION_COLOR_LV2="#FF8C00"
-[ -n "$FM_ACTION_COLOR_BULK" ] || FM_ACTION_COLOR_BULK="#CB06CB"
+FM_GENERIC_COLOR="${FM_GENERIC_COLOR:-#005577}"
+FM_ACTION_COLOR_LV1="${FM_ACTION_COLOR_LV1:-#33691e}"
+FM_ACTION_COLOR_LV2="${FM_ACTION_COLOR_LV2:-#FF8C00}"
+FM_ACTION_COLOR_BULK="${FM_ACTION_COLOR_BULK:-#CB06CB}"
 
 # xdg-open directories
-XDGDIR1="/usr/share/applications"
-XDGDIR2="/usr/local/share/applications"
+XDGDIR1="${XDGDIR1:-/usr/share/applications}"
+XDGDIR2="${XDGDIR2:-/usr/local/share/applications}"
 
 ## GLOBAL VARIABLES
 CHOICE="placeholder"
@@ -67,14 +67,14 @@ COMPRESSIONLIST=$(printf '%s\n' "tar.gz" "tar.bz2" "tar.xz" "xz" "lzma" "gz" "bz
 CheckDeps () {
 	for CurDep in "$@"; do
 		if ! command -v "$CurDep" 1> /dev/null 2>&1; then
-			printf "ERROR: Dependency $CurDep not met."  1>&2
+			printf '%s' "ERROR: Dependency $CurDep not met."  1>&2
 		fi
 	done
 
 	unset CurDep
 }
 
-CheckDeps find tail xdg-mime xdg-open sed awk grep wc cp mv rm paste
+CheckDeps find tail xdg-mime xdg-open sed grep wc cp mv rm paste
 
 
 # # Check os
@@ -111,9 +111,9 @@ Extract () { # Usage: Extract [CMD] [FILE]
 
 	CheckDeps "${1%% *}" || exit 1
 	[ ! -d "DirName" ] && mkdir -p "$DirName"
-	cd "$DirName"
+	cd "$DirName" || return
 	$1 "$2"
-	NotiPrompt "$Choice extracted to $BaseName"
+	NotiPrompt "$CHOICE extracted to $BaseName"
 }
 
 FileOpen () {
@@ -136,18 +136,17 @@ FileOpen () {
 				text/*|*x-empty*|*json*)
 					# Text file opened in $EDITOR or default opener
 					if [ -n "$TERMINAL" ]; then
-						$TERMINAL -e ${EDITOR:-vi} "$1"
+						$TERMINAL -e "${EDITOR:-vi}" "$1"
 					else
-						${FM_OPENER:-xdg-open} "$1"
+						"${FM_OPENER:-xdg-open}" "$1"
 					fi
 					;;
 				*)
 					appdesktop=$(xdg-mime query default "$mimetype")
-					if < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" \
-						| tail -n 1)" grep "Terminal=false"; then
+					if grep "Terminal=false" < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" ; then
 						${FM_OPENER:-xdg-open} "$1"
 					else
-						$TERMINAL -e ${FM_OPENER:-xdg-open} "$1"
+						$TERMINAL -e "${FM_OPENER:-xdg-open}" "$1"
 					fi
 					;;
 			esac
@@ -254,7 +253,7 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 		# Outcome matching
 		if [ "$actCHOICE" = "$TARGET" ]; then
 			if [ "$termpath" = "true" ]; then
-				printf "$PWD" && actCHOICE=""
+				printf '%s' "$PWD" && actCHOICE=""
 				break
 			else
 				HERE=$(printf '%s' "$PWD")
@@ -284,7 +283,7 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 			continue
 		elif [ -f "$actCHOICE" ]; then
 			if [ "$termpath" = "true" ]; then
-				printf "$PWD/$actCHOICE" && actCHOICE=""
+				printf '%s' "$PWD/$actCHOICE" && actCHOICE=""
 				break
 			else
 				HERE=$(printf '%s' "$PWD/$actCHOICE")
@@ -383,9 +382,9 @@ BulkCompress () {
 			compressdir_name="$archive_name"
 			archive_name="$archive_name.$compression_type"
 			mv "$FM_ZIPATH" "./$compressdir_name"
-			$cmd $archive_name ./$compressdir_name/* \
+			$cmd "$archive_name" ./"$compressdir_name"/* \
 				&& NotiPrompt "Compressed to $archive_name"
-			rm -rf ./$compressdir_name
+			rm -rf ./"$compressdir_name"
 		fi
 	else
 		IFS="
@@ -408,13 +407,21 @@ BulkRename () {
 		printf '%s\n' "$SELECTED" \
 			| sed "s=/$==g" \
 			> "$FM_REMFILE.backup"
-		awk -F '/' '{print $NF}' "$FM_REMFILE.backup" \
-			> "$FM_REMFILE"
-		awk -F '/' '{$NF=""; print $0}' "$FM_REMFILE.backup" \
-			| tr ' ' '/' \
-			> "$FM_REMFILE.dirname"
+		IFS="
+		"
+		for name in $(cat -u "$FM_REMFILE.backup"); do
+			printf '%s\n' "${name##*/}"
+		done > "$FM_REMFILE"
+		unset IFS
+
+		IFS="
+		"
+		for name in $(cat -u "$FM_REMFILE.backup"); do
+			printf '%s\n' "${name%%/${name##*/}}"
+		done > "$FM_REMFILE.dirname"
+		unset IFS
 		FileOpen "$FM_REMFILE"
-		if [ $(wc -l < "$FM_REMFILE" ) -ne $(wc -l < "$FM_REMFILE.backup") ]; then
+		if [ "$(wc -l < "$FM_REMFILE" )" -ne "$(wc -l < "$FM_REMFILE.backup")" ]; then
 			NotiPrompt "ERROR: Lines mismatch in rename file; do nothing." \
 				&& return
 		else
@@ -426,10 +433,10 @@ BulkRename () {
 			IFS="
 			"
 			for selection in $(printf '%s' "$renamevar"); do
-				start=$(printf '%s' "$selection" \
-					| awk -F ':' '{print $1}')
-				destination=$(printf '%s' "$selection" \
-					| awk -F ':' '{print $2$3}')
+				TMP="$(printf '%s' "${selection%%:${selection##*:}}")"
+				start="$(printf '%s' "${TMP%%:${TMP##*:}}")"
+				destination="$(printf '%s' "${TMP##*:}/${selection##*:}")"
+				unset TMP
 				if [ "$start" = "$destination" ]; then
 					continue
 				else
@@ -530,7 +537,7 @@ FM_Action () {
 			;;
 		"$FM_NEW")
 			name=$(xprompt "Dir ends w/ slash; File w/o: " "$FM_ACTION_COLOR_LV1") || return
-			if [ -n "$( printf "$name" | grep '/')" ]; then
+			if printf '%s' "$name" | grep -q '/'; then
 				mkdir -p "$name" \
 					&& NotiPrompt "Directory $name created."
 			else
@@ -594,7 +601,7 @@ FM_Action () {
 				|| return \
 				&& allowbulk="NotAllowed")
 			if echo "$compression_type" | grep -E '^tar|^zip'; then
-				continue
+				return
 			else
 				allowbulk="NotAllowed"
 			fi
@@ -828,7 +835,7 @@ MainMenu () {
 		# Outcome matching
 		if [ "$CHOICE" = "$TARGET" ]; then
 			if [ "$termpath" = "true" ]; then
-				printf "$PWD" && CHOICE=""
+				printf '%s' "$PWD" && CHOICE=""
 				break
 			else
 				FileOpen "$PWD"
@@ -846,7 +853,7 @@ MainMenu () {
 			continue
 		elif [ -f "$CHOICE" ]; then
 			if [ "$termpath" = "true" ]; then
-				printf "$PWD/$CHOICE" && CHOICE=""
+				printf '%s' "$PWD/$CHOICE" && CHOICE=""
 				break
 			else
 				FileOpen "$PWD/$CHOICE"
@@ -897,7 +904,7 @@ while [ -n "$1" ]; do
 		"-h"|"--help" ) UsageInfo; exit 0; ;;
 		*)
 			if [ -d "$1" ]; then
-				cd "$1"
+				cd "$1" || exit 1
 			elif [ -f "$1" ]; then
 				FileOpen "$1"
 			else
