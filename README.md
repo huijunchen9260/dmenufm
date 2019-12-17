@@ -120,7 +120,7 @@ file2
 
 Example:
 
-- current working directory is `$HOME` (your user's own home directory), if `ESC` is pressd to leave dmenufm, then `$HOME` will be copied into `xclip`.
+- current working directory is `$HOME` (your user's own home directory), if `ESC` is pressed to leave dmenufm, then `$HOME` will be copied into `xclip`.
 - You can browse into the directory; inside that directory, choose `./`, and the current working directory will be copied.
 
 ### `NEW` to make new file / directory
