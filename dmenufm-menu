@@ -102,7 +102,7 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 		[ -z "$keeplist" ] && Menu \
 			&& list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
 		if [ "$rollingmenu" = "true" ] && [ -f "$actCHOICE" ]; then
-			list=$(printf '%s\n' "$actCHOICE" "${list##*$actCHOICE}" "${list%%$actCHOICE*}" | sed "/^$/ d")
+			list=$(printf '%s\n' "$actCHOICE" "${list#*$actCHOICE}" "${list%%$actCHOICE*}" | sed "/^$/ d")
 		fi
 		if [ -n "$bulkselection" ]; then
 			actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" \
@@ -183,9 +183,9 @@ MainMenu () {
 		# Generate menu with/without arguments
 		# Show only the current directory and one level of parent directory
 		if [ "$rollingmenu" = "true" ] && [ -f "$CHOICE" ]; then
-			list=$(printf '%s\n' "$CHOICE" "${list##*$CHOICE}" "${list%%$CHOICE*}" | sed "/^$/ d")
+			list=$(printf '%s\n' "$CHOICE" "${list#*$CHOICE}" "${list%%$CHOICE*}" | sed "/^$/ d")
 		fi
-		TMP="$(printf '%s' "${PWD%%/${PWD##*/}}")"
+		TMP="${PWD%%/${PWD##*/}}"
 		TwoPWD="$(printf '%s' "${TMP##*/}/${PWD##*/}")"
 		unset TMP
 		CHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" \

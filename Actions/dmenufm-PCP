@@ -1,7 +1,0 @@
-#!/bin/sh
-
-FM_PCP () {
-	# Copy path to xclip, and send notification.
-	ActionMenu "Copy directory/file path: " "$FM_ACTION_COLOR_LV1" || return
-	[ -n "$HERE" ] && printf '%s' "$HERE" | xclip -selection clipboard && NotiPrompt "Path $name copied to clipboard."
-}
