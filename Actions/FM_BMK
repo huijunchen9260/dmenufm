@@ -1,0 +1,29 @@
+#!/bin/sh
+
+FM_BMK () {
+	markmenu=$(printf '%s\n' "$(cat -u "$FM_BMKFILE")" \
+		"Add BMK" "Delete BMK" \
+		|  yprompt "Dmenufm Bookmark" "$FM_GENERIC_COLOR")
+	case "$markmenu" in
+		"Add BMK")
+			ActionMenu "Choose file / directory and add to BMK: " \
+				"$FM_ACTION_COLOR_LV1" || return
+			mark=${HERE##*/}
+			[ -n "$mark" ] && printf '%s\n' "$mark - $HERE" >> "$FM_BMKFILE"
+			[ -n "$mark" ] && sed "/^$/ d" "$FM_BMKFILE" > "$FM_BMKFILE.backup" && cp "$FM_BMKFILE.backup" "$FM_BMKFILE"
+			;;
+		"Delete BMK")
+			delbmk=$(< "$FM_BMKFILE" yprompt "Delete chosen bmk: " "darkred") || return
+			# POSIX way of sed -i.
+			# Assign address as '=' by '\=pattern='
+			# Create backup file and cp to original file.
+			[ -n "$delbmk" ] && sed "\=$delbmk= d" "$FM_BMKFILE" > "$FM_BMKFILE.backup" && cp "$FM_BMKFILE.backup" "$FM_BMKFILE"
+			;;
+		*)
+			destination=${markmenu##* - }
+			if [ -n "$destination" ]; then
+				cd "$destination" || FileOpen "$destination"
+			fi
+			;;
+	esac
+}

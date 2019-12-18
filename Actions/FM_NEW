@@ -1,0 +1,10 @@
+#!/bin/sh
+
+FM_NEW () {
+	name=$(xprompt "Dir ends w/ slash; File w/o: " "$FM_ACTION_COLOR_LV1") || return
+	if printf '%s' "$name" | grep -q '/'; then
+		mkdir -p "$name" && NotiPrompt "Directory $name created."
+	else
+		:>"$name" && NotiPrompt "File $name created."
+	fi
+}

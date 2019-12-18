@@ -1,0 +1,54 @@
+#!/bin/sh
+
+### OPTIONS AND VARIABLES
+
+## OPTIONS
+# FILES LOCATION
+FM_PATH="${FM_PATH:-$HOME/.config/dmenufm}"
+FM_TRASH="${FM_TRASH:-$FM_PATH/trash}"
+FM_BMKFILE="${FM_BMKFILE:-$FM_PATH/dmenufm_bookmark}"
+FM_CMDFILE="${FM_CMDFILE:-$FM_PATH/dmenufm_command}"
+FM_HISFILE="${FM_HISFILE:-$FM_PATH/dmenufm_history}"
+FM_LASTPATH="${FM_LASTPATH:-$FM_PATH/dmenufm_lastpath}"
+FM_REMFILE="${FM_REMFILE:-$FM_PATH/dmenufm_bulk_rename}"
+FM_ZIPATH="${FM_ZIPATH:-$FM_PATH/compression/}"
+# Max number for history
+FM_MAX_HIS_LENGTH="${FM_MAX_HIS_LENGTH:-5000}"
+# FONTS
+FM_GENERIC_FONT="${FM_GENERIC_FONT:-Monospace-15}"
+FM_NOTIF_FONT="${FM_NOTIF_FONT:-Monospace-25}"
+FM_DANGER_FONT="${FM_DANGER_FONT:-Monospace-20}"
+# COLORs
+FM_GENERIC_COLOR="${FM_GENERIC_COLOR:-#005577}"
+FM_ACTION_COLOR_LV1="${FM_ACTION_COLOR_LV1:-#33691e}"
+FM_ACTION_COLOR_LV2="${FM_ACTION_COLOR_LV2:-#FF8C00}"
+FM_ACTION_COLOR_BULK="${FM_ACTION_COLOR_BULK:-#CB06CB}"
+
+# xdg-open directories
+XDGDIR1="${XDGDIR1:-/usr/share/applications}"
+XDGDIR2="${XDGDIR2:-/usr/local/share/applications}"
+
+## GLOBAL VARIABLES
+CHOICE="placeholder"
+actCHOICE="placeholder"
+allselection="placeholder"
+TARGET="./"
+BACKWARD="../"
+ENDSELECTION="End Selection"
+allowbulk="NotAllowed"
+ACTION="Actions"
+TERM="Terminal"
+FM_PCP="PCP - Copy path"
+FM_NEW="NEW - Create new file / directory"
+FM_DEL="DEL - Delete files / directories"
+FM_MVV="MVV - Move files / directories"
+FM_YAK="YAK - Copy files / directories"
+FM_LNK="LNK - Symbolically link files / directories"
+FM_REM="REM - Rename files / directories"
+FM_TRH="TRH - Trash of dmenufm"
+FM_HIS="HIS - History of dmenufm"
+FM_BMK="BMK - Bookmark for dmenufm"
+FM_CMD="CMD - Frequently used command"
+FM_ZIP="ZIP - Compress files / directories"
+ACTLIST=$(printf '%s\n' "$FM_PCP" "$FM_NEW" "$FM_MVV" "$FM_YAK" "$FM_LNK" "$FM_DEL" "$FM_TRH" "$FM_REM" "$FM_HIS" "$FM_BMK" "$FM_CMD" "$FM_ZIP")
+COMPRESSIONLIST=$(printf '%s\n' "tar.gz" "tar.bz2" "tar.xz" "xz" "lzma" "gz" "bz2" "7z" "zip")

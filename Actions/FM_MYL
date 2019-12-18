@@ -1,0 +1,56 @@
+#!/bin/sh
+
+DestMenu () {
+	ActionMenu "Destination: " "$FM_ACTION_COLOR_LV2" || return && allowbulk="NotAllowed" && actCHOICE="placeholder"
+	[ -n "$HERE" ] && destination="$HERE" && destname="$name"
+	if [ -n "$destination" ]; then
+		IFS="
+		"
+		for selection in $(printf '%s' "$SELECTED"); do
+			unset IFS
+			$cmd "$selection" "$destination"
+		done && NotiPrompt "Selected files / directories $cmdname to $destname"
+	fi
+}
+
+FM_MYL () {
+	case "$move" in
+		"$FM_MVV")
+			cmd="mv"
+			cmdname="moved"
+			cmdverb="move"
+			allowbulk="Bulk Move"
+			allselection="Bulk Move all"
+			;;
+		"$FM_YAK")
+			cmd="cp -R"
+			cmdname="copied"
+			cmdverb="copy"
+			allowbulk="Bulk Copy"
+			allselection="Bulk Copy all"
+			;;
+		"$FM_LNK")
+			cmd="ln -s"
+			cmdname="linked"
+			cmdverb="link"
+			allowbulk="Bulk Link"
+			allselection="Bulk Link all"
+			;;
+	esac
+	ActionMenu "Source: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+	if [ -n "$bulkselection" ]; then
+		# Multi-selection mode
+		# No need for dangerousmessage
+		BulkMode "Select files / directories to $cmdverb: "
+		[ "$actCHOICE" = "$ENDSELECTION" ] && DestMenu
+	elif [ "$actCHOICE" = "$allselection" ]; then
+		# All-selection mode
+		BulkListAll
+		[ -n "$SELECTED" ] && DestMenu
+	else
+		# Single-selection mode
+		[ -n "$HERE" ] && SELECTED="$HERE"
+		[ -d "$SELECTED" ] && cd "../"
+		[ -n "$SELECTED" ] && DestMenu
+	fi
+}

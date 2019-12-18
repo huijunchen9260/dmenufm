@@ -1,0 +1,62 @@
+#!/bin/sh
+
+# Bulk rename function.
+BulkRename () {
+	if [ -n "$SELECTED" ]; then
+		printf '%s\n' "$SELECTED" | sed "s=/$==g" "$FM_REMFILE.backup"
+		IFS="
+		"
+		for name in $(cat -u "$FM_REMFILE.backup"); do
+			printf '%s\n' "${name##*/}"
+		done > "$FM_REMFILE"
+		unset IFS
+
+		IFS="
+		"
+		for name in $(cat -u "$FM_REMFILE.backup"); do
+			printf '%s\n' "${name%%/${name##*/}}"
+		done > "$FM_REMFILE.dirname"
+		unset IFS
+
+		FileOpen "$FM_REMFILE"
+
+		if [ "$(wc -l < "$FM_REMFILE" )" -ne "$(wc -l < "$FM_REMFILE.backup")" ]; then
+			NotiPrompt "ERROR: Lines mismatch in rename file; do nothing." && return
+		else
+			renamevar=$(paste -d ':' "$FM_REMFILE.backup" "$FM_REMFILE.dirname" "$FM_REMFILE")
+			# Set IFS for for loop as \n
+			IFS="
+			"
+			for selection in $(printf '%s' "$renamevar"); do
+				TMP="$(printf '%s' "${selection%%:${selection##*:}}")"
+				start="$(printf '%s' "${TMP%%:${TMP##*:}}")"
+				destination="$(printf '%s' "${TMP##*:}/${selection##*:}")"
+				unset TMP
+				if [ "$start" = "$destination" ]; then
+					continue
+				else
+					mv "$start" "$destination"
+				fi
+			done && NotiPrompt "Selected renamed"
+			unset IFS
+		fi
+	else
+		return
+	fi
+}
+
+FM_REM () {
+	allowbulk="Bulk Rename"
+	allselection="Bulk Rename all"
+	ActionMenu "Source: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+	if [ -n "$bulkselection" ]; then
+		BulkMode "Select files / directories to rename: "
+		[ -n "$SELECTED" ] && BulkRename
+	elif [ "$actCHOICE" = "$allselection" ]; then
+		BulkListAll
+		BulkRename
+	else
+		SELECTED="$HERE"
+		[ -n "$SELECTED" ] && BulkRename
+	fi
+}
