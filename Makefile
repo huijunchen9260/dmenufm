@@ -8,6 +8,7 @@ all:
 install:
 	@mkdir -p $(DESTDIR)$(PREFIX)/bin
 	@mkdir -p $(DESTDIR)$(MANDIR)/man1
+	@mkdir -p $(DESTDIR)$(DOCDIR)
 	@cp -p dmenufm $(DESTDIR)$(PREFIX)/bin/dmenufm
 	@cp -p Tools/* $(DESTDIR)$(PREFIX)/bin/
 	@cp -p Actions/* $(DESTDIR)$(PREFIX)/bin/
