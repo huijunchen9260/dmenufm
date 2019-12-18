@@ -1,19 +1,19 @@
 #!/bin/sh
 
-. ./Tools/dmenufm-def
-. ./Tools/dmenufm-menu
-. ./Tools/dmenufm-fileopen
-. ./Actions/FM_Action
-. ./Actions/FM_PCP
-. ./Actions/FM_NEW
-. ./Actions/FM_MYL
-. ./Actions/FM_DEL
-. ./Actions/FM_TRH
-. ./Actions/FM_REM
-. ./Actions/FM_HIS
-. ./Actions/FM_BMK
-. ./Actions/FM_CMD
-. ./Actions/FM_ZIP
+. dmenufm-MENU
+. dmenufm-DEF
+. dmenufm-OPN
+. dmenufm-ACT
+. dmenufm-PCP
+. dmenufm-NEW
+. dmenufm-MYL
+. dmenufm-DEL
+. dmenufm-TRH
+. dmenufm-REM
+. dmenufm-HIS
+. dmenufm-BMK
+. dmenufm-CMD
+. dmenufm-ZIP
 
 
 CheckDeps () {
