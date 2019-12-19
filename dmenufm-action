@@ -89,7 +89,7 @@ FM_CMD () {
 	    addcmd=$(xprompt "Recording your command: " "$FM_ACTION_COLOR_LV1") || return
 	    desp=$(xprompt "Enter command description: " "$FM_ACTION_COLOR_LV1") || return
 	    [ -n "$addcmd" ] && printf '%s\n' "$addcmd - $desp" >> "$FM_CMDFILE"
-	    [ -n "$addcmd" ]  && sed "/^$/ d" "$FM_CMDFILE"  > "$FM_CMDFILE.backup"  && cp "$FM_CMDFILE.backup" "$FM_CMDFILE"
+	    [ -n "$addcmd" ]  && sed "/^$/ d" "$FM_CMDFILE" > "$FM_CMDFILE.backup" && cp "$FM_CMDFILE.backup" "$FM_CMDFILE"
 	    ;;
 	"Delete CMD")
 	    delcmd=$(< "$FM_CMDFILE" yprompt "Delete chosen command: " "darkred")
@@ -241,7 +241,7 @@ FM_NEW () {
 
 FM_PCP () {
     # Copy path to xclip, and send notification.
-    ActionMenu "Copy directory/file path: " "$FM_ACTION_COLOR_LV1" || return
+    ActionMenu "Copy file / directory path: " "$FM_ACTION_COLOR_LV1" || return
     [ -n "$HERE" ] && printf '%s' "$HERE" | xclip -selection clipboard && NotiPrompt "Path $name copied to clipboard."
 }
 
@@ -327,7 +327,7 @@ FM_TRH () {
     trashmenu=$(printf '%s\n' "Move to trash" "Go to trash" "Empty trash" | yprompt "Dmenufm Trash" "$FM_GENERIC_COLOR")
     case $trashmenu in
 	"Move to trash")
-	    ActionMenu "Move file/directory to trash: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+	    ActionMenu "Move file / directory to trash: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
 	    if [ -n "$bulkselection" ]; then
 		# Multi-selection mode
 		BulkMode "Select files / directories to move to trash: "
@@ -340,7 +340,7 @@ FM_TRH () {
 		allowbulk="NotAllowed"
 		# Check the chosen on is directory or not
 		[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
-		[ -n "$HERE" ] && SELECTED="$HERE" && DangerMenu "rm -rf" "Remove all the files / directories in $name?" ""
+		[ -n "$HERE" ] && SELECTED="$HERE" && DangerMenu "rm -rf" "Move all the files / directories in $name to trash?" ""
 		[ "$result" = "0" ] && cd "../" && result=
 	    fi
 	    ;;
@@ -395,7 +395,6 @@ BulkCompress () {
 	    $cmd "$file" && NotiPrompt "Compressed to ${file##*/}"
 	done
     fi
-    ## TODO: Add error handling
 }
 
 

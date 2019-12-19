@@ -136,7 +136,7 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 		break
 	    else
 		HERE=$(printf '%s' "$PWD/$actCHOICE")
-		name=$(printf '%s' "${PWD##*/}")
+		name=$(printf '%s' "$actCHOICE")
 		[ -n "$bulkselection" ] && bulklist=$(printf '%s\n' "$bulklist" "$HERE")
 		break
 	    fi

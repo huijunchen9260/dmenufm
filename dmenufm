@@ -59,13 +59,12 @@ COMPRESSIONLIST=$(printf '%s\n' "tar.gz" "tar.bz2" "tar.xz" "xz" "lzma" "gz" "bz
 
 
 CheckDeps () {
-	for CurDep in "$@"; do
-		if ! command -v "$CurDep" 1> /dev/null 2>&1; then
-			printf '%s' "ERROR: Dependency $CurDep not met."  1>&2
-		fi
-	done
-
-	unset CurDep
+    for CurDep in "$@"; do
+	if ! command -v "$CurDep" 1> /dev/null 2>&1; then
+	    printf '%s' "ERROR: Dependency $CurDep not met."  1>&2
+	fi
+    done
+    unset CurDep
 }
 
 CheckDeps find tail xdg-mime xdg-open sed grep wc cp mv rm paste
@@ -98,27 +97,27 @@ UsageInfo () {
 ### ARGUMENTS
 
 while [ -n "$1" ]; do
-	case $1 in
-		"-d"|"--directory" ) keeplist="${keeplist} DIRs" ;;
-		"-f"|"--file" ) keeplist="${keeplist} FILEs" ;;
-		"-D"|"--dotdirectory" ) keeplist="${keeplist} DOTDIRs" ;;
-		"-F"|"--dotfile" ) keeplist="${keeplist} DOTFILEs" ;;
-		"-p"|"--lastpath" ) outputpath="placeholder" ;;
-		"-r"|"--rollingmenu") rollingmenu="true" ;;
-		"-t"|"--termpath") termpath="true" ;;
-		"-h"|"--help" ) UsageInfo; exit 0; ;;
-		*)
-			if [ -d "$1" ]; then
-				cd "$1" || exit 1
-			elif [ -f "$1" ]; then
-				FileOpen "$1"
-			else
-				printf '%s\n' "Invalid option. Use -h to read help"
-				exit 1
-			fi
-			;;
-	esac
-	shift
+    case $1 in
+	"-d"|"--directory" ) keeplist="${keeplist} DIRs" ;;
+	"-f"|"--file" ) keeplist="${keeplist} FILEs" ;;
+	"-D"|"--dotdirectory" ) keeplist="${keeplist} DOTDIRs" ;;
+	"-F"|"--dotfile" ) keeplist="${keeplist} DOTFILEs" ;;
+	"-p"|"--lastpath" ) outputpath="placeholder" ;;
+	"-r"|"--rollingmenu") rollingmenu="true" ;;
+	"-t"|"--termpath") termpath="true" ;;
+	"-h"|"--help" ) UsageInfo; exit 0; ;;
+	*)
+	    if [ -d "$1" ]; then
+		cd "$1" || exit 1
+	    elif [ -f "$1" ]; then
+		FileOpen "$1"
+	    else
+		printf '%s\n' "Invalid option. Use -h to read help"
+		exit 1
+	    fi
+	    ;;
+    esac
+    shift
 done
 
 ### RUN THE MAIN FUNCTION
