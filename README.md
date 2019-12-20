@@ -6,12 +6,46 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 
 [Distrotube](https://www.youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg) introduced my project much better than I would.
 
-# Preview
+
+<!-- vim-markdown-toc GFM -->
+
+* [Preview](#preview)
+* [Dependencies](#dependencies)
+* [Installation](#installation)
+* [Usage](#usage)
+	* [Terminal](#terminal)
+	* [CD on Exit](#cd-on-exit)
+	* [Rolling Menu](#rolling-menu)
+	* [Actions](#actions)
+		* [`PCP` to copy path.](#pcp-to-copy-path)
+		* [`NEW` to make new file / directory](#new-to-make-new-file--directory)
+		* [`MVV` to move file](#mvv-to-move-file)
+		* [`YAK` to copy files](#yak-to-copy-files)
+		* [`LNK` to create symbolic links](#lnk-to-create-symbolic-links)
+		* [`DEL` to remove](#del-to-remove)
+		* [`TRH` to put in trash.](#trh-to-put-in-trash)
+		* [`REM` to rename files / directories](#rem-to-rename-files--directories)
+		* [`HIS` to record history](#his-to-record-history)
+		* [`BMK` to store as bookmarks](#bmk-to-store-as-bookmarks)
+		* [`CMD` to store command](#cmd-to-store-command)
+			* [`CMD` Notes:](#cmd-notes)
+	* [Open files](#open-files)
+* [Configuration](#configuration)
+* [Note](#note)
+* [Troubleshooting](#troubleshooting)
+	* [Why some of my GUI app will open in terminal?](#why-some-of-my-gui-app-will-open-in-terminal)
+	* [Why files do not open in the right application](#why-files-do-not-open-in-the-right-application)
+	* [I want to configure the color and font of dmenufm](#i-want-to-configure-the-color-and-font-of-dmenufm)
+* [TODO](#todo)
+
+<!-- vim-markdown-toc -->
+
+## Preview
 
 ![Dmenufm Introduction 1](./figure/dmenufm_1.gif)
 ![Dmenufm Introduction 2](./figure/dmenufm_2.gif)
 
-# Dependencies
+## Dependencies
 
 With POSIX-compliance in mind, dmenufm makes use of and requires (or recommends) the below utilities.
 
@@ -33,13 +67,13 @@ In Debian- or Ubuntu-based distributions of Linux, the packages needed (versions
 - xclip                  >= 0.12+svn84-4
 - xz-utils               >= 5.1.1alpha+20120614-2
 
-# Installation
+## Installation
 
 `cd` into the `Makefile` directory, and type `sudo make install` in terminal to install dmenufm.
 
 To uninstall dmenufm, type `sudo make uninstall` in terminal.
 
-# Usage
+## Usage
 
 1. Type `dmenufm` to launch, or assign `dmenufm` to your favorite hot key. You may supply a directory as an argument to start dmenufm in the specified directory.
 2. `../` to go back to parent directory.
@@ -67,12 +101,12 @@ OPTS:       -h | --help               - Show this usage information.
             -t | --textpath           - Print out the path of file / directory.
 ```
 
-## Terminal
+### Terminal
 
 `Terminal` to open terminal in currend working directory. Should define terminal by adding
 `export TERMINAL=<your terminal>` to the end of your `.bashrc` file (or any other system configuration file, like `.profile`, `zshrc`, etc).
 
-## CD on Exit
+### CD on Exit
 
 Use `-p | --lastpath` option:
 
@@ -80,7 +114,7 @@ Use `-p | --lastpath` option:
 dmenufm -p
 ```
 
-## Rolling Menu
+### Rolling Menu
 
 Use `-r` option for rolling menu based on the file that you opened:
 
@@ -112,46 +146,46 @@ file1
 file2
 ```
 
-## Actions
+### Actions
 
 `Actions` is the actions you can do.
 
-### `PCP` to copy path.
+#### `PCP` to copy path.
 
 Example:
 
 - current working directory is `$HOME` (your user's own home directory), if `ESC` is pressed to leave dmenufm, then `$HOME` will be copied into `xclip`.
 - You can browse into the directory; inside that directory, choose `./`, and the current working directory will be copied.
 
-### `NEW` to make new file / directory
+#### `NEW` to make new file / directory
 
 Name with slash will consider as a directory; without as file.
 
 - Example: Type `dirname/` to create new directory, and `filename` to create new file.
 
-### `MVV` to move file
+#### `MVV` to move file
 
 - To move file to destination:
 	- Choose source and destination to move your file. Enter the directory and choose `./` to confirm the destination.
 	- `Bulk Move` for multi-selection
 	- `Bulk Move all` to move all the content in the directory.
 
-### `YAK` to copy files
+#### `YAK` to copy files
 
 - The usage of this action is the same as `MVR`, but will copy the file instead of moving it.
 
-### `LNK` to create symbolic links
+#### `LNK` to create symbolic links
 
 - The usage of this action is the same as `MVR`, but will create the symbolic link for the file instead of moving it.
 
-### `DEL` to remove
+#### `DEL` to remove
 
 Delete directories or files.
 
 - `Bulk Delete` for multi-selection
 - `Bulk Delete all` to delete all the content in the directory.
 
-### `TRH` to put in trash.
+#### `TRH` to put in trash.
 
 - `$HOME/.config/dmenufm/trash` is the directory storing trashes for dmenufm.
 - `Move file to trash` will generate a new dmenu prompt.
@@ -162,18 +196,18 @@ Delete directories or files.
 - `Go to trash` will `cd` to trash directory.
 - `Empty trash` will remove all files/directories in trash directory.
 
-### `REM` to rename files / directories
+#### `REM` to rename files / directories
 
 - Open the name of the selected files / directories to your `$EDITOR` / text editor.
 	- `Bulk Rename` for multi-selection
 	- `Bulk Rename all` to delete all the content in the directory.
 
-### `HIS` to record history
+#### `HIS` to record history
 
 - history file stored in `$HOME/.config/dmenufm/dmenufm_history`.
 - The maximum number of history is 5000.
 
-### `BMK` to store as bookmarks
+#### `BMK` to store as bookmarks
 
 - Choose the listed bookmark to enter that directory. Bookmarks are stored in `$HOME/.config/dmenufm/dmenufm_bookmark`
 - Choose `Add BMK` to browse between directories using new dmenu prompt.
@@ -181,7 +215,7 @@ Delete directories or files.
 	- To add directory to bookmark, enter the directory and choose `./` to confirm.
 - Choose "Delete BMK" to delete one file/directory in bookmark.
 
-### `CMD` to store command
+#### `CMD` to store command
 
 - Choose "Add CMD" to add both the command and command description in `$HOME/.config/dmenufm/dmenufm_command`.
 - Choose "Delete CMD" to delete any command in `$HOME/.config/dmenufm/dmenufm_command`.
@@ -189,32 +223,33 @@ Delete directories or files.
 	- If your command is a single command with no argument, e.g. `ncdu`, then dmenufm will open a terminal to run this command.
 	- If your command has arguments, e.g. `chmod +x $1`, you only need to write one argument (`$1` part), and dmenufm will open a bulk mode, which allows you to choose files to execute.
 
-#### `CMD` Notes:
+##### `CMD` Notes:
 
 GUI application will open only one windows, and terminal application will open a terminal for this command.
 
 If there is no terminal opened for your terminal application, you need to modify `executecmd` function in `dmenufm`.
 
 ```sh
-executecmd () {
-	software=$(printf '%s' "$1" | awk -F ' ' '{print $1}')
-	if < $(locate $software.desktop | tail -n 1) grep "Terminal=false"; then
-		printf '%s' "$1" | ${SHELL:-"/bin/sh"} &
-	else
-		$TERMINAL -e $1 | ${SHELL:-"/bin/sh"} &
-	fi
+ExecCMD () { # Usage ExecCMD [CMD]
+    software=$(printf '%s' "${1%% *}")
+    appdesktop=$(find "$XDGDIR1" "$XDGDIR2" -name "*$software*.desktop" | tail -n 1)
+    if [ -n "$appdesktop" ] && grep 'Terminal=false' "$appdesktop"; then
+	printf '%s' "$1" | ${SHELL:-"/bin/sh"}
+    else
+	$TERMINAL -e $1 | ${SHELL:-"/bin/sh"}
+    fi
 }
 ```
 
 `$TERMINAL -e $1` is the one you need to modify.
 
-## Open files
+### Open files
 
 Files are opened using `xdg-open`. If you have any trouble, go to [troubleshooting on xdg-open](#why-files-do-not-open-in-the-right-application)
 
 For compression, now you can choose the compression, and it will extract into a new directory named by the compression.
 
-# Configuration
+## Configuration
 
 There are many environment variables you can use to configure dmenufm by exporting them in your system or shell configuration file.
 
@@ -242,7 +277,7 @@ export FM_ACTION_COLOR_LV2="#FF8C00"
 export FM_ACTION_COLOR_BULK="#CB06CB"
 ```
 
-# Note
+## Note
 
 If you hate GUIarrowy world like me, based on `man dmenu`, you can
 
@@ -257,9 +292,9 @@ If you hate GUIarrowy world like me, based on `man dmenu`, you can
 
 where `Meta` is also called `Alt`.
 
-# Troubleshooting
+## Troubleshooting
 
-## Why some of my GUI app will open in terminal?
+### Why some of my GUI app will open in terminal?
 
 For GUI application like `sxiv`, default setting will open sxiv in a new terminal. In total, 2 windows will be opened.
 
@@ -279,7 +314,7 @@ Terminal=false
 
 You can replace `sxiv` to any GUI application which has the same issue.
 
-## Why files do not open in the right application
+### Why files do not open in the right application
 
 `dmenufm` use `xdg-open` to open files in the default application.
 
@@ -306,9 +341,9 @@ So I
 
 and you are all set.
 
-## I want to configure the color and font of dmenufm
+### I want to configure the color and font of dmenufm
 
-You can export the following environment variables in your shell or system configuration file:
+You can export the following environment variables in your shell (such as `.bashrc`) or system configuration file (such as `.profile`):
 
 ```sh
 # FONTS
@@ -325,7 +360,7 @@ export FM_ACTION_COLOR_BULK="#CB06CB"
 Change the font / font size / color in the `""` to customize the appearance  of dmenufm.
 
 
-# TODO
+## TODO
 
 See `Issues`.
 
