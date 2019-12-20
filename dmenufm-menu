@@ -116,13 +116,13 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 	    cd "../" || return
 	    History
 	elif [ "$actCHOICE" = "$ENDSELECTION" ]; then
-	    bulkselection=
+	    bulkselection=""
 	    break
 	elif [ "$actCHOICE" = "$allowbulk" ]; then
 	    bulkselection="true"
 	    break
 	elif [ "$actCHOICE" = "$allselection" ]; then
-	    bulkselection=
+	    bulkselection=""
 	    HERE=$(printf '%s' "$PWD")
 	    name=$(printf '%s' "${PWD##*/}")
 	    break
@@ -141,9 +141,9 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 		break
 	    fi
 	else
-	    HERE=
-	    name=
-	    bulkselection=
+	    HERE=""
+	    name=""
+	    bulkselection=""
 	    actCHOICE="placeholder"
 	    break
 	fi
@@ -151,6 +151,7 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 }
 
 TwoPWD () {
+    # Show only the current directory and one level of parent directory
     # Double quote "${PWD##*/}" to prevent special character
     TMP="${PWD%%/"${PWD##*/}"}"
     TMP="${TMP##*/}"
@@ -167,9 +168,8 @@ MainMenu () {
 	# Default menu list if no arguments given
 	[ -z "$keeplist" ] && Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
 	# Generate menu with/without arguments
-	# Show only the current directory and one level of parent directory
-	if [ "$rollingmenu" = "true" ] && [ -f "$CHOICE" ]; then
-	    list="$(printf '%s\n' "$CHOICE" "${list#*$CHOICE}" "${list%%$CHOICE*}")"
+	if [ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "${PWD##*/}" = "$rolldir" ]; then
+		list="$(printf '%s\n' "$rollmenu" "${list#*$rollmenu}" "${list%%$rollmenu*}")"
 	fi
 	TwoPWD
 	CHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$list" | sed "/^$/ d" | yprompt "$TwoPWD" "$FM_GENERIC_COLOR")
@@ -190,6 +190,9 @@ MainMenu () {
 	    $TERMINAL
 	elif [ -d "$CHOICE" ]; then
 	    cd "$CHOICE" || exit 1
+	    rolldir="${PWD%%/"${PWD##*/}"}"
+	    rolldir="${rolldir##*/}"
+	    rollmenu="$CHOICE"
 	    History
 	    continue
 	elif [ -f "$CHOICE" ]; then
@@ -197,6 +200,7 @@ MainMenu () {
 		printf '%s' "$PWD/$CHOICE" && CHOICE=""
 		break
 	    else
+		rollmenu="$CHOICE"
 		FileOpen "$PWD/$CHOICE"
 	    fi
 	else

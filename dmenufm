@@ -71,7 +71,7 @@ CheckDeps () {
     unset CurDep
 }
 
-CheckDeps find tail xdg-mime xdg-open sed grep wc cp mv rm paste
+CheckDeps find tail xdg-mime xdg-open sed grep wc cp mv rm paste cut
 
 UsageInfo () {
 	while read -r CurLine; do

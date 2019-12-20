@@ -15,7 +15,7 @@ Extract () { # Usage: Extract [CMD] [FILE]
     [ ! -d "DirName" ] && mkdir -p "$DirName"
     cd "$DirName" || return
     $1 "$2"
-    NotiPrompt "$CHOICE extracted to $BaseName"
+    NotiPrompt "$CHOICE extracted to $DirName"
 }
 
 FileOpen () {
@@ -36,7 +36,7 @@ FileOpen () {
 	*)
 	    case "$mimetype" in
 		text/*|*x-empty*|*json*)
-		    Text file opened in $EDITOR or default opener
+		    # Text file opened in $EDITOR or default opener
 		    if [ -n "$TERMINAL" ]; then
 			$TERMINAL -e "${EDITOR:-vi}" "$1"
 		    else

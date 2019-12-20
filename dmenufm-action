@@ -23,8 +23,8 @@ BulkListAll () {
 }
 
 BulkMode () { # Usage: BulkMode [MSG]
-    HERE=
-    bulklist=
+    HERE=""
+    bulklist=""
     ActionMenu "$1" "$FM_ACTION_COLOR_BULK" || return && allowbulk="NotAllowed"
 
     while [ -n "$bulkselection" ]; do
@@ -159,7 +159,7 @@ FM_DEL () {
 	# Check the chosen on is directory or not
 	[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 	[ -n "$HERE" ] && SELECTED="$HERE" && DangerMenu "rm -rf" "Remove all the files / directories in $name?" ""
-	[ "$result" -eq 0 ] && cd "../" && result=
+	[ "$result" -eq 0 ] && cd "../" && result=""
     fi
 }
 
@@ -344,7 +344,7 @@ FM_TRH () {
 		# Check the chosen on is directory or not
 		[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 		[ -n "$HERE" ] && SELECTED="$HERE" && DangerMenu "rm -rf" "Move all the files / directories in $name to trash?" ""
-		[ "$result" = "0" ] && cd "../" && result=
+		[ "$result" = "0" ] && cd "../" && result=""
 	    fi
 	    ;;
 	"Go to trash")
