@@ -1,0 +1,56 @@
+#!/bin/sh
+
+# See README.md for more detail
+
+# Compressions are extracted by its file extension.
+# Use Extract to put content in a new directory.
+# To edit default applications in xdg-open,
+# sudo $EDITOR /usr/share/applications/mimeinfo.cache
+
+Extract () { # Usage: Extract [CMD] [FILE]
+    BaseName=${2##*/}
+    DirName=${BaseName%%.*}
+
+    CheckDeps "${1%% *}" || exit 1
+    [ ! -d "DirName" ] && mkdir -p "$DirName"
+    cd "$DirName" || return
+    $1 "$2"
+    NotiPrompt "$CHOICE extracted to $BaseName"
+}
+
+FileOpen () {
+    mimetype=$(xdg-mime query filetype "$1")
+    case "$1" in
+	*.tar.bz2|*.tar.xz|*.tbz2) Extract "tar xvjf" "$1" ;;
+	*.tar.gz|*.tgz) Extract "tar xvzf" "$1" ;;
+	*.lzma) Extract "unlzma" "$1" ;;
+	*.bz2) Extract "bunzip2" "$1" ;;
+	*.rar) Extract "unrar x -ad" "$1" ;;
+	*.gz) Extract "gunzip" "$1" ;;
+	*.tar) Extract "tar xvf" "$1" ;;
+	*.zip) Extract "unzip" "$1" ;;
+	*.Z) Extract "uncompress" "$1" ;;
+	*.7z) Extract "7z x" "$1" ;;
+	*.xz) Extract "unxz" "$1" ;;
+	*.cab) Extract "cabextract" "$1" ;;
+	*)
+	    case "$mimetype" in
+		text/*|*x-empty*|*json*)
+		    Text file opened in $EDITOR or default opener
+		    if [ -n "$TERMINAL" ]; then
+			$TERMINAL -e "${EDITOR:-vi}" "$1"
+		    else
+			"${FM_OPENER:-xdg-open}" "$1"
+		    fi
+		    ;;
+		*)
+		    appdesktop=$(xdg-mime query default "$mimetype")
+		    if grep "Terminal=false" < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" ; then
+			${FM_OPENER:-xdg-open} "$1"
+		    else
+			$TERMINAL -e "${FM_OPENER:-xdg-open}" "$1"
+		    fi
+		    ;;
+	    esac
+    esac
+}
