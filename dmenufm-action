@@ -174,7 +174,7 @@ History () {
     if [ "$hisnum" -ge "$FM_MAX_HIS_LENGTH" ]; then
 	newline="$(printf '\n ')" && newline="${newline% }"
 	HIS="$(cat -u $FM_HISFILE)"
-	printf '%s' "${HIS#*"$newline"}" > "$FM_HISFILE"
+	printf '%s\n' "${HIS#*"$newline"}" > "$FM_HISFILE"
     fi
 }
 
