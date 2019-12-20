@@ -2,10 +2,17 @@
 
 A simple dmenu file manager written in POSIX-compliant shell script.
 
+- Minimal (*only require **POSIX compliant shell** and coreutils*)
+- File management (*yank, move, symbolic link, **ranger style bulk rename**, etc*)
+- Remember you last path ([CD on Exit](#cd-on-exit))
+- Rolling menu for dynamic file browsing ([Rolling Menu](#rolling-menu))
+
 [![Distrotube introduced my project much better than I would](https://img.youtube.com/vi/EyW6pRlWv6Q/0.jpg)](https://www.youtube.com/watch?v=EyW6pRlWv6Q)
 
 [Distrotube](https://www.youtube.com/channel/UCVls1GmFKf6WlTraIb_IaJg) introduced my project much better than I would.
 
+
+## Table of Content
 
 <!-- vim-markdown-toc GFM -->
 
