@@ -7,7 +7,9 @@ FM_Action () {
 	"$FM_NEW") FM_NEW ;;
 	"$FM_MVV"|"$FM_YAK"|"$FM_LNK") FM_MYL ;;
 	"$FM_ZIP") FM_ZIP ;;
-	"$FM_REM") FM_REM ;; "$FM_DEL") FM_DEL ;; "$FM_TRH") FM_TRH ;;
+	"$FM_REM") FM_REM ;;
+	"$FM_DEL") FM_DEL ;;
+	"$FM_TRH") FM_TRH ;;
 	"$FM_HIS") FM_HIS ;;
 	"$FM_BMK") FM_BMK ;;
 	"$FM_CMD") FM_CMD ;;
@@ -24,6 +26,7 @@ BulkMode () { # Usage: BulkMode [MSG]
     HERE=
     bulklist=
     ActionMenu "$1" "$FM_ACTION_COLOR_BULK" || return && allowbulk="NotAllowed"
+
     while [ -n "$bulkselection" ]; do
 	ActionMenu "$1" "$FM_ACTION_COLOR_BULK" || return && allowbulk="NotAllowed"
 	HERE=$bulklist
@@ -43,15 +46,16 @@ FM_BMK () {
 	"Add BMK")
 	    ActionMenu "Choose file / directory and add to BMK: " "$FM_ACTION_COLOR_LV1" || return
 	    mark=${HERE##*/}
-	    [ -n "$mark" ] && printf '%s\n' "$mark - $HERE" >> "$FM_BMKFILE"
-	    [ -n "$mark" ] && sed "/^$/ d" "$FM_BMKFILE" > "$FM_BMKFILE.backup" && cp "$FM_BMKFILE.backup" "$FM_BMKFILE"
+	    if [ -n "$mark" ]; then
+		printf '%s' "$mark - $HERE" >> "$FM_BMKFILE" && NotiPrompt "$mark added."
+	    fi
 	    ;;
 	"Delete BMK")
-	    delbmk=$(< "$FM_BMKFILE" yprompt "Delete chosen bmk: " "darkred") || return
-	    # POSIX way of sed -i.
-	    # Assign address as '=' by '\=pattern='
-	    # Create backup file and cp to original file.
-	    [ -n "$delbmk" ] && sed "\=$delbmk= d" "$FM_BMKFILE" > "$FM_BMKFILE.backup" && cp "$FM_BMKFILE.backup" "$FM_BMKFILE"
+	    BMK="$(cat -u "$FM_BMKFILE")"
+	    delbmk=$(< "$FM_BMKFILE" yprompt "Delete chosen bookmark: " "darkred") || return
+	    if [ -n "$delbmk" ]; then
+		printf '%s' "${BMK%%"$delbmk"*}" "${BMK##*"$delbmk"}" > "$FM_BMKFILE" && NotiPrompt "$delbmk deleted"
+	    fi
 	    ;;
 	*)
 	    destination=${markmenu##* - }
@@ -88,16 +92,16 @@ FM_CMD () {
 	"Add CMD")
 	    addcmd=$(xprompt "Recording your command: " "$FM_ACTION_COLOR_LV1") || return
 	    desp=$(xprompt "Enter command description: " "$FM_ACTION_COLOR_LV1") || return
-	    [ -n "$addcmd" ] && printf '%s\n' "$addcmd - $desp" >> "$FM_CMDFILE"
-	    [ -n "$addcmd" ]  && sed "/^$/ d" "$FM_CMDFILE" > "$FM_CMDFILE.backup" && cp "$FM_CMDFILE.backup" "$FM_CMDFILE"
+	    if [ -n "$addcmd" ]; then
+		printf '%s' "$addcmd - $desp" >> "$FM_CMDFILE" && NotiPrompt "$addcmd added."
+	    fi
 	    ;;
 	"Delete CMD")
+	    CMD="$(cat -u "$FM_CMDFILE")"
 	    delcmd=$(< "$FM_CMDFILE" yprompt "Delete chosen command: " "darkred")
-	    # POSIX way of sed -i.
-	    # Assign address as '+' by '\+pattern+'
-	    # '=' seems not usable in command
-	    # Create backup file and cp to original file.
-	    [ -n "$delcmd" ] && sed "\:$delcmd: d" "$FM_CMDFILE" > "$FM_CMDFILE.backup" && cp "$FM_CMDFILE.backup" "$FM_CMDFILE"
+	    if [ -n "$delcmd" ]; then
+		printf '%s' "${CMD%%"$delcmd"*}" "${CMD##*"$delcmd"}" > "$FM_CMDFILE" && NotiPrompt "$delcmd deleted"
+	    fi
 	    ;;
 	*)
 	    execmd=${cmdmenu%% - *}
@@ -155,20 +159,23 @@ FM_DEL () {
 	# Check the chosen on is directory or not
 	[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 	[ -n "$HERE" ] && SELECTED="$HERE" && DangerMenu "rm -rf" "Remove all the files / directories in $name?" ""
-	[ "$result" = "0" ] && cd "../" && result=
+	[ "$result" -eq 0 ] && cd "../" && result=
     fi
 }
 
 # Store every move between directories into history
 History () {
-    [ ! -d "$FM_PATH" ] && mkdir -p "$FM_PATH"
     dirmark="${PWD##*/}"
-    printf '%s\n' "$dirmark - $PWD" | sed "/^$/ d" >> "$FM_HISFILE"
+    printf '%s\n' "$dirmark - $PWD" >> "$FM_HISFILE"
     # Limit the max number of history
     TMP=$(wc -l "$FM_HISFILE")
     hisnum=${TMP%% *}
     unset TMP
-    [ "$hisnum" -ge "$FM_MAX_HIS_LENGTH" ] && sed "1d" "$FM_HISFILE" > "$FM_HISFILE.backup" && cp "$FM_HISFILE.backup" "$FM_HISFILE"
+    if [ "$hisnum" -ge "$FM_MAX_HIS_LENGTH" ]; then
+	newline="$(printf '\n ')" && newline="${newline% }"
+	HIS="$(cat -u $FM_HISFILE)"
+	printf '%s' "${HIS#*"$newline"}" > "$FM_HISFILE"
+    fi
 }
 
 FM_HIS () {
@@ -228,7 +235,6 @@ FM_MYL () {
 	[ -n "$SELECTED" ] && DestMenu
     fi
 }
-#!/bin/sh
 
 FM_NEW () {
     name=$(xprompt "Dir ends w/ slash; File w/o: " "$FM_ACTION_COLOR_LV1") || return
@@ -270,8 +276,6 @@ BulkRename () {
 	    # Set IFS for for loop as \n
 	    IFS="$(printf '\n ')" && IFS="${IFS% }"
 	    for selection in $(printf '%s' "$renamevar"); do
-		# start=$(printf '%s' "$selection" | awk -F ':' '{print $1}')
-		# destination=$(printf '%s' "$selection" | awk -F ':' '{print $2"/"$3}')
 		TMP="${selection%%:"${selection##*:}"}"
 		start="${TMP%%:"${TMP##*:}"}"
 		destination="${TMP##*:}/${selection##*:}"
@@ -323,7 +327,6 @@ FM_TRH () {
     # Allow multiple files to be selected
     allowbulk="Bulk Trash"
     allselection="Bulk Trash all"
-    [ ! -d "$FM_TRASH" ] && mkdir -p "$FM_TRASH"
     trashmenu=$(printf '%s\n' "Move to trash" "Go to trash" "Empty trash" | yprompt "Dmenufm Trash" "$FM_GENERIC_COLOR")
     case $trashmenu in
 	"Move to trash")
@@ -380,7 +383,7 @@ BulkCompress () {
 	    unset IFS
 	    cp -R "$file" "$FM_ZIPATH"
 	done
-	archive_name=$(xprompt "Please insert archive name: " "$FM_ACTION_COLOR_LV2" | cut -d'.' -f1) || return
+	archive_name=$(xprompt "Please insert archive name: " "$FM_ACTION_COLOR_LV2" | cut -d '.' -f1) || return
 	if [ -n "$archive_name" ]; then
 	    compressdir_name="$archive_name"
 	    archive_name="$archive_name.$compression_type"
@@ -388,6 +391,7 @@ BulkCompress () {
 	    $cmd "$archive_name" ./"$compressdir_name"/* && NotiPrompt "Compressed to $archive_name"
 	    rm -rf ./"$compressdir_name"
 	fi
+	rm -rf "$FM_ZIPATH"
     else
 	IFS="$(printf '\n ')" && IFS="${IFS% }"
 	for file in $SELECTED; do

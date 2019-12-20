@@ -169,7 +169,7 @@ MainMenu () {
 	# Generate menu with/without arguments
 	# Show only the current directory and one level of parent directory
 	if [ "$rollingmenu" = "true" ] && [ -f "$CHOICE" ]; then
-	    list=$(printf '%s\n' "$CHOICE" "${list#*$CHOICE}" "${list%%$CHOICE*}" | sed "/^$/ d")
+	    list="$(printf '%s\n' "$CHOICE" "${list#*$CHOICE}" "${list%%$CHOICE*}")"
 	fi
 	TwoPWD
 	CHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$list" | sed "/^$/ d" | yprompt "$TwoPWD" "$FM_GENERIC_COLOR")

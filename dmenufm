@@ -53,6 +53,10 @@ FM_ZIP="ZIP - Compress files / directories"
 ACTLIST=$(printf '%s\n' "$FM_PCP" "$FM_NEW" "$FM_MVV" "$FM_YAK" "$FM_LNK" "$FM_DEL" "$FM_TRH" "$FM_REM" "$FM_HIS" "$FM_BMK" "$FM_CMD" "$FM_ZIP")
 COMPRESSIONLIST=$(printf '%s\n' "tar.gz" "tar.bz2" "tar.xz" "xz" "lzma" "gz" "bz2" "7z" "zip")
 
+# Create files / directories
+[ ! -d "$FM_PATH" ] && mkdir -p "$FM_PATH"
+[ ! -d "$FM_TRASH" ] && mkdir -p "$FM_TRASH"
+
 . dmenufm-open
 . dmenufm-action
 . dmenufm-menu
