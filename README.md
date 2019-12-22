@@ -105,7 +105,7 @@ OPTS:       -h | --help               - Show this usage information.
             -F | --dotfile            - Only show hidden files.
             -p | --lastpath           - Opens in last working directory. (cd on exit)
             -r | --rollingmenu        - Rolling menu based on selected files.
-            -t | --textpath           - Print out the path of file / directory.
+            -t | --termpath           - Print out the path of file / directory.
 ```
 
 ### Terminal

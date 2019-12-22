@@ -20,8 +20,7 @@ DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
 
 ## MENUFUNCTIONS
 
-# Generate directories
-MenuDir () {
+MenuDir () { # Generate dir
     IFS="$(printf '\n ')" && IFS="${IFS% }"
     DIRs=$(
     for dir in *; do
@@ -31,9 +30,7 @@ MenuDir () {
 unset IFS
 }
 
-# Generate dotdirectories
-# Delete extra ./ and ../ (Need use = as sed delimiter)
-MenuDotDir () {
+MenuDotDir () { # Generate dotdir
     IFS="$(printf '\n ')" && IFS="${IFS% }"
     DOTDIRs=$(
     for dir in .*; do
@@ -43,8 +40,7 @@ MenuDotDir () {
 unset IFS
 }
 
-# Generate files
-MenuFile () {
+MenuFile () { # Generate file
     IFS="$(printf '\n ')" && IFS="${IFS% }"
     FILEs=$(
     for file in *; do
@@ -54,8 +50,7 @@ MenuFile () {
 unset IFS
 }
 
-# Generate dotfiles
-MenuDotFile () {
+MenuDotFile () { # Generate dorfile
     IFS="$(printf '\n ')" && IFS="${IFS% }"
     DOTFILEs=$(
     for file in .*; do
@@ -65,18 +60,15 @@ MenuDotFile () {
 unset IFS
 }
 
-# Generate default menu
-Menu () {
+Menu () { # Generate default menu
     MenuDir
     MenuDotDir
     MenuFile
     MenuDotFile
 }
 
-# Update menu in each move
-UpdateMenu () {
+UpdateMenu () { # Generate menu based on arguments
     list=
-    # Rebuild list in every move
     for element in $keeplist; do
 	case $element in
 	    DIRs) MenuDir && list=$(printf '%s\n' "$list" "$DIRs") ;;
@@ -89,17 +81,20 @@ UpdateMenu () {
 
 ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
     while [ -n "$actCHOICE" ]; do
-	UpdateMenu # Default menu list if no arguments given
-	[ -z "$keeplist" ] && Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
-	if [ "$rollingmenu" = "true" ] && [ -f "$actCHOICE" ]; then
-	    list=$(printf '%s\n' "$actCHOICE" "${list#*$actCHOICE}" "${list%%$actCHOICE*}" | sed "/^$/ d")
-	fi
-	if [ -n "$bulkselection" ]; then
-	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$ENDSELECTION" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
-	elif [ "$allowbulk" != "NotAllowed" ]; then
-	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$allowbulk" "$allselection" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
+	if [ -n "$keeplist" ]; then
+	    UpdateMenu
 	else
-	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
+	    Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
+	fi
+	if [ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "${PWD##*/}" = "$rolldir" ]; then
+		list="$(printf '%s\n' "$rollmenu" "${list#*$rollmenu}" "${list%%$rollmenu*}")"
+	fi
+	if [ "$bulkselection" = "true" ]; then
+	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$ENDSELECTION" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
+	elif [ "$allowbulk" != "NotAllowed" ]; then
+	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$allowbulk" "$allselection" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
+	else
+	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
 	fi
 	# Outcome matching
 	if [ "$actCHOICE" = "$TARGET" ]; then
@@ -109,25 +104,31 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 	    else
 		HERE=$(printf '%s' "$PWD")
 		name=$(printf '%s' "${PWD##*/}")
-		[ -n "$bulkselection" ] && bulklist=$(printf '%s\n' "$bulklist" "$HERE") && cd "../"
+		[ "$bulkselection" = "true" ] && bulklist=$(printf '%s\n' "$bulklist" "$HERE") && cd "../"
 		break
 	    fi
 	elif [ "$actCHOICE" = "$BACKWARD" ]; then
 	    cd "../" || return
 	    History
 	elif [ "$actCHOICE" = "$ENDSELECTION" ]; then
-	    bulkselection=""
+	    bulkselection="false"
 	    break
 	elif [ "$actCHOICE" = "$allowbulk" ]; then
 	    bulkselection="true"
 	    break
 	elif [ "$actCHOICE" = "$allselection" ]; then
-	    bulkselection=""
+	    bulkselection="false"
 	    HERE=$(printf '%s' "$PWD")
 	    name=$(printf '%s' "${PWD##*/}")
 	    break
+	elif [ "$actCHOICE" = "$FM_HIS" ]; then
+	    FM_HIS
+	    continue
 	elif [ -d "$actCHOICE" ]; then
 	    cd "$actCHOICE" || exit 1
+	    rolldir="${PWD%%/"${PWD##*/}"}"
+	    rolldir="${rolldir##*/}"
+	    rollmenu="$actCHOICE"
 	    History
 	    continue
 	elif [ -f "$actCHOICE" ]; then
@@ -135,24 +136,24 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 		printf '%s' "$PWD/$actCHOICE" && actCHOICE=""
 		break
 	    else
+		rollmenu="$actCHOICE"
 		HERE=$(printf '%s' "$PWD/$actCHOICE")
 		name=$(printf '%s' "$actCHOICE")
-		[ -n "$bulkselection" ] && bulklist=$(printf '%s\n' "$bulklist" "$HERE")
+		[ "$bulkselection" = "true" ] && bulklist=$(printf '%s\n' "$bulklist" "$HERE")
 		break
 	    fi
 	else
 	    HERE=""
 	    name=""
-	    bulkselection=""
+	    bulkselection="false"
 	    actCHOICE="placeholder"
 	    break
 	fi
     done
 }
 
-TwoPWD () {
-    # Show only the current directory and one level of parent directory
-    # Double quote "${PWD##*/}" to prevent special character
+TwoPWD () { # Usage: Show last two level of PWD
+    # Need "${PWD##*/}" to prevent special character
     TMP="${PWD%%/"${PWD##*/}"}"
     TMP="${TMP##*/}"
     [ ${#TMP} -ge 30 ] && TMP="$(printf '%s' "$(printf '%s' "$TMP" | cut -b 1-30)...")"
@@ -162,12 +163,13 @@ TwoPWD () {
     unset TMP TMP2
 }
 
-MainMenu () {
+MainMenu () { # Usage: MainMenu
     while [ -n "$CHOICE" ]; do
-	UpdateMenu
-	# Default menu list if no arguments given
-	[ -z "$keeplist" ] && Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
-	# Generate menu with/without arguments
+	if [ -n "$keeplist" ]; then
+	    UpdateMenu
+	else
+	    Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
+	fi
 	if [ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "${PWD##*/}" = "$rolldir" ]; then
 		list="$(printf '%s\n' "$rollmenu" "${list#*$rollmenu}" "${list%%$rollmenu*}")"
 	fi

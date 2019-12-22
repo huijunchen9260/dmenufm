@@ -2,11 +2,6 @@
 
 # See README.md for more detail
 
-# Compressions are extracted by its file extension.
-# Use Extract to put content in a new directory.
-# To edit default applications in xdg-open,
-# sudo $EDITOR /usr/share/applications/mimeinfo.cache
-
 Extract () { # Usage: Extract [CMD] [FILE]
     BaseName=${2##*/}
     DirName=${BaseName%%.*}
@@ -18,7 +13,7 @@ Extract () { # Usage: Extract [CMD] [FILE]
     NotiPrompt "$CHOICE extracted to $DirName"
 }
 
-FileOpen () {
+FileOpen () { # Usage: FileOpen [File/Dir]
     mimetype=$(xdg-mime query filetype "$1")
     case "$1" in
 	*.tar.bz2|*.tar.xz|*.tbz2) Extract "tar xvjf" "$1" ;;
