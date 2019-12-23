@@ -87,7 +87,9 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 	    Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
 	fi
 	if [ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "${PWD##*/}" = "$rolldir" ]; then
-		list="$(printf '%s\n' "$rollmenu" "${list#*$rollmenu}" "${list%%$rollmenu*}")"
+		list="$(printf '%s\n' "$rollmenu" "${list#*"$rollmenu"}" "${list%%"$rollmenu"*}")"
+		rollmenu=""
+		rolldir=""
 	fi
 	if [ "$bulkselection" = "true" ]; then
 	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$ENDSELECTION" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
@@ -108,8 +110,15 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 		break
 	    fi
 	elif [ "$actCHOICE" = "$BACKWARD" ]; then
-	    cd "../" || return
-	    History
+	    if [ "$rollingmenu" = "true" ]; then
+		rollmenu="${PWD##*/}/"
+		cd "../" || return
+		rolldir="${PWD##*/}"
+		History
+	    else
+		cd "../" || return
+		History
+	    fi
 	elif [ "$actCHOICE" = "$ENDSELECTION" ]; then
 	    bulkselection="false"
 	    break
@@ -125,11 +134,15 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 	    FM_HIS
 	    continue
 	elif [ -d "$actCHOICE" ]; then
-	    cd "$actCHOICE" || exit 1
-	    rolldir="${PWD%%/"${PWD##*/}"}"
-	    rolldir="${rolldir##*/}"
-	    rollmenu="$actCHOICE"
-	    History
+	    if [ "$rollingmenu" = "true" ]; then
+		rolldir="${PWD##*/}"
+		cd "$actCHOICE" || exit 1
+		rollmenu="$actCHOICE"
+		History
+	    else
+		cd "$actCHOICE" || exit 1
+		History
+	    fi
 	    continue
 	elif [ -f "$actCHOICE" ]; then
 	    if [ "$termpath" = "true" ]; then
@@ -171,7 +184,9 @@ MainMenu () { # Usage: MainMenu
 	    Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
 	fi
 	if [ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "${PWD##*/}" = "$rolldir" ]; then
-		list="$(printf '%s\n' "$rollmenu" "${list#*$rollmenu}" "${list%%$rollmenu*}")"
+		list="$(printf '%s\n' "$rollmenu" "${list#*"$rollmenu"}" "${list%%"$rollmenu"*}")"
+		rollmenu=""
+		rolldir=""
 	fi
 	TwoPWD
 	CHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$list" | sed "/^$/ d" | yprompt "$TwoPWD" "$FM_GENERIC_COLOR")
@@ -184,18 +199,29 @@ MainMenu () { # Usage: MainMenu
 		FileOpen "$PWD"
 	    fi
 	elif [ "$CHOICE" = "$BACKWARD" ]; then
-	    cd "../"
-	    History
+	    if [ "$rollingmenu" = "true" ]; then
+		rollmenu="${PWD##*/}/"
+		cd "../" || return
+		rolldir="${PWD##*/}"
+		History
+	    else
+		cd "../" || return
+		History
+	    fi
 	elif [ "$CHOICE" = "$ACTION" ]; then
 	    FM_Action
 	elif [ "$CHOICE" = "$TERM" ]; then
 	    $TERMINAL
 	elif [ -d "$CHOICE" ]; then
-	    cd "$CHOICE" || exit 1
-	    rolldir="${PWD%%/"${PWD##*/}"}"
-	    rolldir="${rolldir##*/}"
-	    rollmenu="$CHOICE"
-	    History
+	    if [ "$rollingmenu" = "true" ]; then
+		rolldir="${PWD##*/}"
+		cd "$CHOICE" || exit 1
+		rollmenu="$CHOICE"
+		History
+	    else
+		cd "$CHOICE" || exit 1
+		History
+	    fi
 	    continue
 	elif [ -f "$CHOICE" ]; then
 	    if [ "$termpath" = "true" ]; then
