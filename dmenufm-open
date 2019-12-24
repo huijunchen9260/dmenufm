@@ -9,8 +9,11 @@ Extract () { # Usage: Extract [CMD] [FILE]
     CheckDeps "${1%% *}" || exit 1
     [ ! -d "DirName" ] && mkdir -p "$DirName"
     cd "$DirName" || return
-    $1 "$2"
-    NotiPrompt "$CHOICE extracted to $DirName"
+    if $1 "$2"; then
+	NotiPrompt "$CHOICE extracted to $DirName"
+    else
+	NotiPrompt "Extraction fail"
+    fi
 }
 
 FileOpen () { # Usage: FileOpen [File/Dir]

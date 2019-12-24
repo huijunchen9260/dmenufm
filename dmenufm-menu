@@ -2,19 +2,19 @@
 
 ## PROMPT FUNCTIONS
 yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-    dmenu -fn "$FM_GENERIC_FONT" -i -sb "$2" -l 10 -p "$1"
+    dmenu -f -fn "$FM_GENERIC_FONT" -i -sb "$2" -l 10 -p "$1"
 }
 
 xprompt () { # Usage xprompt [MSG] [BG_COLOR]
-    dmenu -fn "$FM_GENERIC_FONT" -i -sb "$2" -p "$1" <&-
+    dmenu -f -fn "$FM_GENERIC_FONT" -i -sb "$2" -p "$1" <&-
 }
 
 NotiPrompt () { # Usage NotiPrompt [MSG]
-    dmenu -fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000" -p "$1" <&-
+    dmenu -f -fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000" -p "$1" <&-
 }
 
 DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
-    [ "$(printf "No\\nYes" | dmenu -fn "$FM_DANGER_FONT" -i -p "$1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ]
+    [ "$(printf "No\\nYes" | dmenu -f -fn "$FM_DANGER_FONT" -i -p "$1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ]
 }
 
 
@@ -86,7 +86,7 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 	else
 	    Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
 	fi
-	if [ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "${PWD##*/}" = "$rolldir" ]; then
+	if [ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "$PWD" = "$rolldir" ]; then
 		list="$(printf '%s\n' "$rollmenu" "${list#*"$rollmenu"}" "${list%%"$rollmenu"*}")"
 		rollmenu=""
 		rolldir=""
@@ -111,12 +111,12 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 	    fi
 	elif [ "$actCHOICE" = "$BACKWARD" ]; then
 	    if [ "$rollingmenu" = "true" ]; then
-		rollmenu="${PWD##*/}/"
-		cd "../" || return
+		rollmenu="$PWD"
+		cd "../" || NotiPrompt "Need super user permission to enter this directory"
 		rolldir="${PWD##*/}"
 		History
 	    else
-		cd "../" || return
+		cd "../" || NotiPrompt "Need super user permission to enter this directory"
 		History
 	    fi
 	elif [ "$actCHOICE" = "$ENDSELECTION" ]; then
@@ -135,12 +135,12 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 	    continue
 	elif [ -d "$actCHOICE" ]; then
 	    if [ "$rollingmenu" = "true" ]; then
-		rolldir="${PWD##*/}"
-		cd "$actCHOICE" || exit 1
+		rolldir="$PWD"
+		cd "$actCHOICE" || NotiPrompt "Need super user permission to enter this directory"
 		rollmenu="$actCHOICE"
 		History
 	    else
-		cd "$actCHOICE" || exit 1
+		cd "$actCHOICE" || NotiPrompt "Need super user permission to enter this directory"
 		History
 	    fi
 	    continue
@@ -183,7 +183,7 @@ MainMenu () { # Usage: MainMenu
 	else
 	    Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
 	fi
-	if [ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "${PWD##*/}" = "$rolldir" ]; then
+	if [ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "$PWD" = "$rolldir" ]; then
 		list="$(printf '%s\n' "$rollmenu" "${list#*"$rollmenu"}" "${list%%"$rollmenu"*}")"
 		rollmenu=""
 		rolldir=""
@@ -201,11 +201,11 @@ MainMenu () { # Usage: MainMenu
 	elif [ "$CHOICE" = "$BACKWARD" ]; then
 	    if [ "$rollingmenu" = "true" ]; then
 		rollmenu="${PWD##*/}/"
-		cd "../" || return
-		rolldir="${PWD##*/}"
+		cd "../" || NotiPrompt "Need super user permission to enter this directory"
+		rolldir="$PWD"
 		History
 	    else
-		cd "../" || return
+		cd "../" || NotiPrompt "Need super user permission to enter this directory"
 		History
 	    fi
 	elif [ "$CHOICE" = "$ACTION" ]; then
@@ -214,12 +214,12 @@ MainMenu () { # Usage: MainMenu
 	    $TERMINAL
 	elif [ -d "$CHOICE" ]; then
 	    if [ "$rollingmenu" = "true" ]; then
-		rolldir="${PWD##*/}"
-		cd "$CHOICE" || exit 1
+		rolldir="$PWD"
+		cd "$CHOICE" || NotiPrompt "Need super user permission to enter this directory"
 		rollmenu="$CHOICE"
 		History
 	    else
-		cd "$CHOICE" || exit 1
+		cd "$CHOICE" || NotiPrompt "Need super user permission to enter this directory"
 		History
 	    fi
 	    continue

@@ -6,13 +6,14 @@ FM_Action () { # Usage: FM_Action
 	"$FM_PCP") FM_PCP ;;
 	"$FM_NEW") FM_NEW ;;
 	"$FM_MVV"|"$FM_YAK"|"$FM_LNK") FM_MYL ;;
-	"$FM_ZIP") FM_ZIP ;;
 	"$FM_REM") FM_REM ;;
 	"$FM_DEL") FM_DEL ;;
 	"$FM_TRH") FM_TRH ;;
 	"$FM_HIS") FM_HIS ;;
 	"$FM_BMK") FM_BMK ;;
 	"$FM_CMD") FM_CMD ;;
+	"$FM_ZIP") FM_ZIP ;;
+	"$FM_SDO") FM_SDO ;;
     esac
     MainMenu
 }
@@ -256,8 +257,9 @@ FM_PCP () { # Usage: FM_PCP
 
 BulkRename () { # Usage: BulkRename
     if [ -n "$SELECTED" ]; then
+	[ -f "$FM_REMFILE" ] && rm "$FM_REMFILE" "$FM_REMFILE.dirname" "$FM_REMFILE.backup"
+
 	printf '%s\n' "$SELECTED" | sed "s=/$==g" > "$FM_REMFILE.backup"
-	rm "$FM_REMFILE" "$FM_REMFILE.dirname"
 
 	IFS="$(printf '\n ')" && IFS="${IFS% }"
 	while read -r line; do
@@ -290,6 +292,7 @@ BulkRename () { # Usage: BulkRename
 	    done && NotiPrompt "Selected renamed"
 	    unset IFS
 	fi
+	rm "$FM_REMFILE" "$FM_REMFILE.dirname" "$FM_REMFILE.backup"
     else
 	return
     fi
@@ -418,4 +421,8 @@ FM_ZIP () { # Usage: FM_ZIP
 	SELECTED="$HERE"
 	[ -n "$SELECTED" ] && BulkCompress
     fi
+}
+
+FM_SDO () {
+    sudo -A dmenufm
 }

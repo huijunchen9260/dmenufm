@@ -5,13 +5,15 @@
 ## OPTIONS
 # FILES LOCATION
 FM_PATH="${FM_PATH:-$HOME/.config/dmenufm}"
-FM_TRASH="${FM_TRASH:-$FM_PATH/trash}"
+FM_CACHE_PATH="${FM_CACHE_PATH:-$HOME/.cache/dmenufm}"
+FM_TRASH="${FM_TRASH:-$FM_CACHE_PATH/trash}"
 FM_BMKFILE="${FM_BMKFILE:-$FM_PATH/dmenufm_bookmark}"
 FM_CMDFILE="${FM_CMDFILE:-$FM_PATH/dmenufm_command}"
 FM_HISFILE="${FM_HISFILE:-$FM_PATH/dmenufm_history}"
-FM_LASTPATH="${FM_LASTPATH:-$FM_PATH/dmenufm_lastpath}"
-FM_REMFILE="${FM_REMFILE:-$FM_PATH/dmenufm_bulk_rename}"
-FM_ZIPATH="${FM_ZIPATH:-$FM_PATH/compression/}"
+FM_SDOPROP="${FM_SDOPROP:-$FM_PATH/dmenufm_sudoprompt}"
+FM_LASTPATH="${FM_LASTPATH:-$FM_CACHE_PATH/dmenufm_lastpath}"
+FM_REMFILE="${FM_REMFILE:-$FM_CACHE_PATH/dmenufm_bulk_rename}"
+FM_ZIPATH="${FM_ZIPATH:-$FM_CACHE_PATH/compression/}"
 # Max number for history
 FM_MAX_HIS_LENGTH="${FM_MAX_HIS_LENGTH:-5000}"
 # FONTS
@@ -19,6 +21,7 @@ FM_GENERIC_FONT="${FM_GENERIC_FONT:-Monospace-15}"
 FM_NOTIF_FONT="${FM_NOTIF_FONT:-Monospace-25}"
 FM_DANGER_FONT="${FM_DANGER_FONT:-Monospace-20}"
 # COLORs
+FM_SUDO_COLOR="${FM_SUDO_COLOR:-#8b0000}"
 FM_GENERIC_COLOR="${FM_GENERIC_COLOR:-#005577}"
 FM_ACTION_COLOR_LV1="${FM_ACTION_COLOR_LV1:-#33691e}"
 FM_ACTION_COLOR_LV2="${FM_ACTION_COLOR_LV2:-#FF8C00}"
@@ -27,6 +30,9 @@ FM_ACTION_COLOR_BULK="${FM_ACTION_COLOR_BULK:-#CB06CB}"
 # xdg-open directories
 XDGDIR1="${XDGDIR1:-/usr/share/applications}"
 XDGDIR2="${XDGDIR2:-/usr/local/share/applications}"
+
+# SUDO setting
+SUDO_ASKPASS="$FM_SDOPROP"
 
 ## GLOBAL VARIABLES
 CHOICE="placeholder"
@@ -50,12 +56,16 @@ FM_HIS="HIS - History of dmenufm"
 FM_BMK="BMK - Bookmark for dmenufm"
 FM_CMD="CMD - Frequently used command"
 FM_ZIP="ZIP - Compress files / directories"
-ACTLIST=$(printf '%s\n' "$FM_PCP" "$FM_NEW" "$FM_MVV" "$FM_YAK" "$FM_LNK" "$FM_DEL" "$FM_TRH" "$FM_REM" "$FM_HIS" "$FM_BMK" "$FM_CMD" "$FM_ZIP")
+FM_SDO="SDO - Enable Super user privilege"
+ACTLIST=$(printf '%s\n' "$FM_PCP" "$FM_NEW" "$FM_MVV" "$FM_YAK" "$FM_LNK" "$FM_DEL" "$FM_TRH" "$FM_REM" "$FM_HIS" "$FM_BMK" "$FM_CMD" "$FM_ZIP" "$FM_SDO")
 COMPRESSIONLIST=$(printf '%s\n' "tar.gz" "tar.bz2" "tar.xz" "xz" "lzma" "gz" "bz2" "7z" "zip")
 
 # Create files / directories
 [ ! -d "$FM_PATH" ] && mkdir -p "$FM_PATH"
+[ ! -d "$FM_CACHE_PATH" ] && mkdir -p "$FM_CACHE_PATH"
 [ ! -d "$FM_TRASH" ] && mkdir -p "$FM_TRASH"
+printf '%s\n' '#!/bin/sh' 'dmenu -fn Monospace-18 -sb "#FEE12B" -sf "#1d2021" -nf "#000000" -nb "#000000" -p "$1" <&- && echo' > "$FM_SDOPROP"
+chmod +x "$FM_SDOPROP"
 
 . dmenufm-open
 . dmenufm-action
@@ -71,7 +81,7 @@ CheckDeps () {
     unset CurDep
 }
 
-CheckDeps find tail xdg-mime xdg-open sed grep wc cp mv rm paste cut
+CheckDeps find tail xdg-mime xdg-open sed grep wc cp mv rm paste cut id
 
 UsageInfo () {
 	while read -r CurLine; do
@@ -127,8 +137,15 @@ done
 ### RUN THE MAIN FUNCTION
 
 # --lastpath option:
+
 [ -n "$outputpath" ] && cd "$(cat -u "$FM_LASTPATH")"
 
-MainMenu
+if [ "$(id -u)" -eq 0 ]; then
+    # root privilege
+    FM_GENERIC_COLOR="$FM_SUDO_COLOR"
+    MainMenu
+else
+    MainMenu
+fi
 
 printf '%s' "$PWD" > "$FM_LASTPATH"
