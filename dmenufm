@@ -21,7 +21,7 @@ FM_GENERIC_FONT="${FM_GENERIC_FONT:-Monospace-15}"
 FM_NOTIF_FONT="${FM_NOTIF_FONT:-Monospace-25}"
 FM_DANGER_FONT="${FM_DANGER_FONT:-Monospace-20}"
 # COLORs
-FM_SUDO_COLOR="${FM_SUDO_COLOR:-#8b0000}"
+FM_SUDO_COLOR="${FM_SUDO_COLOR:-red}"
 FM_GENERIC_COLOR="${FM_GENERIC_COLOR:-#005577}"
 FM_ACTION_COLOR_LV1="${FM_ACTION_COLOR_LV1:-#33691e}"
 FM_ACTION_COLOR_LV2="${FM_ACTION_COLOR_LV2:-#FF8C00}"
@@ -32,7 +32,7 @@ XDGDIR1="${XDGDIR1:-/usr/share/applications}"
 XDGDIR2="${XDGDIR2:-/usr/local/share/applications}"
 
 # SUDO setting
-SUDO_ASKPASS="$FM_SDOPROP"
+export SUDO_ASKPASS="$FM_SDOPROP"
 
 ## GLOBAL VARIABLES
 CHOICE="placeholder"
@@ -109,7 +109,6 @@ UsageInfo () {
 
 
 ### ARGUMENTS
-
 while [ -n "$1" ]; do
     case $1 in
 	"-d"|"--directory" ) keeplist="${keeplist} DIRs" ;;
@@ -141,8 +140,21 @@ done
 [ -n "$outputpath" ] && cd "$(cat -u "$FM_LASTPATH")"
 
 if [ "$(id -u)" -eq 0 ]; then
-    # root privilege
+    # super user privilege
+    yprompt () { # Usage yprompt [MSG] [BG_COLOR]
+	dmenu -f -fn "$FM_DANGER_FONT" -nb darkred -sb "$2" -sf white -nf gray -i -l 10 -p "SUDO: $1"
+    }
+
+    xprompt () { # Usage xprompt [MSG] [BG_COLOR]
+	dmenu -f -fn "$FM_DANGER_FONT" -nb darkred -sb "$2" -sf white -nf gray -i -p "SUDO: $1" <&-
+    }
+
+    DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
+	[ "$(printf "No\\nYes" | dmenu -f -fn "$FM_DANGER_FONT" -i -p "SUDO: $1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ]
+    }
+
     FM_GENERIC_COLOR="$FM_SUDO_COLOR"
+
     MainMenu
 else
     MainMenu
