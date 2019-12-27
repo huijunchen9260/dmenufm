@@ -6,6 +6,8 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 - File management (*yank, move, symbolic link, **ranger style bulk rename**, etc*)
 - Remember you last path ([CD on Exit](#cd-on-exit))
 - Rolling menu for dynamic file browsing ([Rolling Menu](#rolling-menu))
+- Able to **Preview** you file. (use [`EYE` to preview your file](#eye-to-preview-your-file))
+
 
 [![Distrotube introduced my project much better than I would](https://img.youtube.com/vi/EyW6pRlWv6Q/0.jpg)](https://www.youtube.com/watch?v=EyW6pRlWv6Q)
 
@@ -120,7 +122,7 @@ OPTS:       -h | --help               - Show this usage information.
 
 Use `-p | --lastpath` option:
 
-```
+```sh
 dmenufm -p
 ```
 
@@ -128,12 +130,12 @@ dmenufm -p
 
 Use `-r` option for rolling menu based on the file that you opened:
 
-```
+```sh
 dmenufm -r
 ```
 
 For example, the original list is
-```
+```sh
 ../
 ./
 Actions
@@ -145,7 +147,7 @@ file4
 ```
 
 You open `file3`. After you close `file3`, the menu would be
-```
+```sh
 ../
 ./
 Actions
@@ -197,7 +199,7 @@ Delete directories or files.
 
 #### `TRH` to put in trash.
 
-- `$HOME/.config/dmenufm/trash` is the directory storing trashes for dmenufm.
+- `$HOME/.cache/dmenufm/trash` is the directory storing trashes for dmenufm.
 - `Move file to trash` will generate a new dmenu prompt.
 	- Choose any file to move to trash.
 	- To move a directory to trash, enter the directory, and choose `./` to confirm this directory..
@@ -279,15 +281,18 @@ There are many environment variables you can use to configure dmenufm by exporti
 
 The default options are as follows:
 
-```
+```sh
 # FILES LOCATION
 export FM_PATH="$HOME/.config/dmenufm"
-export FM_TRASH="$FM_PATH/trash"
+export FM_CACHE_PATH="$HOME/.cache/dmenufm"
 export FM_BMKFILE="$FM_PATH/dmenufm_bookmark"
 export FM_CMDFILE="$FM_PATH/dmenufm_command"
 export FM_HISFILE="$FM_PATH/dmenufm_history"
-export FM_LASTPATH="$FM_PATH/dmenufm_lastpath"
-export FM_REMFILE="$FM_PATH/dmenufm_bulk_rename"
+export FM_SDOPROP="$FM_PATH/dmenufm_sudoprompt"
+export FM_LASTPATH="$FM_CACHE_PATH/dmenufm_lastpath"
+export FM_REMFILE="$FM_CACHE_PATH/dmenufm_bulk_rename"
+export FM_ZIPATH="$FM_CACHE_PATH/compression/"
+export FM_TRASH="$FM_CACHE_PATH/trash"
 # Max number for history
 export FM_MAX_HIS_LENGTH=5000
 # FONTS
@@ -380,6 +385,7 @@ export FM_GENERIC_COLOR="#005577"
 export FM_ACTION_COLOR_LV1="#33691e"
 export FM_ACTION_COLOR_LV2="#FF8C00"
 export FM_ACTION_COLOR_BULK="#CB06CB"
+export FM_SUDO_COLOR="red"
 ```
 
 Change the font / font size / color in the `""` to customize the appearance  of dmenufm.

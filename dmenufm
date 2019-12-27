@@ -6,11 +6,11 @@
 # FILES LOCATION
 FM_PATH="${FM_PATH:-$HOME/.config/dmenufm}"
 FM_CACHE_PATH="${FM_CACHE_PATH:-$HOME/.cache/dmenufm}"
-FM_TRASH="${FM_TRASH:-$FM_CACHE_PATH/trash}"
 FM_BMKFILE="${FM_BMKFILE:-$FM_PATH/dmenufm_bookmark}"
 FM_CMDFILE="${FM_CMDFILE:-$FM_PATH/dmenufm_command}"
 FM_HISFILE="${FM_HISFILE:-$FM_PATH/dmenufm_history}"
 FM_SDOPROP="${FM_SDOPROP:-$FM_PATH/dmenufm_sudoprompt}"
+FM_TRASH="${FM_TRASH:-$FM_CACHE_PATH/trash}"
 FM_LASTPATH="${FM_LASTPATH:-$FM_CACHE_PATH/dmenufm_lastpath}"
 FM_REMFILE="${FM_REMFILE:-$FM_CACHE_PATH/dmenufm_bulk_rename}"
 FM_ZIPATH="${FM_ZIPATH:-$FM_CACHE_PATH/compression/}"
@@ -82,7 +82,7 @@ CheckDeps () {
     unset CurDep
 }
 
-CheckDeps find tail xdg-mime xdg-open sed grep wc cp mv rm paste cut id wmctrl
+CheckDeps find tail xdg-mime xdg-open sed grep wc cp mv rm paste cut id wmctrl xclip
 
 UsageInfo () {
 	while read -r CurLine; do
