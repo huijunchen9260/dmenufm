@@ -61,6 +61,7 @@ With POSIX-compliance in mind, dmenufm makes use of and requires (or recommends)
 - `sed`, `grep`
 - `xclip`, `find`, `
 - `cat`, `wc`, `cp`, `mv`, `rm`, `mkdir`, `touch` (GNU coreutils)
+- `wmctrl` for [`EYE`](#eye-to-preview-your-file) action
 - `tar`, `unlzma`, `bunzip2`, `unrar`, `unzip`, `uncompress`, `7z`, `unxz`, `cabextract`
 
 In Debian- or Ubuntu-based distributions of Linux, the packages needed (versions are a guideline) are listed below, at least as is the case in Ubuntu 16.04 (Xenial).
