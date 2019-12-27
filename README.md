@@ -36,6 +36,8 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 		* [`BMK` to store as bookmarks](#bmk-to-store-as-bookmarks)
 		* [`CMD` to store command](#cmd-to-store-command)
 			* [`CMD` Notes:](#cmd-notes)
+		* [`SDO` to enter super user mode](#sdo-to-enter-super-user-mode)
+		* [`EYE` to preview your file](#eye-to-preview-your-file)
 	* [Open files](#open-files)
 * [Configuration](#configuration)
 * [Note](#note)
@@ -250,6 +252,20 @@ ExecCMD () { # Usage ExecCMD [CMD]
 
 `$TERMINAL -e $1` is the one you need to modify.
 
+#### `SDO` to enter super user mode
+
+Enter you password to enter super user mode (sudo).
+
+The prompt will be all red because this is a dangerous action.
+
+#### `EYE` to preview your file
+
+The `EYE` prompt will appear at the button of the screen.
+
+Recommend using this function with [Rolling Menu](#rolling-menu)
+
+Need `wmctrl` to automatically close the opened file.
+
 ### Open files
 
 Files are opened using `xdg-open`. If you have any trouble, go to [troubleshooting on xdg-open](#why-files-do-not-open-in-the-right-application)
@@ -279,6 +295,7 @@ export FM_NOTIF_FONT="Monospace-25"
 export FM_DANGER_FONT="Monospace-20"
 # COLORs
 export FM_GENERIC_COLOR="#005577"
+export FM_SUDO_COLOR="red"
 export FM_ACTION_COLOR_LV1="#33691e"
 export FM_ACTION_COLOR_LV2="#FF8C00"
 export FM_ACTION_COLOR_BULK="#CB06CB"

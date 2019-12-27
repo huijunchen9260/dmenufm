@@ -95,6 +95,8 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$ENDSELECTION" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
 	elif [ "$allowbulk" != "NotAllowed" ]; then
 	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$allowbulk" "$allselection" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
+	elif [ "$preview" = "true" ]; then
+	    actCHOICE=$(printf '%s\n' "$list" "$BACKWARD" "$FM_HIS" | sed "/^$/ d" | yprompt "$1" "$2")
 	else
 	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
 	fi

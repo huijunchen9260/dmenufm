@@ -14,6 +14,7 @@ FM_Action () { # Usage: FM_Action
 	"$FM_CMD") FM_CMD ;;
 	"$FM_ZIP") FM_ZIP ;;
 	"$FM_SDO") FM_SDO ;;
+	"$FM_EYE") FM_EYE ;;
     esac
     MainMenu
 }
@@ -252,7 +253,15 @@ FM_NEW () { # Usage: FM_NEW
 FM_PCP () { # Usage: FM_PCP
     # Copy path to xclip, and send notification.
     ActionMenu "Copy file / directory path: " "$FM_ACTION_COLOR_LV1" || return
-    [ -n "$HERE" ] && printf '%s' "$HERE" | xclip -selection clipboard && NotiPrompt "Path $name copied to clipboard."
+    if [ -n "$HERE" ] && CheckDeps xclip; then
+	printf '%s' "$HERE" | xclip -selection clipboard && NotiPrompt "Path $name copied to clipboard."
+    elif [ -n "$HERE" ] && CheckDeps xsel; then
+	printf '%s' "$HERE" | xsel --clipboard && NotiPrompt "Path $name copied to clipboard."
+    elif [ -n "$HERE" ]; then
+	NotiPrompt "Need to install xclip or xsel as dependency"
+    else
+	continue
+    fi
 }
 
 BulkRename () { # Usage: BulkRename
@@ -425,4 +434,23 @@ FM_ZIP () { # Usage: FM_ZIP
 
 FM_SDO () {
     sudo -A dmenufm
+}
+
+FM_EYE () {
+    preview="true"
+    yprompt () { # Usage yprompt [MSG] [BG_COLOR]
+	dmenu -f -fn "$FM_GENERIC_FONT" -b -i -h 40 -sb "$2" -p "$1"
+    }
+    HERE="placeholder"
+    ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+    [ -n "$HERE" ] && FileOpen "$HERE" &
+    while [ -n "$HERE" ]; do
+	ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+	[ -n "$HERE" ] && FileOpen "$HERE" &
+	[ -n "$HERE" ] && wmctrl -c :ACTIVE: &
+    done
+    wmctrl -c :ACTIVE:
+    yprompt () { # Usage yprompt [MSG] [BG_COLOR]
+	dmenu -f -fn "$FM_GENERIC_FONT" -i -sb "$2" -l 10 -p "$1"
+    }
 }

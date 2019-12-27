@@ -57,7 +57,8 @@ FM_BMK="BMK - Bookmark for dmenufm"
 FM_CMD="CMD - Frequently used command"
 FM_ZIP="ZIP - Compress files / directories"
 FM_SDO="SDO - Enable Super user privilege"
-ACTLIST=$(printf '%s\n' "$FM_PCP" "$FM_NEW" "$FM_MVV" "$FM_YAK" "$FM_LNK" "$FM_DEL" "$FM_TRH" "$FM_REM" "$FM_HIS" "$FM_BMK" "$FM_CMD" "$FM_ZIP" "$FM_SDO")
+FM_EYE="EYE - Preview files"
+ACTLIST=$(printf '%s\n' "$FM_PCP" "$FM_NEW" "$FM_MVV" "$FM_YAK" "$FM_LNK" "$FM_DEL" "$FM_TRH" "$FM_REM" "$FM_HIS" "$FM_BMK" "$FM_CMD" "$FM_ZIP" "$FM_SDO" "$FM_EYE")
 COMPRESSIONLIST=$(printf '%s\n' "tar.gz" "tar.bz2" "tar.xz" "xz" "lzma" "gz" "bz2" "7z" "zip")
 
 # Create files / directories
@@ -81,7 +82,7 @@ CheckDeps () {
     unset CurDep
 }
 
-CheckDeps find tail xdg-mime xdg-open sed grep wc cp mv rm paste cut id
+CheckDeps find tail xdg-mime xdg-open sed grep wc cp mv rm paste cut id wmctrl
 
 UsageInfo () {
 	while read -r CurLine; do
