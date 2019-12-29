@@ -446,9 +446,10 @@ FM_EYE () {
     ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
     [ -n "$HERE" ] && FileOpen "$HERE" &
     while [ -n "$HERE" ]; do
-	[ -n "$HERE" ] && wmctrl -c :ACTIVE: &
 	ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
 	[ -n "$HERE" ] && FileOpen "$HERE" &
+	wmctrl -c "PREVIEW"
+	wmctrl -r :ACTIVE: -N "PREVIEW"
     done
     wmctrl -c :ACTIVE:
 

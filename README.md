@@ -115,7 +115,7 @@ OPTS:       -h | --help               - Show this usage information.
 
 ### Terminal
 
-`Terminal` to open terminal in currend working directory. Should define terminal by adding
+`Terminal` to open terminal in current working directory. To define terminal, add
 `export TERMINAL=<your terminal>` to the end of your `.bashrc` file (or any other system configuration file, like `.profile`, `zshrc`, etc).
 
 ### CD on Exit

@@ -43,7 +43,7 @@ FileOpen () { # Usage: FileOpen [File/Dir]
 		    ;;
 		*)
 		    appdesktop=$(xdg-mime query default "$mimetype")
-		    if grep "Terminal=false" < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" ; then
+		    if grep -q "Terminal=false" < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" ; then
 			${FM_OPENER:-xdg-open} "$1"
 		    else
 			$TERMINAL -e "${FM_OPENER:-xdg-open}" "$1"
