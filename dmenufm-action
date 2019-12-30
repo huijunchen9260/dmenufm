@@ -160,7 +160,13 @@ FM_DEL () { # Usage: FM_DEL
 	# Check the chosen on is directory or not
 	[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 	[ -n "$HERE" ] && SELECTED="$HERE" && DangerMenu "rm -rf" "Remove all the files / directories in $name?" ""
-	[ "$result" -eq 0 ] && cd "../" && result=""
+	if [ "$result" -eq 0 ] && [ "$rollingmenu" = "true" ]; then
+	    rollmenu=""
+	    cd "../" && result=""
+	    rolldir="$PWD"
+	else
+	    cd "../" && result=""
+	fi
     fi
 }
 
@@ -268,7 +274,7 @@ BulkRename () { # Usage: BulkRename
     if [ -n "$SELECTED" ]; then
 	[ -f "$FM_REMFILE" ] && rm "$FM_REMFILE" "$FM_REMFILE.dirname" "$FM_REMFILE.backup"
 
-	printf '%s\n' "$SELECTED" | sed "s=/$==g" > "$FM_REMFILE.backup"
+	printf '%s\n' "$SELECTED" | sed "s=/$==g; /^$/ d" > "$FM_REMFILE.backup"
 
 	IFS="$(printf '\n ')" && IFS="${IFS% }"
 	while read -r line; do
@@ -318,8 +324,16 @@ FM_REM () { # Usage: FM_REM
 	BulkListAll
 	[ -n "$check" ] && BulkRename
     else
+	[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 	SELECTED="$HERE"
 	[ -n "$SELECTED" ] && BulkRename
+	if [ "$result" -eq 0 ] && [ "$rollingmenu" = "true" ]; then
+	    rollmenu=""
+	    cd "../" && result=""
+	    rolldir="$PWD"
+	else
+	    cd "../" && result=""
+	fi
     fi
 }
 
@@ -355,7 +369,13 @@ FM_TRH () { # Usage: FM_TRH
 		# Check the chosen on is directory or not
 		[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 		[ -n "$HERE" ] && SELECTED="$HERE" && DangerMenu "rm -rf" "Move all the files / directories in $name to trash?" ""
-		[ "$result" = "0" ] && cd "../" && result=""
+		if [ "$result" -eq 0 ] && [ "$rollingmenu" = "true" ]; then
+		    rollmenu=""
+		    cd "../" && result=""
+		    rolldir="$PWD"
+		else
+		    cd "../" && result=""
+		fi
 	    fi
 	    ;;
 	"Go to trash")

@@ -1,0 +1,91 @@
+!_TAG_FILE_FORMAT	2	/extended format; --format=1 will not append ;" to lines/
+!_TAG_FILE_SORTED	1	/0=unsorted, 1=sorted, 2=foldcase/
+!_TAG_OUTPUT_MODE	u-ctags	/u-ctags or e-ctags/
+!_TAG_PROGRAM_AUTHOR	Universal Ctags Team	//
+!_TAG_PROGRAM_NAME	Universal Ctags	/Derived from Exuberant Ctags/
+!_TAG_PROGRAM_URL	https://ctags.io/	/official site/
+!_TAG_PROGRAM_VERSION	0.0.0	/3fdf28bc/
+ActionMenu	dmenufm-menu	/^ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]$/;"	f
+Actions	README.md	/^### Actions$/;"	S
+BulkCMD	dmenufm-action	/^BulkCMD () { # Usage: BulkCMD$/;"	f
+BulkCompress	dmenufm-action	/^BulkCompress () { # Usage: BulkCompress$/;"	f
+BulkListAll	dmenufm-action	/^BulkListAll () { # Usage: BulkListAll$/;"	f
+BulkMode	dmenufm-action	/^BulkMode () { # Usage: BulkMode [MSG]$/;"	f
+BulkRename	dmenufm-action	/^BulkRename () { # Usage: BulkRename$/;"	f
+CD on Exit	README.md	/^### CD on Exit$/;"	S
+COLORs	README.md	/^# COLORs$/;"	c
+CheckDeps	dmenufm	/^CheckDeps () {$/;"	f
+Configuration	README.md	/^## Configuration$/;"	s
+DangerMenu	dmenufm-action	/^DangerMenu () { # Usage: DangerMenu [CMD] [MSG] (OPT: [Dest])$/;"	f
+DangerPrompt	dmenufm	/^    DangerPrompt () { # Usage: DangerPrompt [MSG] && ...$/;"	f
+DangerPrompt	dmenufm-menu	/^DangerPrompt () { # Usage: DangerPrompt [MSG] && ...$/;"	f
+Dependencies	README.md	/^## Dependencies$/;"	s
+DestMenu	dmenufm-action	/^DestMenu () { # Usage: DestMenu$/;"	f
+Dmenufm	README.md	/^# Dmenufm$/;"	c
+EOF	dmenufm	/^	done <<-EOF$/;"	h
+ExecCMD	dmenufm-action	/^ExecCMD () { # Usage: ExecCMD [CMD]$/;"	f
+Extract	dmenufm-open	/^Extract () { # Usage: Extract [CMD] [FILE]$/;"	f
+FILES LOCATION	README.md	/^# FILES LOCATION$/;"	c
+FM_Action	dmenufm-action	/^FM_Action () { # Usage: FM_Action$/;"	f
+FM_BMK	dmenufm-action	/^FM_BMK () { # Usage: FM_BMK$/;"	f
+FM_CMD	dmenufm-action	/^FM_CMD () { # Usage: FM_CMD$/;"	f
+FM_DEL	dmenufm-action	/^FM_DEL () { # Usage: FM_DEL$/;"	f
+FM_EYE	dmenufm-action	/^FM_EYE () {$/;"	f
+FM_HIS	dmenufm-action	/^FM_HIS () { # Usage: FM_HIS$/;"	f
+FM_MYL	dmenufm-action	/^FM_MYL () { # Usage: FM_MYL$/;"	f
+FM_NEW	dmenufm-action	/^FM_NEW () { # Usage: FM_NEW$/;"	f
+FM_PCP	dmenufm-action	/^FM_PCP () { # Usage: FM_PCP$/;"	f
+FM_REM	dmenufm-action	/^FM_REM () { # Usage: FM_REM$/;"	f
+FM_SDO	dmenufm-action	/^FM_SDO () {$/;"	f
+FM_TRH	dmenufm-action	/^FM_TRH () { # Usage: FM_TRH$/;"	f
+FM_ZIP	dmenufm-action	/^FM_ZIP () { # Usage: FM_ZIP$/;"	f
+FONTS	README.md	/^# FONTS$/;"	c
+FileOpen	dmenufm-open	/^FileOpen () { # Usage: FileOpen [File\/Dir]$/;"	f
+History	dmenufm-action	/^History () { # Usage: History$/;"	f
+I want to configure the color and font of dmenufm	README.md	/^### I want to configure the color and font of dmenufm$/;"	S
+Installation	README.md	/^## Installation$/;"	s
+MainMenu	dmenufm-menu	/^MainMenu () { # Usage: MainMenu$/;"	f
+Max number for history	README.md	/^# Max number for history$/;"	c
+Menu	dmenufm-menu	/^Menu () { # Generate default menu$/;"	f
+MenuDir	dmenufm-menu	/^MenuDir () { # Generate dir$/;"	f
+MenuDotDir	dmenufm-menu	/^MenuDotDir () { # Generate dotdir$/;"	f
+MenuDotFile	dmenufm-menu	/^MenuDotFile () { # Generate dorfile$/;"	f
+MenuFile	dmenufm-menu	/^MenuFile () { # Generate file$/;"	f
+Note	README.md	/^## Note$/;"	s
+NotiPrompt	dmenufm-menu	/^NotiPrompt () { # Usage NotiPrompt [MSG]$/;"	f
+Open files	README.md	/^### Open files$/;"	S
+PREFIX	Makefile	/^PREFIX ?= \/usr$/;"	m
+Preview	README.md	/^## Preview$/;"	s
+Rolling Menu	README.md	/^### Rolling Menu$/;"	S
+TODO	README.md	/^## TODO$/;"	s
+Table of Content	README.md	/^## Table of Content$/;"	s
+Terminal	README.md	/^### Terminal$/;"	S
+Troubleshooting	README.md	/^## Troubleshooting$/;"	s
+TwoPWD	dmenufm-menu	/^TwoPWD () { # Usage: Show last two level of PWD$/;"	f
+UpdateMenu	dmenufm-menu	/^UpdateMenu () { # Generate menu based on arguments$/;"	f
+Usage	README.md	/^## Usage$/;"	s
+UsageInfo	dmenufm	/^UsageInfo () {$/;"	f
+Why files do not open in the right application	README.md	/^### Why files do not open in the right application$/;"	S
+Why some of my GUI app will open in terminal?	README.md	/^### Why some of my GUI app will open in terminal?$/;"	S
+`BMK` to store as bookmarks	README.md	/^#### `BMK` to store as bookmarks$/;"	t
+`CMD` Notes:	README.md	/^##### `CMD` Notes:$/;"	T
+`CMD` to store command	README.md	/^#### `CMD` to store command$/;"	t
+`DEL` to remove	README.md	/^#### `DEL` to remove$/;"	t
+`EYE` to preview your file	README.md	/^#### `EYE` to preview your file$/;"	t
+`HIS` to record history	README.md	/^#### `HIS` to record history$/;"	t
+`LNK` to create symbolic links	README.md	/^#### `LNK` to create symbolic links$/;"	t
+`MVV` to move file	README.md	/^#### `MVV` to move file$/;"	t
+`NEW` to make new file / directory	README.md	/^#### `NEW` to make new file \/ directory$/;"	t
+`PCP` to copy path.	README.md	/^#### `PCP` to copy path.$/;"	t
+`REM` to rename files / directories	README.md	/^#### `REM` to rename files \/ directories$/;"	t
+`SDO` to enter super user mode	README.md	/^#### `SDO` to enter super user mode$/;"	t
+`TRH` to put in trash.	README.md	/^#### `TRH` to put in trash.$/;"	t
+`YAK` to copy files	README.md	/^#### `YAK` to copy files$/;"	t
+all	Makefile	/^all:$/;"	t
+install	Makefile	/^install:$/;"	t
+uninstall	Makefile	/^uninstall:$/;"	t
+xprompt	dmenufm	/^    xprompt () { # Usage xprompt [MSG] [BG_COLOR]$/;"	f
+xprompt	dmenufm-menu	/^xprompt () { # Usage xprompt [MSG] [BG_COLOR]$/;"	f
+yprompt	dmenufm	/^    yprompt () { # Usage yprompt [MSG] [BG_COLOR]$/;"	f
+yprompt	dmenufm-action	/^    yprompt () { # Usage yprompt [MSG] [BG_COLOR]$/;"	f
+yprompt	dmenufm-menu	/^yprompt () { # Usage yprompt [MSG] [BG_COLOR]$/;"	f
