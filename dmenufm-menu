@@ -94,7 +94,7 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 	if [ "$bulkselection" = "true" ]; then
 	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$ENDSELECTION" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
 	elif [ "$allowbulk" != "NotAllowed" ]; then
-	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$allowbulk" "$allselection" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
+	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$allowbulk" "$allselection" "$masselection" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
 	elif [ "$preview" = "true" ]; then
 	    actCHOICE=$(printf '%s\n' "$list" "$BACKWARD" "$FM_HIS" | sed "/^$/ d" | yprompt "$1" "$2")
 	else
@@ -127,7 +127,7 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 	elif [ "$actCHOICE" = "$allowbulk" ]; then
 	    bulkselection="true"
 	    break
-	elif [ "$actCHOICE" = "$allselection" ]; then
+	elif [ "$actCHOICE" = "$allselection" ] || [ "$actCHOICE" = "$masselection" ]; then
 	    bulkselection="false"
 	    HERE=$(printf '%s' "$PWD")
 	    name=$(printf '%s' "${PWD##*/}")

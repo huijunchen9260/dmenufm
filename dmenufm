@@ -13,6 +13,7 @@ FM_SDOPROP="${FM_SDOPROP:-$FM_PATH/dmenufm_sudoprompt}"
 FM_TRASH="${FM_TRASH:-$FM_CACHE_PATH/trash}"
 FM_LASTPATH="${FM_LASTPATH:-$FM_CACHE_PATH/dmenufm_lastpath}"
 FM_REMFILE="${FM_REMFILE:-$FM_CACHE_PATH/dmenufm_bulk_rename}"
+FM_MASFILE="${FM_MASFILE:-$FM_CACHE_PATH/dmenufm_bulk_mass}"
 FM_ZIPATH="${FM_ZIPATH:-$FM_CACHE_PATH/compression/}"
 # Max number for history
 FM_MAX_HIS_LENGTH="${FM_MAX_HIS_LENGTH:-5000}"

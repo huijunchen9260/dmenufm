@@ -89,7 +89,7 @@ To uninstall dmenufm, type `sudo make uninstall` in terminal.
 
 1. Type `dmenufm` to launch, or assign `dmenufm` to your favorite hot key. You may supply a directory as an argument to start dmenufm in the specified directory.
 2. `../` to go back to parent directory.
-3. `./` to open your file manager in currend working directory (determined by `xdg-open`)
+3. `./` to open your file manager in current working directory (determined by `xdg-open`)
 4. Choices with `/` are directory; choices without `/` are files.
 
 Usage output (as of 2019-12-16) showing optional arguments for custom usage:
@@ -180,7 +180,8 @@ Name with slash will consider as a directory; without as file.
 - To move file to destination:
 	- Choose source and destination to move your file. Enter the directory and choose `./` to confirm the destination.
 	- `Bulk Move` for multi-selection
-	- `Bulk Move all` to move all the content in the directory.
+	- `Bulk Move All` to move all the content in the directory.
+	- `Bulk Move Mass` to move contents that is selected by editing the list of content in default text editor.
 
 #### `YAK` to copy files
 
@@ -195,7 +196,8 @@ Name with slash will consider as a directory; without as file.
 Delete directories or files.
 
 - `Bulk Delete` for multi-selection
-- `Bulk Delete all` to delete all the content in the directory.
+- `Bulk Delete All` to delete all the content in the directory.
+- `Bulk Delete Mass` to delete contents that is selected by editing the list of content in default text editor.
 
 #### `TRH` to put in trash.
 
@@ -204,7 +206,8 @@ Delete directories or files.
 	- Choose any file to move to trash.
 	- To move a directory to trash, enter the directory, and choose `./` to confirm this directory..
 	- `Bulk Trash` for multi-selection
-	- `Bulk Trash all` to delete all the content in the directory.
+	- `Bulk Trash All` to delete all the content in the directory.
+	- `Bulk Trash Mass` to delete contents that is selected by editing the list of content in default text editor.
 - `Go to trash` will `cd` to trash directory.
 - `Empty trash` will remove all files/directories in trash directory.
 
@@ -212,7 +215,8 @@ Delete directories or files.
 
 - Open the name of the selected files / directories to your `$EDITOR` / text editor.
 	- `Bulk Rename` for multi-selection
-	- `Bulk Rename all` to delete all the content in the directory.
+	- `Bulk Rename All` to rename all the content in the directory.
+	- `Bulk Rename Mass` to rename contents that is selected by editing the list of content in default text editor.
 
 #### `HIS` to record history
 
@@ -291,6 +295,7 @@ export FM_HISFILE="$FM_PATH/dmenufm_history"
 export FM_SDOPROP="$FM_PATH/dmenufm_sudoprompt"
 export FM_LASTPATH="$FM_CACHE_PATH/dmenufm_lastpath"
 export FM_REMFILE="$FM_CACHE_PATH/dmenufm_bulk_rename"
+export FM_MASFILE="$FM_CACHE_PATH/dmenufm_bulk_mass"
 export FM_ZIPATH="$FM_CACHE_PATH/compression/"
 export FM_TRASH="$FM_CACHE_PATH/trash"
 # Max number for history

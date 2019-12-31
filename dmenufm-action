@@ -24,6 +24,21 @@ BulkListAll () { # Usage: BulkListAll
     [ -n "$SELECTED" ] && check=$(printf '%s' "$SELECTED" | yprompt "Check selections. (Enter to continue, ESC to quit)" "$FM_ACTION_COLOR_LV1")
 }
 
+
+BulkMassMode () { # Usage: BulkMassMode
+    SELECTED=$(printf '%s' "$list" | sed "/^$/ d; s=^=$PWD/=g")
+    [ -f "$FM_MASFILE" ] && rm "$FM_MASFILE"
+
+    printf '%s\n' "$SELECTED" | sed "s=/$==g; /^$/ d" > "$FM_MASFILE"
+    NotiPrompt "Remove unwanted names and remain the desire ones."
+    FileOpen "$FM_MASFILE"
+
+    SELECTED="$(cat -u $FM_MASFILE | sed "/^$/ d")"
+    [ -n "$SELECTED" ] && check=$(printf '%s' "$SELECTED" | yprompt "Check selections. (Enter to continue, ESC to quit)" "$FM_ACTION_COLOR_LV1")
+
+    rm "$FM_MASFILE"
+}
+
 BulkMode () { # Usage: BulkMode [MSG]
     HERE=""
     bulklist=""
@@ -111,13 +126,17 @@ FM_CMD () { # Usage: FM_CMD
 	    execmd=${cmdmenu%% - *}
 	    if printf '%s' "$execmd" | grep '\$'; then
 		allowbulk="Bulk Execute"
-		allselection="Bulk Execute all"
+		allselection="Bulk Execute All"
+		masselection="Bulk Execute Mass"
 		ActionMenu "Choose and execute: " "$FM_ACTION_COLOR_LV1"
 		if [ "$bulkselection" = "true" ]; then
 		    BulkMode "Select to execute: "
 		    [ -n "$check" ] && BulkCMD
 		elif [ "$actCHOICE" = "$allselection" ]; then
 		    BulkListAll
+		    [ -n "$check" ] && BulkCMD
+		elif [ "$actCHOICE" = "$masselection" ]; then
+		    BulkMassMode
 		    [ -n "$check" ] && BulkCMD
 		else
 		    SELECTED="$HERE"
@@ -146,13 +165,17 @@ DangerMenu () { # Usage: DangerMenu [CMD] [MSG] (OPT: [Dest])
 
 FM_DEL () { # Usage: FM_DEL
     allowbulk="Bulk Delete"
-    allselection="Bulk Delete all"
+    allselection="Bulk Delete All"
+    masselection="Bulk Delete Mass"
     ActionMenu "Remove file / directory: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
     if [ "$bulkselection" = "true" ]; then
 	BulkMode "Select files / directories to delete: "
 	[ -n "$check" ] && DangerMenu "rm -rf" "Delete all selected?" ""
     elif [ "$actCHOICE" = "$allselection" ]; then
 	BulkListAll
+	[ -n "$check" ] && DangerMenu "rm -rf" "Delete all selected in $name?" ""
+    elif [ "$actCHOICE" = "$masselection" ]; then
+	BulkMassMode
 	[ -n "$check" ] && DangerMenu "rm -rf" "Delete all selected in $name?" ""
     else
 	# Single-selection mode
@@ -164,8 +187,10 @@ FM_DEL () { # Usage: FM_DEL
 	    rollmenu=""
 	    cd "../" && result=""
 	    rolldir="$PWD"
-	else
+	elif [ "$result" -eq 0 ]; then
 	    cd "../" && result=""
+	else
+	    result=""
 	fi
     fi
 }
@@ -210,21 +235,24 @@ FM_MYL () { # Usage: FM_MYL
 	    cmdname="moved"
 	    cmdverb="move"
 	    allowbulk="Bulk Move"
-	    allselection="Bulk Move all"
+	    allselection="Bulk Move All"
+	    masselection="Bulk Move Mass"
 	    ;;
 	"$FM_YAK")
 	    cmd="cp -R"
 	    cmdname="copied"
 	    cmdverb="copy"
 	    allowbulk="Bulk Copy"
-	    allselection="Bulk Copy all"
+	    allselection="Bulk Copy All"
+	    masselection="Bulk Copy Mass"
 	    ;;
 	"$FM_LNK")
 	    cmd="ln -s"
 	    cmdname="linked"
 	    cmdverb="link"
 	    allowbulk="Bulk Link"
-	    allselection="Bulk Link all"
+	    allselection="Bulk Link All"
+	    masselection="Bulk Link Mass"
 	    ;;
     esac
     ActionMenu "Source: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
@@ -233,6 +261,9 @@ FM_MYL () { # Usage: FM_MYL
 	[ -n "$check" ] && DestMenu
     elif [ "$actCHOICE" = "$allselection" ]; then
 	BulkListAll
+	[ -n "$check" ] && DestMenu
+    elif [ "$actCHOICE" = "$masselection" ]; then
+	BulkMassMode
 	[ -n "$check" ] && DestMenu
     else
 	# Single-selection mode
@@ -315,13 +346,17 @@ BulkRename () { # Usage: BulkRename
 
 FM_REM () { # Usage: FM_REM
     allowbulk="Bulk Rename"
-    allselection="Bulk Rename all"
+    allselection="Bulk Rename All"
+    masselection="Bulk Rename Mass"
     ActionMenu "Source: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
     if [ "$bulkselection" = "true" ]; then
 	BulkMode "Select files / directories to rename: "
 	[ -n "$check" ] && BulkRename
     elif [ "$actCHOICE" = "$allselection" ]; then
 	BulkListAll
+	[ -n "$check" ] && BulkRename
+    elif [ "$actCHOICE" = "$masselection" ]; then
+	BulkMassMode
 	[ -n "$check" ] && BulkRename
     else
 	[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
@@ -331,8 +366,10 @@ FM_REM () { # Usage: FM_REM
 	    rollmenu=""
 	    cd "../" && result=""
 	    rolldir="$PWD"
-	else
+	elif [ "$result" -eq 0 ]; then
 	    cd "../" && result=""
+	else
+	    result=""
 	fi
     fi
 }
@@ -353,7 +390,8 @@ DangerMenu () { # Usage: DangerMenu [CMD] [MSG] (OPT: [Dest])
 
 FM_TRH () { # Usage: FM_TRH
     allowbulk="Bulk Trash"
-    allselection="Bulk Trash all"
+    allselection="Bulk Trash All"
+    masselection="Bulk Trash Mass"
     trashmenu=$(printf '%s\n' "Move to trash" "Go to trash" "Empty trash" | yprompt "Dmenufm Trash" "$FM_GENERIC_COLOR")
     case $trashmenu in
 	"Move to trash")
@@ -363,18 +401,23 @@ FM_TRH () { # Usage: FM_TRH
 		[ -n "$check" ] && DangerMenu "mv" "Move all selected to trash?" "$FM_TRASH"
 	    elif [ "$actCHOICE" = "$allselection" ]; then
 		BulkListAll
-		[ -n "$check" ] && DangerMenu "rm -rf" "Delete all selected in $name?" ""
+		[ -n "$check" ] && DangerMenu "mv" "Move all selected to trash?" "$FM_TRASH"
+	    elif [ "$actCHOICE" = "$masselection" ]; then
+		BulkMassMode
+		[ -n "$check" ] && DangerMenu "mv" "Move all selected to trash?" "$FM_TRASH"
 	    else
 		allowbulk="NotAllowed"
 		# Check the chosen on is directory or not
 		[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
-		[ -n "$HERE" ] && SELECTED="$HERE" && DangerMenu "rm -rf" "Move all the files / directories in $name to trash?" ""
+		[ -n "$HERE" ] && SELECTED="$HERE" && DangerMenu "mv" "Move $name to trash?" "$FM_TRASH"
 		if [ "$result" -eq 0 ] && [ "$rollingmenu" = "true" ]; then
 		    rollmenu=""
 		    cd "../" && result=""
 		    rolldir="$PWD"
-		else
+		elif [ "$result" -eq 0 ]; then
 		    cd "../" && result=""
+		else
+		    result=""
 		fi
 	    fi
 	    ;;
@@ -434,7 +477,8 @@ BulkCompress () { # Usage: BulkCompress
 
 FM_ZIP () { # Usage: FM_ZIP
     allowbulk="Bulk Compress"
-    allselection="Bulk Compress all"
+    allselection="Bulk Compress All"
+    masselection="Bulk Compress Mass"
     compression_type=$(printf '%s\n' "$COMPRESSIONLIST" | yprompt "Compression type: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed")
     if ! printf '%s' "$compression_type" | grep -E '^tar|^zip'; then
 	allowbulk="NotAllowed"
@@ -445,6 +489,9 @@ FM_ZIP () { # Usage: FM_ZIP
 	[ -n "$check" ] && BulkCompress
     elif [ "$actCHOICE" = "$allselection" ]; then
 	BulkListAll
+	[ -n "$check" ] && BulkCompress
+    elif [ "$actCHOICE" = "$masselection" ]; then
+	BulkMassMode
 	[ -n "$check" ] && BulkCompress
     else
 	SELECTED="$HERE"
