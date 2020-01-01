@@ -164,8 +164,10 @@ FM_DEL () { # Usage: FM_DEL
 	    rollmenu=""
 	    cd "../" && result=""
 	    rolldir="$PWD"
-	else
+	elif [ "$result" -eq 0 ]; then
 	    cd "../" && result=""
+	else
+	    result=""
 	fi
     fi
 }
@@ -331,8 +333,10 @@ FM_REM () { # Usage: FM_REM
 	    rollmenu=""
 	    cd "../" && result=""
 	    rolldir="$PWD"
-	else
+	elif [ "$result" -eq 0 ]; then
 	    cd "../" && result=""
+	else
+	    result=""
 	fi
     fi
 }
@@ -363,18 +367,20 @@ FM_TRH () { # Usage: FM_TRH
 		[ -n "$check" ] && DangerMenu "mv" "Move all selected to trash?" "$FM_TRASH"
 	    elif [ "$actCHOICE" = "$allselection" ]; then
 		BulkListAll
-		[ -n "$check" ] && DangerMenu "rm -rf" "Delete all selected in $name?" ""
+		[ -n "$check" ] && DangerMenu "mv" "Move all selected to trash?" "$FM_TRASH"
 	    else
 		allowbulk="NotAllowed"
 		# Check the chosen on is directory or not
 		[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
-		[ -n "$HERE" ] && SELECTED="$HERE" && DangerMenu "rm -rf" "Move all the files / directories in $name to trash?" ""
+		[ -n "$HERE" ] && SELECTED="$HERE" && DangerMenu "mv" "Move $name to trash?" "$FM_TRASH"
 		if [ "$result" -eq 0 ] && [ "$rollingmenu" = "true" ]; then
 		    rollmenu=""
 		    cd "../" && result=""
 		    rolldir="$PWD"
-		else
+		elif [ "$result" -eq 0 ]; then
 		    cd "../" && result=""
+		else
+		    result=""
 		fi
 	    fi
 	    ;;
