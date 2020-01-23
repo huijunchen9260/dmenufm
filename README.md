@@ -283,6 +283,19 @@ For compression, now you can choose the compression, and it will extract into a 
 
 There are many environment variables you can use to configure dmenufm by exporting them in your system or shell configuration file.
 
+Alternatively write the configuration to `dmenufm_config` in `$HOME/.config/dmenufm` or what ever you have set `FM_PATH` to.
+
+Example:
+
+    FM_GENERIC_FONT="Iosevka:pixelsize=26:antialias=true:autohint=true"
+    FM_NOTIF_FONT="$FM_GENERIC_FONT"
+    FM_DANGER_FONT="$FM_GENERIC_FONt"
+    FM_SUDO_COLOR="#bf616a"
+    FM_GENERIC_COLOR="#2e3440"
+    FM_ACTION_COLOR_LVL1="#2e3440"
+    FM_ACTION_COLOR_LVL2="#4c566a"
+    FM_ACTION_COLOR_LVL3="#d8dee9"
+
 The default options are as follows:
 
 ```sh

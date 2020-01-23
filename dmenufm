@@ -1,5 +1,10 @@
 #!/bin/sh
 
+# source configuration file
+if [ -r "${FM_PATH:-$HOME/.config/dmenufm}/dmenufm_config" ]; then
+    . "${FM_PATH:-$HOME/.config/dmenufm}/dmenufm_config"
+fi
+
 ### OPTIONS AND VARIABLES
 
 ## OPTIONS
