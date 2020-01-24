@@ -25,7 +25,7 @@ BulkListAll () { # Usage: BulkListAll
 }
 
 
-BulkMassMode () { # Usage: BulkMassMode
+BulkListMass () { # Usage: BulkListMass
     SELECTED=$(printf '%s' "$list" | sed "/^$/ d; s=^=$PWD/=g")
     [ -f "$FM_MASFILE" ] && rm "$FM_MASFILE"
 
@@ -88,7 +88,7 @@ FM_BMK () { # Usage: FM_BMK
 BulkCMD () { # Usage: BulkCMD
     execfile=$(printf '%s' "$SELECTED")
     execmd=$(printf '%s' "$execmd" | sed "1 s/$.*//")
-    IFS="$(printf '\n ')" && IFS="${IFS% }"
+    IFS="$nl"
     for selection in $(printf '%s' "$execfile"); do
 	unset IFS
 	$execmd "$selection"
@@ -136,7 +136,7 @@ FM_CMD () { # Usage: FM_CMD
 		    BulkListAll
 		    [ -n "$check" ] && BulkCMD
 		elif [ "$actCHOICE" = "$masselection" ]; then
-		    BulkMassMode
+		    BulkListMass
 		    [ -n "$check" ] && BulkCMD
 		else
 		    SELECTED="$HERE"
@@ -150,7 +150,7 @@ FM_CMD () { # Usage: FM_CMD
 }
 
 DangerMenu () { # Usage: DangerMenu [CMD] [MSG] (OPT: [Dest])
-    IFS="$(printf '\n ')" && IFS="${IFS% }"
+    IFS="$nl"
     if DangerPrompt "$2"; then
 	for selection in $(printf '%s' "$SELECTED"); do
 	    unset IFS
@@ -175,7 +175,7 @@ FM_DEL () { # Usage: FM_DEL
 	BulkListAll
 	[ -n "$check" ] && DangerMenu "rm -rf" "Delete all selected in $name?" ""
     elif [ "$actCHOICE" = "$masselection" ]; then
-	BulkMassMode
+	BulkListMass
 	[ -n "$check" ] && DangerMenu "rm -rf" "Delete all selected in $name?" ""
     else
 	# Single-selection mode
@@ -203,9 +203,9 @@ History () { # Usage: History
     hisnum=${TMP%% *}
     unset TMP
     if [ "$hisnum" -ge "$FM_MAX_HIS_LENGTH" ]; then
-	newline="$(printf '\n ')" && newline="${newline% }"
+	# newline="$(printf '\n ')" && newline="${newline% }"
 	HIS="$(cat -u $FM_HISFILE)"
-	printf '%s\n' "${HIS#*"$newline"}" > "$FM_HISFILE"
+	printf '%s\n' "${HIS#*"$nl"}" > "$FM_HISFILE"
     fi
 }
 
@@ -220,7 +220,7 @@ DestMenu () { # Usage: DestMenu
     ActionMenu "Destination: " "$FM_ACTION_COLOR_LV2" || return && allowbulk="NotAllowed" && actCHOICE="placeholder"
     [ -n "$HERE" ] && destination="$HERE" && destname="$name"
     if [ -n "$HERE" ]; then
-	IFS="$(printf '\n ')" && IFS="${IFS% }"
+	IFS="$nl"
 	for selection in $(printf '%s' "$SELECTED"); do
 	    unset IFS
 	    $cmd "$selection" "$destination"
@@ -263,7 +263,7 @@ FM_MYL () { # Usage: FM_MYL
 	BulkListAll
 	[ -n "$check" ] && DestMenu
     elif [ "$actCHOICE" = "$masselection" ]; then
-	BulkMassMode
+	BulkListMass
 	[ -n "$check" ] && DestMenu
     else
 	# Single-selection mode
@@ -273,18 +273,31 @@ FM_MYL () { # Usage: FM_MYL
     fi
 }
 
-FM_NEW () { # Usage: FM_NEW
-    name=$(xprompt "Dir ends w/ slash; File w/o: " "$FM_ACTION_COLOR_LV1") || return
+NewFileDir () { # Usage: NewFileDir
+    name=$(xprompt "Type name for $newmenu; Press ESC to leave" "$FM_ACTION_COLOR_LV1") || return
     case "$name" in
-	'~') NotiPrompt "Alias to $HOME; not a proper name." && FM_NEW ;;
-	'/') NotiPrompt "Alias to root; not a proper name." && FM_NEW ;;
-	':') NotiPrompt "Alias for Command prompt; not a proper name." && FM_NEW ;;
-	'.') NotiPrompt "Alias for current directory; not a proper name." && FM_NEW ;;
-	'..') NotiPrompt "Alias for parent directory; not a proper name." && FM_NEW ;;
+	'~') NotiPrompt "Alias to $HOME; not a proper name." && continue ;;
+	'/') NotiPrompt "Alias to root; not a proper name." && continue ;;
+	':') NotiPrompt "Alias for Command prompt; not a proper name." && continue ;;
+	'.') NotiPrompt "Alias for current directory; not a proper name." && continue ;;
+	'..') NotiPrompt "Alias for parent directory; not a proper name." && continue ;;
 	'*'|'!'|'?'|'+'|'['|']'|'^'|'$'|'{'|'}'|'-'|'('|')'|'|'|'\') NotiPrompt "Shell pattern; not a proper name." && FM_NEW ;;
-	*/) mkdir -p "$name" && NotiPrompt "Directory $name created." ;;
-	*) :>"$name" && NotiPrompt "File $name created." ;;
+	*) $cmd "$name" ;;
     esac
+}
+
+FM_NEW () { # Usage: FM_NEW
+    name="placeholder"
+    newmenu=$(printf '%s\n' "File" "Directory" | yprompt "Create new files or directories" "$FM_GENERIC_COLOR")
+    while [ -n "$name" ]; do
+	if [ "$newmenu" = "File" ]; then
+	    cmd='touch'
+	    NewFileDir
+	else
+	    cmd="mkdir -p"
+	    NewFileDir
+	fi
+    done
 }
 
 FM_PCP () { # Usage: FM_PCP
@@ -307,7 +320,7 @@ BulkRename () { # Usage: BulkRename
 
 	printf '%s\n' "$SELECTED" | sed "s=/$==g; /^$/ d" > "$FM_REMFILE.backup"
 
-	IFS="$(printf '\n ')" && IFS="${IFS% }"
+	IFS="$nl"
 	while read -r line; do
 	     printf '%s\n' "${line##*/}" >> "$FM_REMFILE"
 	done < "$FM_REMFILE.backup"
@@ -324,7 +337,7 @@ BulkRename () { # Usage: BulkRename
 	else
 	    renamevar=$(paste -d ':' "$FM_REMFILE.backup" "$FM_REMFILE.dirname" "$FM_REMFILE")
 	    # Set IFS for for loop as \n
-	    IFS="$(printf '\n ')" && IFS="${IFS% }"
+	    IFS="$nl"
 	    for selection in $(printf '%s' "$renamevar"); do
 		TMP="${selection%%:"${selection##*:}"}"
 		start="${TMP%%:"${TMP##*:}"}"
@@ -356,7 +369,7 @@ FM_REM () { # Usage: FM_REM
 	BulkListAll
 	[ -n "$check" ] && BulkRename
     elif [ "$actCHOICE" = "$masselection" ]; then
-	BulkMassMode
+	BulkListMass
 	[ -n "$check" ] && BulkRename
     else
 	[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
@@ -375,7 +388,7 @@ FM_REM () { # Usage: FM_REM
 }
 
 DangerMenu () { # Usage: DangerMenu [CMD] [MSG] (OPT: [Dest])
-    IFS="$(printf '\n ')" && IFS="${IFS% }"
+    IFS="$nl"
     if DangerPrompt "$2"; then
 	for selection in $(printf '%s' "$SELECTED"); do
 	    unset IFS
@@ -403,7 +416,7 @@ FM_TRH () { # Usage: FM_TRH
 		BulkListAll
 		[ -n "$check" ] && DangerMenu "mv" "Move all selected to trash?" "$FM_TRASH"
 	    elif [ "$actCHOICE" = "$masselection" ]; then
-		BulkMassMode
+		BulkListMass
 		[ -n "$check" ] && DangerMenu "mv" "Move all selected to trash?" "$FM_TRASH"
 	    else
 		allowbulk="NotAllowed"
@@ -451,7 +464,7 @@ BulkCompress () { # Usage: BulkCompress
     if echo "$compression_type" | grep -E '^tar|^zip'; then
 	[ -d "$FM_ZIPATH" ] && rm -rf "$FM_ZIPATH"
 	mkdir "$FM_ZIPATH"
-	IFS="$(printf '\n ')" && IFS="${IFS% }"
+	IFS="$nl"
 	for file in $SELECTED; do
 	    unset IFS
 	    cp -R "$file" "$FM_ZIPATH"
@@ -466,7 +479,7 @@ BulkCompress () { # Usage: BulkCompress
 	fi
 	rm -rf "$FM_ZIPATH"
     else
-	IFS="$(printf '\n ')" && IFS="${IFS% }"
+	IFS="$nl"
 	for file in $SELECTED; do
 	    unset IFS
 	    $cmd "$file" && NotiPrompt "Compressed to ${file##*/}"
@@ -491,7 +504,7 @@ FM_ZIP () { # Usage: FM_ZIP
 	BulkListAll
 	[ -n "$check" ] && BulkCompress
     elif [ "$actCHOICE" = "$masselection" ]; then
-	BulkMassMode
+	BulkListMass
 	[ -n "$check" ] && BulkCompress
     else
 	SELECTED="$HERE"
@@ -503,6 +516,31 @@ FM_SDO () {
     sudo -A dmenufm
 }
 
+# FM_EYE () {
+#     preview="true"
+
+#     yprompt () { # Usage yprompt [MSG] [BG_COLOR]
+# 	dmenu -f -fn "$FM_GENERIC_FONT" -b -i -h 40 -sb "$2" -p "$1"
+#     }
+
+#     ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+#     [ -n "$HERE" ] && FileOpen "$HERE" &
+#     while [ -n "$HERE" ]; do
+# 	wmctrl -r :ACTIVE: -N "PREVIEW"
+# 	ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+# 	[ -n "$HERE" ] && FileOpen "$HERE" &
+# 	wmctrl -c "PREVIEW"
+#     done
+#     wmctrl -c :ACTIVE:
+
+#     yprompt () { # Usage yprompt [MSG] [BG_COLOR]
+# 	dmenu -f -fn "$FM_GENERIC_FONT" -i -sb "$2" -l 10 -p "$1"
+#     }
+
+#     preview="false"
+# }
+
+
 FM_EYE () {
     preview="true"
 
@@ -513,14 +551,17 @@ FM_EYE () {
     ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
     [ -n "$HERE" ] && FileOpen "$HERE" &
     while [ -n "$HERE" ]; do
+	wmctrl -ic "$eyeid" &
 	ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+	eyeid="$(xprop -root _NET_ACTIVE_WINDOW | cut -d ' ' -f 5)"
 	[ -n "$HERE" ] && FileOpen "$HERE" &
-	wmctrl -c "PREVIEW"
-	wmctrl -r :ACTIVE: -N "PREVIEW"
     done
     wmctrl -c :ACTIVE:
 
     yprompt () { # Usage yprompt [MSG] [BG_COLOR]
 	dmenu -f -fn "$FM_GENERIC_FONT" -i -sb "$2" -l 10 -p "$1"
     }
+
+    preview="false"
 }
+
