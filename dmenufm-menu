@@ -21,7 +21,7 @@ DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
 ## MENUFUNCTIONS
 
 MenuDir () { # Generate dir
-    IFS="$(printf '\n ')" && IFS="${IFS% }"
+    IFS="$nl"
     DIRs=$(
     for dir in *; do
 	[ -d "$dir" ] && printf '%s\n' "$dir/"
@@ -31,7 +31,7 @@ unset IFS
 }
 
 MenuDotDir () { # Generate dotdir
-    IFS="$(printf '\n ')" && IFS="${IFS% }"
+    IFS="$nl"
     DOTDIRs=$(
     for dir in .*; do
 	[ -d "$dir" ] && printf '%s\n' "$dir/"
@@ -41,7 +41,7 @@ unset IFS
 }
 
 MenuFile () { # Generate file
-    IFS="$(printf '\n ')" && IFS="${IFS% }"
+    IFS="$nl"
     FILEs=$(
     for file in *; do
 	[ -f "$file" ] && printf '%s\n' "$file"
@@ -51,7 +51,7 @@ unset IFS
 }
 
 MenuDotFile () { # Generate dorfile
-    IFS="$(printf '\n ')" && IFS="${IFS% }"
+    IFS="$nl"
     DOTFILEs=$(
     for file in .*; do
 	[ -f "$file" ] && printf '%s\n' "$file"
