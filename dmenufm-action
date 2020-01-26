@@ -66,14 +66,14 @@ FM_BMK () { # Usage: FM_BMK
 	    ActionMenu "Choose file / directory and add to BMK: " "$FM_ACTION_COLOR_LV1" || return
 	    mark=${HERE##*/}
 	    if [ -n "$mark" ]; then
-		printf '%s' "$mark - $HERE" >> "$FM_BMKFILE" && NotiPrompt "$mark added."
+		printf '%s\n' "$mark - $HERE" >> "$FM_BMKFILE" && NotiPrompt "$mark added."
 	    fi
 	    ;;
 	"Delete BMK")
 	    BMK="$(cat -u "$FM_BMKFILE")"
 	    delbmk=$(< "$FM_BMKFILE" yprompt "Delete chosen bookmark: " "darkred") || return
 	    if [ -n "$delbmk" ]; then
-		printf '%s' "${BMK%%"$delbmk"*}" "${BMK##*"$delbmk"}" > "$FM_BMKFILE" && NotiPrompt "$delbmk deleted"
+		printf '%s\n' "${BMK%%"$delbmk"*}" "${BMK##*"$delbmk"}" > "$FM_BMKFILE" && NotiPrompt "$delbmk deleted"
 	    fi
 	    ;;
 	*)
@@ -112,14 +112,14 @@ FM_CMD () { # Usage: FM_CMD
 	    addcmd=$(xprompt "Recording your command: " "$FM_ACTION_COLOR_LV1") || return
 	    desp=$(xprompt "Enter command description: " "$FM_ACTION_COLOR_LV1") || return
 	    if [ -n "$addcmd" ]; then
-		printf '%s' "$addcmd - $desp" >> "$FM_CMDFILE" && NotiPrompt "$addcmd added."
+		printf '%s\n' "$addcmd - $desp" >> "$FM_CMDFILE" && NotiPrompt "$addcmd added."
 	    fi
 	    ;;
 	"Delete CMD")
 	    CMD="$(cat -u "$FM_CMDFILE")"
 	    delcmd=$(< "$FM_CMDFILE" yprompt "Delete chosen command: " "darkred")
 	    if [ -n "$delcmd" ]; then
-		printf '%s' "${CMD%%"$delcmd"*}" "${CMD##*"$delcmd"}" > "$FM_CMDFILE" && NotiPrompt "$delcmd deleted"
+		printf '%s\n' "${CMD%%"$delcmd"*}" "${CMD##*"$delcmd"}" > "$FM_CMDFILE" && NotiPrompt "$delcmd deleted"
 	    fi
 	    ;;
 	*)

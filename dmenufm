@@ -1,11 +1,11 @@
 #!/bin/sh
 
 # source configuration file
-if [ -r "${FM_PATH:-$HOME/.config/dmenufm}/dmenufmrc" ]; then
-    . "${FM_PATH:-$HOME/.config/dmenufm}/dmenufmrc"
-else
-    cp ./dmenufmrc "${FM_PATH:-$HOME/.config/dmenufm}/dmenufmrc"
-fi
+# if [ -r "${FM_PATH:-$HOME/.config/dmenufm}/dmenufmrc" ]; then
+#     . "${FM_PATH:-$HOME/.config/dmenufm}/dmenufmrc"
+# else
+#     cp ./dmenufmrc "${FM_PATH:-$HOME/.config/dmenufm}/dmenufmrc"
+# fi
 
 ### OPTIONS AND VARIABLES
 

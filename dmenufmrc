@@ -1,3 +1,5 @@
+#!/bin/sh
+
 ## OPTIONS
 # FILES LOCATION
 FM_PATH=$HOME/.config/dmenufm
