@@ -7,7 +7,6 @@ else
     cp ./dmenufmrc "${FM_PATH:-$HOME/.config/dmenufm}/dmenufmrc"
 fi
 
-
 ### OPTIONS AND VARIABLES
 
 ## OPTIONS
