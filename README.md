@@ -283,47 +283,20 @@ For compression, now you can choose the compression, and it will extract into a 
 
 There are many environment variables you can use to configure dmenufm by exporting them in your system or shell configuration file.
 
-Alternatively write the configuration to `dmenufm_config` in `$HOME/.config/dmenufm` or what ever you have set `FM_PATH` to.
+Alternatively write the configuration to `dmenufmrc` in `$HOME/.config/dmenufm` or what ever you have set `FM_PATH` to.
 
 Example:
 
     FM_GENERIC_FONT="Iosevka:pixelsize=26:antialias=true:autohint=true"
     FM_NOTIF_FONT="$FM_GENERIC_FONT"
-    FM_DANGER_FONT="$FM_GENERIC_FONt"
+    FM_DANGER_FONT="$FM_GENERIC_FONT"
     FM_SUDO_COLOR="#bf616a"
     FM_GENERIC_COLOR="#2e3440"
     FM_ACTION_COLOR_LVL1="#2e3440"
     FM_ACTION_COLOR_LVL2="#4c566a"
     FM_ACTION_COLOR_LVL3="#d8dee9"
 
-The default options are as follows:
-
-```sh
-# FILES LOCATION
-export FM_PATH="$HOME/.config/dmenufm"
-export FM_CACHE_PATH="$HOME/.cache/dmenufm"
-export FM_BMKFILE="$FM_PATH/dmenufm_bookmark"
-export FM_CMDFILE="$FM_PATH/dmenufm_command"
-export FM_HISFILE="$FM_PATH/dmenufm_history"
-export FM_SDOPROP="$FM_PATH/dmenufm_sudoprompt"
-export FM_LASTPATH="$FM_CACHE_PATH/dmenufm_lastpath"
-export FM_REMFILE="$FM_CACHE_PATH/dmenufm_bulk_rename"
-export FM_MASFILE="$FM_CACHE_PATH/dmenufm_bulk_mass"
-export FM_ZIPATH="$FM_CACHE_PATH/compression/"
-export FM_TRASH="$FM_CACHE_PATH/trash"
-# Max number for history
-export FM_MAX_HIS_LENGTH=5000
-# FONTS
-export FM_GENERIC_FONT="Monospace-15"
-export FM_NOTIF_FONT="Monospace-25"
-export FM_DANGER_FONT="Monospace-20"
-# COLORs
-export FM_GENERIC_COLOR="#005577"
-export FM_SUDO_COLOR="red"
-export FM_ACTION_COLOR_LV1="#33691e"
-export FM_ACTION_COLOR_LV2="#FF8C00"
-export FM_ACTION_COLOR_BULK="#CB06CB"
-```
+See the `./dmenufmrc` file to find options.
 
 ## Note
 
