@@ -48,6 +48,7 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 	* [Why files do not open in the right application](#why-files-do-not-open-in-the-right-application)
 	* [I want to configure the color and font of dmenufm](#i-want-to-configure-the-color-and-font-of-dmenufm)
 * [TODO](#todo)
+* [Licence](#licence)
 
 <!-- vim-markdown-toc -->
 
@@ -386,3 +387,8 @@ Change the font / font size / color in the `""` to customize the appearance  of 
 
 See `Issues`.
 
+## Licence
+
+GNU General Public License v3.0
+
+See `LICENCE.md` for detail information.
