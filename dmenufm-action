@@ -61,19 +61,23 @@ BulkMode () { # Usage: BulkMode [MSG]
 
 FM_BMK () { # Usage: FM_BMK
     markmenu=$(printf '%s\n' "$(cat -u "$FM_BMKFILE")" "Add BMK" "Delete BMK" | yprompt "Dmenufm Bookmark" "$FM_GENERIC_COLOR")
+    # Add \n at end of file
+    if [ "$(tail -c 1 "$FM_BMKFILE")" != "" ]; then
+	echo >> "$FM_BMKFILE"
+    fi
     case "$markmenu" in
 	"Add BMK")
 	    ActionMenu "Choose file / directory and add to BMK: " "$FM_ACTION_COLOR_LV1" || return
 	    mark=${HERE##*/}
 	    if [ -n "$mark" ]; then
-		printf '%s\n' "$mark - $HERE" >> "$FM_BMKFILE" && NotiPrompt "$mark added."
+		printf '%s' "$mark - $HERE" >> "$FM_BMKFILE" && NotiPrompt "$mark added."
 	    fi
 	    ;;
 	"Delete BMK")
 	    BMK="$(cat -u "$FM_BMKFILE")"
 	    delbmk=$(< "$FM_BMKFILE" yprompt "Delete chosen bookmark: " "darkred") || return
 	    if [ -n "$delbmk" ]; then
-		printf '%s\n' "${BMK%%"$delbmk"*}" "${BMK##*"$delbmk"}" > "$FM_BMKFILE" && NotiPrompt "$delbmk deleted"
+		printf '%s' "${BMK%%$nl"$delbmk"*}" "${BMK##*"$delbmk"}" > "$FM_BMKFILE" && NotiPrompt "$delbmk deleted"
 	    fi
 	    ;;
 	*)
@@ -107,19 +111,23 @@ ExecCMD () { # Usage: ExecCMD [CMD]
 
 FM_CMD () { # Usage: FM_CMD
     cmdmenu=$(printf '%s\n' "$(cat -u "$FM_CMDFILE")" "Add CMD" "Delete CMD" | yprompt "Dmenufm Custom Command" "$FM_GENERIC_COLOR")
+    # Add \n at end of file
+    if [ "$(tail -c 1 "$FM_CMDFILE")" != "" ]; then
+	echo >> "$FM_CMDFILE"
+    fi
     case "$cmdmenu" in
 	"Add CMD")
 	    addcmd=$(xprompt "Recording your command: " "$FM_ACTION_COLOR_LV1") || return
 	    desp=$(xprompt "Enter command description: " "$FM_ACTION_COLOR_LV1") || return
 	    if [ -n "$addcmd" ]; then
-		printf '%s\n' "$addcmd - $desp" >> "$FM_CMDFILE" && NotiPrompt "$addcmd added."
+		printf '%s' "$addcmd - $desp" >> "$FM_CMDFILE" && NotiPrompt "$addcmd added."
 	    fi
 	    ;;
 	"Delete CMD")
 	    CMD="$(cat -u "$FM_CMDFILE")"
 	    delcmd=$(< "$FM_CMDFILE" yprompt "Delete chosen command: " "darkred")
 	    if [ -n "$delcmd" ]; then
-		printf '%s\n' "${CMD%%"$delcmd"*}" "${CMD##*"$delcmd"}" > "$FM_CMDFILE" && NotiPrompt "$delcmd deleted"
+		printf '%s' "${CMD%%$nl"$delcmd"*}" "${CMD##*"$delcmd"}" > "$FM_CMDFILE" && NotiPrompt "$delcmd deleted"
 	    fi
 	    ;;
 	*)
