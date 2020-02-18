@@ -284,7 +284,7 @@ For compression, now you can choose the compression, and it will extract into a 
 
 There are many environment variables you can use to configure dmenufm by exporting them in your system or shell configuration file.
 
-Alternatively write the configuration to `dmenufmrc` in `$HOME/.config/dmenufm` or what ever you have set `FM_PATH` to.
+Alternatively write the configuration to `dmenufm.conf` in `$HOME/.config/dmenufm`.
 
 Example:
 
@@ -297,7 +297,7 @@ Example:
     FM_ACTION_COLOR_LVL2="#4c566a"
     FM_ACTION_COLOR_LVL3="#d8dee9"
 
-See the `./dmenufmrc` file to find options.
+See the `./dmenufm.conf` file to find options.
 
 ## Note
 
@@ -365,7 +365,9 @@ and you are all set.
 
 ### I want to configure the color and font of dmenufm
 
-You can export the following environment variables in your shell (such as `.bashrc`) or system configuration file (such as `.profile`):
+See [Configuration](#configuration)
+
+Examples:
 
 ```sh
 # FONTS

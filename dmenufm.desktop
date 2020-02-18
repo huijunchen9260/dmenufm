@@ -1,0 +1,12 @@
+[Desktop Entry]
+Categories=System;FileTools;FileManager;Utility;
+Comment=A simple file manager using dmenu
+Exec=dmenufm %F
+GenericName=File Manager
+Icon=dmenufm
+Name=dmenufm
+Terminal=false
+TryExec=dmenufm
+Type=Application
+Keywords=File;Directory;Browse;
+MimeType=inode/directory;

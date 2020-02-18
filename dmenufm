@@ -1,43 +1,15 @@
 #!/bin/sh
 
 # source configuration file
-if [ -r "${FM_PATH:-$HOME/.config/dmenufm}/dmenufmrc" ]; then
-    . "${FM_PATH:-$HOME/.config/dmenufm}/dmenufmrc"
+FM_PATH="$HOME/.config/dmenufm"
+FM_CACHE_PATH="$HOME/.cache/dmenufm"
+if [ -r "$FM_PATH/dmenufm.conf" ]; then
+    . "$FM_PATH/dmenufm.conf"
+elif [ -r "/usr/bin/dmenufm.conf" ]; then
+    . "/usr/bin/dmenufm.conf"
 else
-    cp ./dmenufmrc "${FM_PATH:-$HOME/.config/dmenufm}/dmenufmrc"
+    echo "Run `sudo make install` first to install all dmenufm files."
 fi
-
-### OPTIONS AND VARIABLES
-
-## OPTIONS
-# FILES LOCATION
-: "${FM_PATH:=$HOME/.config/dmenufm}"
-: "${FM_CACHE_PATH:=$HOME/.cache/dmenufm}"
-: "${FM_BMKFILE:=$FM_PATH/dmenufm_bookmark}"
-: "${FM_CMDFILE:=$FM_PATH/dmenufm_command}"
-: "${FM_HISFILE:=$FM_PATH/dmenufm_history}"
-: "${FM_SDOPROP:=$FM_PATH/dmenufm_sudoprompt}"
-: "${FM_TRASH:=$FM_CACHE_PATH/trash}"
-: "${FM_LASTPATH:=$FM_CACHE_PATH/dmenufm_lastpath}"
-: "${FM_REMFILE:=$FM_CACHE_PATH/dmenufm_bulk_rename}"
-: "${FM_MASFILE:=$FM_CACHE_PATH/dmenufm_bulk_mass}"
-: "${FM_ZIPATH:=$FM_CACHE_PATH/compression/}"
-# Max number for history
-: "${FM_MAX_HIS_LENGTH:=5000}"
-# FONTS
-: "${FM_GENERIC_FONT:=Monospace-15}"
-: "${FM_NOTIF_FONT:=Monospace-25}"
-: "${FM_DANGER_FONT:=Monospace-20}"
-# COLORs
-: "${FM_SUDO_COLOR:=red}"
-: "${FM_GENERIC_COLOR:=#005577}"
-: "${FM_ACTION_COLOR_LV1:=#33691e}"
-: "${FM_ACTION_COLOR_LV2:=#FF8C00}"
-: "${FM_ACTION_COLOR_BULK:=#CB06CB}"
-
-# xdg-open directories
-: "${XDGDIR1:=/usr/share/applications}"
-: "${XDGDIR2:=/usr/local/share/applications}"
 
 # SUDO setting
 export SUDO_ASKPASS="$FM_SDOPROP"

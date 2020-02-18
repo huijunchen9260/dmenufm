@@ -1,5 +1,6 @@
 #!/bin/sh
 
+
 ## PROMPT FUNCTIONS
 yprompt () { # Usage yprompt [MSG] [BG_COLOR]
     dmenu -f -fn "$FM_GENERIC_FONT" -i -sb "$2" -l 10 -p "$1"
