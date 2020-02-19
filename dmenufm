@@ -8,7 +8,7 @@ if [ -r "$FM_PATH/dmenufm.conf" ]; then
 elif [ -r "/usr/bin/dmenufm.conf" ]; then
     . "/usr/bin/dmenufm.conf"
 else
-    echo "Run `sudo make install` first to install all dmenufm files."
+    echo 'Run `sudo make install` first to install all dmenufm files.'
 fi
 
 # SUDO setting
