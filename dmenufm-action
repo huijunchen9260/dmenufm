@@ -553,7 +553,7 @@ FM_EYE () {
     preview="true"
 
     yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-	dmenu -f -fn "$FM_GENERIC_FONT" -b -i -h 40 -sb "$2" -p "$1"
+	dmenu -f -fn "$FM_GENERIC_FONT" -b -i -sb "$2" -p "$1"
     }
 
     ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
@@ -564,7 +564,7 @@ FM_EYE () {
 	eyeid="$(xprop -root _NET_ACTIVE_WINDOW | cut -d ' ' -f 5)"
 	[ -n "$HERE" ] && FileOpen "$HERE" &
     done
-    wmctrl -c :ACTIVE:
+    wmctrl -ic "$eyeid"
 
     yprompt () { # Usage yprompt [MSG] [BG_COLOR]
 	dmenu -f -fn "$FM_GENERIC_FONT" -i -sb "$2" -l 10 -p "$1"
