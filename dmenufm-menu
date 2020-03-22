@@ -117,10 +117,10 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 		rollmenu="$PWD"
 		cd "../" || NotiPrompt "Need super user permission to enter this directory"
 		rolldir="${PWD##*/}"
-		History
+		History "$actCHOICE"
 	    else
 		cd "../" || NotiPrompt "Need super user permission to enter this directory"
-		History
+		History "$actCHOICE"
 	    fi
 	elif [ "$actCHOICE" = "$ENDSELECTION" ]; then
 	    bulkselection="false"
@@ -141,10 +141,10 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 		rolldir="$PWD"
 		cd "$actCHOICE" || NotiPrompt "Need super user permission to enter this directory"
 		rollmenu="$actCHOICE"
-		History
+		History "$actCHOICE"
 	    else
 		cd "$actCHOICE" || NotiPrompt "Need super user permission to enter this directory"
-		History
+		History "$actCHOICE"
 	    fi
 	    continue
 	elif [ -f "$actCHOICE" ]; then
@@ -200,16 +200,17 @@ MainMenu () { # Usage: MainMenu
 		break
 	    else
 		FileOpen "$PWD"
+		History "$CHOICE"
 	    fi
 	elif [ "$CHOICE" = "$BACKWARD" ]; then
 	    if [ "$rollingmenu" = "true" ]; then
 		rollmenu="${PWD##*/}/"
 		cd "../" || NotiPrompt "Need super user permission to enter this directory"
 		rolldir="$PWD"
-		History
+		History "$CHOICE"
 	    else
 		cd "../" || NotiPrompt "Need super user permission to enter this directory"
-		History
+		History "$CHOICE"
 	    fi
 	elif [ "$CHOICE" = "$ACTION" ]; then
 	    FM_Action
@@ -220,10 +221,10 @@ MainMenu () { # Usage: MainMenu
 		rolldir="$PWD"
 		cd "$CHOICE" || NotiPrompt "Need super user permission to enter this directory"
 		rollmenu="$CHOICE"
-		History
+		History "$CHOICE"
 	    else
 		cd "$CHOICE" || NotiPrompt "Need super user permission to enter this directory"
-		History
+		History "$CHOICE"
 	    fi
 	    continue
 	elif [ -f "$CHOICE" ]; then
@@ -233,6 +234,7 @@ MainMenu () { # Usage: MainMenu
 	    else
 		rollmenu="$CHOICE"
 		FileOpen "$PWD/$CHOICE"
+		History "$CHOICE"
 	    fi
 	else
 	    break

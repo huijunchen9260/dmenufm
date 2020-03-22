@@ -207,15 +207,18 @@ FM_DEL () { # Usage: FM_DEL
     fi
 }
 
-History () { # Usage: History
-    dirmark="${PWD##*/}"
-    printf '%s\n' "$dirmark - $PWD" >> "$FM_HISFILE"
+History () { # Usage: History [DIR/FILE]
+    if [ "$1" = "$BACKWARD" ] || [ "$1" = "$TARGET" ]; then
+	dirmark="${PWD##*/}"
+	printf '%s\n' "$dirmark - $PWD" >> "$FM_HISFILE"
+    else
+	printf '%s\n' "$1 - $PWD/$1" >> "$FM_HISFILE"
+    fi
     # Limit the max number of history
     TMP=$(wc -l "$FM_HISFILE")
     hisnum=${TMP%% *}
     unset TMP
     if [ "$hisnum" -ge "$FM_MAX_HIS_LENGTH" ]; then
-	# newline="$(printf '\n ')" && newline="${newline% }"
 	HIS="$(cat -u $FM_HISFILE)"
 	printf '%s\n' "${HIS#*"$nl"}" > "$FM_HISFILE"
     fi
@@ -225,7 +228,7 @@ FM_HIS () { # Usage: FM_HIS
     # Use sed command to mimic reverse of cat for POSIX.
     goto=$(sed '1!G;h;$!d' "$FM_HISFILE" | yprompt "Dmenufm History" "$FM_GENERIC_COLOR")
     destination=${goto##* - }
-    cd "$destination" || return
+    cd "$destination" || FileOpen "$destination"
 }
 
 DestMenu () { # Usage: DestMenu
@@ -527,31 +530,6 @@ FM_ZIP () { # Usage: FM_ZIP
 FM_SDO () {
     sudo -A dmenufm
 }
-
-# FM_EYE () {
-#     preview="true"
-
-#     yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-# 	dmenu -f -fn "$FM_GENERIC_FONT" -b -i -h 40 -sb "$2" -p "$1"
-#     }
-
-#     ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
-#     [ -n "$HERE" ] && FileOpen "$HERE" &
-#     while [ -n "$HERE" ]; do
-# 	wmctrl -r :ACTIVE: -N "PREVIEW"
-# 	ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
-# 	[ -n "$HERE" ] && FileOpen "$HERE" &
-# 	wmctrl -c "PREVIEW"
-#     done
-#     wmctrl -c :ACTIVE:
-
-#     yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-# 	dmenu -f -fn "$FM_GENERIC_FONT" -i -sb "$2" -l 10 -p "$1"
-#     }
-
-#     preview="false"
-# }
-
 
 FM_EYE () {
     preview="true"
