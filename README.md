@@ -293,9 +293,9 @@ Example:
     FM_DANGER_FONT="$FM_GENERIC_FONT"
     FM_SUDO_COLOR="#bf616a"
     FM_GENERIC_COLOR="#2e3440"
-    FM_ACTION_COLOR_LVL1="#2e3440"
-    FM_ACTION_COLOR_LVL2="#4c566a"
-    FM_ACTION_COLOR_LVL3="#d8dee9"
+    FM_ACTION_COLOR_LV1="#2e3440"
+    FM_ACTION_COLOR_LV2="#4c566a"
+    FM_ACTION_COLOR_BULK="#d8dee9"
 
 See the `./dmenufm.conf` file to find options.
 
@@ -366,24 +366,6 @@ and you are all set.
 ### I want to configure the color and font of dmenufm
 
 See [Configuration](#configuration)
-
-Examples:
-
-```sh
-# FONTS
-export FM_GENERIC_FONT="Monospace-15"
-export FM_NOTIF_FONT="Monospace-25"
-export FM_DANGER_FONT="Monospace-20"
-# COLORs
-export FM_GENERIC_COLOR="#005577"
-export FM_ACTION_COLOR_LV1="#33691e"
-export FM_ACTION_COLOR_LV2="#FF8C00"
-export FM_ACTION_COLOR_BULK="#CB06CB"
-export FM_SUDO_COLOR="red"
-```
-
-Change the font / font size / color in the `""` to customize the appearance  of dmenufm.
-
 
 ## TODO
 
