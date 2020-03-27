@@ -208,8 +208,8 @@ FM_DEL () { # Usage: FM_DEL
 }
 
 History () { # Usage: History [DIR/FILE]
-    if [ "$1" = "$BACKWARD" ] || [ "$1" = "$TARGET" ]; then
-	dirmark="${PWD##*/}"
+    dirmark="${PWD##*/}"
+    if [ "$1" = "$BACKWARD" ] || [ "$1" = "$TARGET" ] || [ "$1" = "$dirmark/" ]; then
 	printf '%s\n' "$dirmark - $PWD" >> "$FM_HISFILE"
     else
 	printf '%s\n' "$1 - $PWD/$1" >> "$FM_HISFILE"
