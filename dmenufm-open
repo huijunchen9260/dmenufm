@@ -36,16 +36,20 @@ FileOpen () { # Usage: FileOpen [File/Dir]
 		text/*|*x-empty*|*json*)
 		    # Text file opened in $EDITOR or default opener
 		    if [ -n "$TERMINAL" ]; then
+			printf '%s' "$PWD" > "$FM_LASTPATH"
 			$TERMINAL -e "${EDITOR:-vi}" "$1"
 		    else
+			printf '%s' "$PWD" > "$FM_LASTPATH"
 			"${FM_OPENER:-xdg-open}" "$1"
 		    fi
 		    ;;
 		*)
 		    appdesktop=$(xdg-mime query default "$mimetype")
 		    if grep -q "Terminal=false" < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" ; then
+			printf '%s' "$PWD" > "$FM_LASTPATH"
 			${FM_OPENER:-xdg-open} "$1"
 		    else
+			printf '%s' "$PWD" > "$FM_LASTPATH"
 			$TERMINAL -e "${FM_OPENER:-xdg-open}" "$1"
 		    fi
 		    ;;
