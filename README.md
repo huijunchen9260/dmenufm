@@ -82,6 +82,8 @@ In Debian- or Ubuntu-based distributions of Linux, the packages needed (versions
 
 ## Installation
 
+For Arch Linux user, there is an [AUR](https://aur.archlinux.org/packages/dmenufm/) package available.
+
 `cd` into the `Makefile` directory, and type `sudo make install` in terminal to install dmenufm.
 
 To uninstall dmenufm, type `sudo make uninstall` in terminal.
