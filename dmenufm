@@ -5,8 +5,8 @@ FM_PATH="$HOME/.config/dmenufm"
 FM_CACHE_PATH="$HOME/.cache/dmenufm"
 if [ -r "$FM_PATH/dmenufm.conf" ]; then
     . "$FM_PATH/dmenufm.conf"
-elif [ -r "/usr/bin/dmenufm.conf" ]; then
-    . "/usr/bin/dmenufm.conf"
+elif [ -r "/etc/dmenufm.conf" ]; then
+    . "/etc/dmenufm.conf"
 else
     echo 'Run `sudo make install` first to install all dmenufm files.'
 fi
@@ -46,6 +46,7 @@ nl='
 
 # Create files / directories
 [ ! -d "$FM_PATH" ] && mkdir -p "$FM_PATH"
+[ ! -f "$FM_PATH/dmenufm.conf" ] && cp "/etc/dmenufm.conf" "$FM_PATH/dmenufm.conf"
 [ ! -d "$FM_CACHE_PATH" ] && mkdir -p "$FM_CACHE_PATH"
 [ ! -d "$FM_TRASH" ] && mkdir -p "$FM_TRASH"
 printf '%s\n' '#!/bin/sh' 'dmenu -fn Monospace-18 -sb "#FEE12B" -sf "#1d2021" -nf "#000000" -nb "#000000" -p "$1" <&- && echo' > "$FM_SDOPROP"

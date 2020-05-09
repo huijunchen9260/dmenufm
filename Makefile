@@ -1,4 +1,5 @@
 PREFIX ?= /usr
+CONFIG ?= /etc
 
 all:
 	@echo Run \'make install\' to install dmenufm.
@@ -11,7 +12,7 @@ install:
 	@cp -p dmenufm-open $(DESTDIR)$(PREFIX)/bin/dmenufm-open
 	@cp -p dmenufm-menu $(DESTDIR)$(PREFIX)/bin/dmenufm-menu
 	@cp -p dmenufm-action $(DESTDIR)$(PREFIX)/bin/dmenufm-action
-	@cp -p dmenufm.conf $(DESTDIR)$(PREFIX)/bin/dmenufm.conf
+	@cp -p dmenufm.conf $(DESTDIR)$(CONFIG)/dmenufm.conf
 	@cp -p dmenufm.desktop $(DESTDIR)$(PREFIX)/share/applications
 	@chmod 755 $(DESTDIR)$(PREFIX)/bin/dmenufm
 	@chmod 755 $(DESTDIR)$(PREFIX)/bin/dmenufm-*
@@ -19,4 +20,4 @@ install:
 uninstall:
 	@rm -rf $(DESTDIR)$(PREFIX)/bin/dmenufm*
 	@rm -rf $(DESTDIR)$(PREFIX)/share/applications/dmenufm.desktop
-	@rm -rf $(DESTDIR)$(DOCDIR)
+	@rm -rf $(DESTDIR)$(CONFIG)/dmenufm.conf
