@@ -60,7 +60,7 @@ BulkMode () { # Usage: BulkMode [MSG]
 
 
 FM_BMK () { # Usage: FM_BMK
-    markmenu=$(printf '%s\n' "$(cat -u "$FM_BMKFILE")" "Add BMK" "Delete BMK" | yprompt "Dmenufm Bookmark" "$FM_GENERIC_COLOR")
+    markmenu=$(printf '%s\n' "$(cat -u "$FM_BMKFILE")" "Add BMK" "Delete BMK" | yprompt "Fzffm Bookmark" "$FM_GENERIC_COLOR")
     # Add \n at end of file
     if [ "$(tail -c 1 "$FM_BMKFILE")" != "" ]; then
 	echo >> "$FM_BMKFILE"
@@ -114,7 +114,7 @@ ExecCMD () { # Usage: ExecCMD [CMD]
 }
 
 FM_CMD () { # Usage: FM_CMD
-    cmdmenu=$(printf '%s\n' "$(cat -u "$FM_CMDFILE")" "Add CMD" "Delete CMD" | yprompt "Dmenufm Custom Command" "$FM_GENERIC_COLOR")
+    cmdmenu=$(printf '%s\n' "$(cat -u "$FM_CMDFILE")" "Add CMD" "Delete CMD" | yprompt "Fzffm Custom Command" "$FM_GENERIC_COLOR")
     # Add \n at end of file
     if [ "$(tail -c 1 "$FM_CMDFILE")" != "" ]; then
 	echo >> "$FM_CMDFILE"
@@ -226,7 +226,7 @@ History () { # Usage: History [DIR/FILE]
 
 FM_HIS () { # Usage: FM_HIS
     # Use sed command to mimic reverse of cat for POSIX.
-    goto=$(sed '1!G;h;$!d' "$FM_HISFILE" | yprompt "Dmenufm History" "$FM_GENERIC_COLOR")
+    goto=$(sed '1!G;h;$!d' "$FM_HISFILE" | yprompt "Fzffm History" "$FM_GENERIC_COLOR")
     destination=${goto##* - }
     cd "$destination" || FileOpen "$destination"
 }
@@ -420,7 +420,7 @@ FM_TRH () { # Usage: FM_TRH
     allowbulk="Bulk Trash"
     allselection="Bulk Trash All"
     masselection="Bulk Trash Mass"
-    trashmenu=$(printf '%s\n' "Move to trash" "Go to trash" "Empty trash" | yprompt "Dmenufm Trash" "$FM_GENERIC_COLOR")
+    trashmenu=$(printf '%s\n' "Move to trash" "Go to trash" "Empty trash" | yprompt "Fzffm Trash" "$FM_GENERIC_COLOR")
     case $trashmenu in
 	"Move to trash")
 	    ActionMenu "Move file / directory to trash: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
@@ -528,29 +528,29 @@ FM_ZIP () { # Usage: FM_ZIP
 }
 
 FM_SDO () {
-    sudo -A dmenufm
+    sudo -A fzffm
 }
 
-FM_EYE () {
-    preview="true"
+# FM_EYE () {
+#     preview="true"
 
-    yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-	dmenu -f -fn "$FM_GENERIC_FONT" -b -i -sb "$2" -p "$1"
-    }
+#     yprompt () { # Usage yprompt [MSG] [BG_COLOR]
+# 	dmenu -f -fn "$FM_GENERIC_FONT" -b -i -sb "$2" -p "$1"
+#     }
 
-    ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
-    [ -n "$HERE" ] && FileOpen "$HERE" &
-    while [ -n "$HERE" ]; do
-	wmctrl -ic "$eyeid" &
-	ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
-	eyeid="$(xprop -root _NET_ACTIVE_WINDOW | cut -d ' ' -f 5)"
-	[ -n "$HERE" ] && FileOpen "$HERE" &
-    done
-    wmctrl -ic "$eyeid"
+#     ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+#     [ -n "$HERE" ] && FileOpen "$HERE" &
+#     while [ -n "$HERE" ]; do
+# 	wmctrl -ic "$eyeid" &
+# 	ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+# 	eyeid="$(xprop -root _NET_ACTIVE_WINDOW | cut -d ' ' -f 5)"
+# 	[ -n "$HERE" ] && FileOpen "$HERE" &
+#     done
+#     wmctrl -ic "$eyeid"
 
-    yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-	dmenu -f -fn "$FM_GENERIC_FONT" -i -sb "$2" -l 10 -p "$1"
-    }
+#     yprompt () { # Usage yprompt [MSG] [BG_COLOR]
+# 	dmenu -f -fn "$FM_GENERIC_FONT" -i -sb "$2" -l 10 -p "$1"
+#     }
 
-    preview="false"
-}
+#     preview="false"
+# }

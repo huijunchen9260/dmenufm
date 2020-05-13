@@ -35,13 +35,9 @@ FileOpen () { # Usage: FileOpen [File/Dir]
 	    case "$mimetype" in
 		text/*|*x-empty*|*json*)
 		    # Text file opened in $EDITOR or default opener
-		    if [ -n "$TERMINAL" ]; then
-			printf '%s' "$PWD" > "$FM_LASTPATH"
-			$TERMINAL -e "${EDITOR:-vi}" "$1"
-		    else
-			printf '%s' "$PWD" > "$FM_LASTPATH"
-			"${FM_OPENER:-xdg-open}" "$1"
-		    fi
+		    printf '%s' "$PWD" > "$FM_LASTPATH"
+		    # "${EDITOR:-vi}" "$1"
+		    $EDITOR "$1"
 		    ;;
 		*)
 		    appdesktop=$(xdg-mime query default "$mimetype")

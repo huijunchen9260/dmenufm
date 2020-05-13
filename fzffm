@@ -1,15 +1,9 @@
 #!/bin/sh
 
 # source configuration file
-FM_PATH="$HOME/.config/dmenufm"
-FM_CACHE_PATH="$HOME/.cache/dmenufm"
-if [ -r "$FM_PATH/dmenufm.conf" ]; then
-    . "$FM_PATH/dmenufm.conf"
-elif [ -r "/etc/dmenufm.conf" ]; then
-    . "/etc/dmenufm.conf"
-else
-    echo 'Run `sudo make install` first to install all dmenufm files.'
-fi
+FM_PATH="$HOME/.config/fzffm"
+FM_CACHE_PATH="$HOME/.cache/fzffm"
+[ -r "$FM_PATH/fzffm.conf" ] && . "$FM_PATH/fzffm.conf" || [ -r "/etc/fzffm.conf" ] && . "/etc/fzffm.conf" || echo 'Run `sudo make install` first to install all fzffm files.'
 
 # SUDO setting
 export SUDO_ASKPASS="$FM_SDOPROP"
@@ -32,29 +26,29 @@ FM_MVV="MVV - Move files / directories"
 FM_YAK="YAK - Copy files / directories"
 FM_LNK="LNK - Symbolically link files / directories"
 FM_REM="REM - Rename files / directories"
-FM_TRH="TRH - Trash of dmenufm"
-FM_HIS="HIS - History of dmenufm"
-FM_BMK="BMK - Bookmark for dmenufm"
+FM_TRH="TRH - Trash of fzffm"
+FM_HIS="HIS - History of fzffm"
+FM_BMK="BMK - Bookmark for fzffm"
 FM_CMD="CMD - Frequently used command"
 FM_ZIP="ZIP - Compress files / directories"
 FM_SDO="SDO - Enable Super user privilege"
-FM_EYE="EYE - Preview files"
-ACTLIST=$(printf '%s\n' "$FM_PCP" "$FM_NEW" "$FM_MVV" "$FM_YAK" "$FM_LNK" "$FM_DEL" "$FM_TRH" "$FM_REM" "$FM_HIS" "$FM_BMK" "$FM_CMD" "$FM_ZIP" "$FM_SDO" "$FM_EYE")
+# FM_EYE="EYE - Preview files"
+ACTLIST=$(printf '%s\n' "$FM_PCP" "$FM_NEW" "$FM_MVV" "$FM_YAK" "$FM_LNK" "$FM_DEL" "$FM_TRH" "$FM_REM" "$FM_HIS" "$FM_BMK" "$FM_CMD" "$FM_ZIP" "$FM_SDO")
 COMPRESSIONLIST=$(printf '%s\n' "tar.gz" "tar.bz2" "tar.xz" "xz" "lzma" "gz" "bz2" "7z" "zip")
 nl='
 '
 
 # Create files / directories
 [ ! -d "$FM_PATH" ] && mkdir -p "$FM_PATH"
-[ ! -f "$FM_PATH/dmenufm.conf" ] && cp "/etc/dmenufm.conf" "$FM_PATH/dmenufm.conf"
+[ ! -f "$FM_PATH/fzffm.conf" ] && cp "/etc/fzffm.conf" "$FM_PATH/fzffm.conf"
 [ ! -d "$FM_CACHE_PATH" ] && mkdir -p "$FM_CACHE_PATH"
 [ ! -d "$FM_TRASH" ] && mkdir -p "$FM_TRASH"
-printf '%s\n' '#!/bin/sh' 'dmenu -fn Monospace-18 -sb "#FEE12B" -sf "#1d2021" -nf "#000000" -nb "#000000" -p "$1" <&- && echo' > "$FM_SDOPROP"
+printf '%s\n' '#!/bin/sh' 'fzf --reverse --prompt "$1 " <&- && echo' > "$FM_SDOPROP"
 chmod +x "$FM_SDOPROP"
 
-. dmenufm-open
-. dmenufm-action
-. dmenufm-menu
+. fzffm-open
+. fzffm-action
+. fzffm-menu
 
 
 CheckDeps () {
@@ -72,12 +66,12 @@ UsageInfo () {
 	while read -r CurLine; do
 		printf "%b\n" "$CurLine"
 	done <<-EOF
-		\r            DMENUFM
+		\r            FZFFM
 		\r            Written by huijunchen9260 (chen.9260@osu.edu)
 		\r
-		\r            Simple file manager using dmenu
+		\r            Simple file manager using fzf
 		\r
-		\rSYNTAX:     dmenufm [OPTS]
+		\rSYNTAX:     fzffm [OPTS]
 		\r
 		\rOPTS:       -h | --help               - Show this usage information.
 		\r            -d | --directory          - Only directories.
@@ -121,21 +115,20 @@ done
 ### RUN THE MAIN FUNCTION
 
 # --lastpath option:
-
 [ -n "$outputpath" ] && cd "$(cat -u "$FM_LASTPATH")"
 
 if [ "$(id -u)" -eq 0 ]; then
     # super user privilege
     yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-	dmenu -f -fn "$FM_DANGER_FONT" -nb darkred -sb "$2" -sf white -nf gray -i -l 10 -p "SUDO: $1"
+	fzf --reverse --prompt "SUDO: $1 "
     }
 
     xprompt () { # Usage xprompt [MSG] [BG_COLOR]
-	dmenu -f -fn "$FM_DANGER_FONT" -nb darkred -sb "$2" -sf white -nf gray -i -p "SUDO: $1" <&-
+	printf '%s' "" | fzf --reverse --prompt "SUDO: $1 "
     }
 
     DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
-	[ "$(printf "No\\nYes" | dmenu -f -fn "$FM_DANGER_FONT" -i -p "SUDO: $1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ]
+	[ "$(printf "No\\nYes" | fzf --reverse --prompt "SUDO: $1 ")" = "Yes" ]
     }
 
     FM_GENERIC_COLOR="$FM_SUDO_COLOR"
