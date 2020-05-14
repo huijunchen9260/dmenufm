@@ -5,6 +5,27 @@ FM_PATH="$HOME/.config/fzffm"
 FM_CACHE_PATH="$HOME/.cache/fzffm"
 [ -r "$FM_PATH/fzffm.conf" ] && . "$FM_PATH/fzffm.conf" || [ -r "/etc/fzffm.conf" ] && . "/etc/fzffm.conf" || echo 'Run `sudo make install` first to install all fzffm files.'
 
+case $FM_PROG in
+	"fzf")
+		FM_OPT_PROMPT="--prompt"
+		FM_OPT_REVERSE="--reverse"
+		FM_OPT_NOSORT="--no-sort"
+		;;
+	"bemenu")
+		FM_OPT_PROMPT="-p"
+		;;
+	"")
+		echo "No program selected, falling back to fzf."
+		FM_PROG="fzf"
+		FM_OPT_PROMPT="--prompt"
+		FM_OPT_REVERSE="--reverse"
+		FM_OPT_NOSORT="--no-sort"
+		;;
+	*)
+		echo "Program \`$FM_PROG\` not recognized, trying to run with prompt option '--prompt'."
+		;;
+esac
+
 # SUDO setting
 export SUDO_ASKPASS="$FM_SDOPROP"
 
@@ -43,7 +64,7 @@ nl='
 [ ! -f "$FM_PATH/fzffm.conf" ] && cp "/etc/fzffm.conf" "$FM_PATH/fzffm.conf"
 [ ! -d "$FM_CACHE_PATH" ] && mkdir -p "$FM_CACHE_PATH"
 [ ! -d "$FM_TRASH" ] && mkdir -p "$FM_TRASH"
-printf '%s\n' '#!/bin/sh' 'fzf --reverse --prompt "$1 " <&- && echo' > "$FM_SDOPROP"
+printf '%s\n' '#!/bin/sh' "${FM_PROG} ${FM_OPT_REVERSE} ${FM_OPT_PROMPT} \"$1 \" <&- && echo" > "$FM_SDOPROP"
 chmod +x "$FM_SDOPROP"
 
 . fzffm-open
@@ -120,15 +141,15 @@ done
 if [ "$(id -u)" -eq 0 ]; then
     # super user privilege
     yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-	fzf --reverse --prompt "SUDO: $1 "
+	${FM_PROG} ${FM_OPT_REVERSE} ${FM_OPT_PROMPT} "SUDO: $1 "
     }
 
     xprompt () { # Usage xprompt [MSG] [BG_COLOR]
-	printf '%s' "" | fzf --reverse --prompt "SUDO: $1 "
+	printf '%s' "" | ${FM_PROG} ${FM_OPT_REVERSE} ${FM_OPT_PROMPT} "SUDO: $1 "
     }
 
     DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
-	[ "$(printf "No\\nYes" | fzf --reverse --prompt "SUDO: $1 ")" = "Yes" ]
+	[ "$(printf "No\\nYes" | ${FM_PROG} ${FM_OPT_REVERSE} ${FM_OPT_PROMPT} "SUDO: $1 ")" = "Yes" ]
     }
 
     FM_GENERIC_COLOR="$FM_SUDO_COLOR"

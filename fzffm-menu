@@ -3,19 +3,19 @@
 
 ## PROMPT FUNCTIONS
 yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-    fzf --reverse --no-sort --prompt "$1 "
+    ${FM_PROG} ${FM_OPT_REVERSE} ${FM_OPT_NOSORT} ${FM_OPT_PROMPT} "$1 "
 }
 
 xprompt () { # Usage xprompt [MSG] [BG_COLOR]
-    printf '%s' "" | fzf --reverse  --no-sort --prompt "$1 "
+    printf '%s' "" | ${FM_PROG} ${FM_OPT_REVERSE} ${FM_OPT_NOSORT} ${FM_OPT_PROMPT}t "$1 "
 }
 
 NotiPrompt () { # Usage NotiPrompt [MSG]
-    printf '%s' "" | fzf --reverse --no-sort --prompt "$1 "
+    printf '%s' "" | ${FM_PROG} ${FM_OPT_REVERSE} ${FM_OPT_NOSORT} ${FM_OPT_PROMPT} "$1 "
 }
 
 DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
-    [ "$(printf "No\\nYes" | fzf --reverse --no-sort --prompt "$1")" = "Yes" ]
+    [ "$(printf "No\\nYes" | ${FM_PROG} ${FM_OPT_REVERSE} ${FM_OPT_NOSORT} ${FM_OPT_PROMPT} "$1")" = "Yes" ]
 }
 
 
