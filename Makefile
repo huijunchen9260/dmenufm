@@ -7,6 +7,7 @@ all:
 
 install:
 	@mkdir -p $(DESTDIR)$(PREFIX)/bin
+	@mkdir -p $(DESTDIR)$(CONFIG)
 	@mkdir -p $(DESTDIR)$(PREFIX)/share/applications
 	@cp -p dmenufm $(DESTDIR)$(PREFIX)/bin/dmenufm
 	@cp -p dmenufm-open $(DESTDIR)$(PREFIX)/bin/dmenufm-open
