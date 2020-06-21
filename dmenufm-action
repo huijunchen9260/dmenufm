@@ -61,6 +61,19 @@ BulkMode () { # Usage: BulkMode [MSG]
 	check=$(printf '%s' "$SELECTED" | sed "/^$/ d" | yprompt "Check selections. (Enter to continue, ESC to quit) " "$FM_ACTION_COLOR_LV1")
 }
 
+DirCheck () {
+    [ "$result" -eq 0 ] &&
+	case "$rollingmenu" in
+	    "true")
+		rollmenu=""
+		cd "../" && result=""
+		rolldir="$PWD"
+		;;
+	    *)
+		cd "../" && result=""
+		;;
+	esac || result=""
+}
 
 FM_BMK () { # Usage: FM_BMK
     markmenu=$(printf '%s\n' "$(cat -u "$FM_BMKFILE")" "Add BMK" "Delete BMK" | yprompt "Dmenufm Bookmark" "$FM_GENERIC_COLOR")
@@ -259,18 +272,7 @@ FM_DEL () { # Usage: FM_DEL
 		    # Check the chosen on is directory or not
 		    [ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 		    [ -n "$HERE" ] && SELECTED="$HERE" && DangerMenu "rm -rf" "Remove all the files / directories in $name?" ""
-		    [ "$result" -eq 0 ] &&
-			case "$rollingmenu" in
-			    "true")
-				rollmenu=""
-				cd "../" && result=""
-				rolldir="$PWD"
-				;;
-			    *)
-				cd "../" && result=""
-				;;
-			esac ||
-			    result=""
+		    DirCheck
 		    ;;
 	    esac
 	    ;;
@@ -537,18 +539,7 @@ FM_REM () { # Usage: FM_REM
 		    [ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 		    SELECTED="$HERE"
 		    [ -n "$SELECTED" ] && BulkRename
-		    [ "$result" -eq 0 ] &&
-			case "$rollingmenu" in
-			    "true")
-				rollmenu=""
-				cd "../" && result=""
-				rolldir="$PWD"
-				;;
-			    *)
-				cd "../" && result=""
-				;;
-			esac ||
-			result=""
+		    DirCheck
 		    ;;
 	    esac
 	    ;;
@@ -605,18 +596,7 @@ FM_TRH () { # Usage: FM_TRH
 			[ -n "$HERE" ] && [ -d "$HERE" ] && result=$?
 			SELECTED="$HERE"
 			[ -n "$SELECTED" ] && DangerMenu "mv" "Move $name to trash?" "$FM_TRASH"
-			[ "$result" -eq 0 ] &&
-			    case "$rollingmenu" in
-				"true")
-				    rollmenu=""
-				    cd "../" && result=""
-				    rolldir="$PWD"
-				    ;;
-				*)
-				    cd "../" && result=""
-				    ;;
-			    esac ||
-			    result=""
+			DirCheck
 		    fi
 		    ;;
 	    esac
