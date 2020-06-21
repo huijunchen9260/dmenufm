@@ -59,9 +59,7 @@ chmod +x "$FM_SDOPROP"
 
 CheckDeps () {
     for CurDep in "$@"; do
-	if ! command -v "$CurDep" 1> /dev/null 2>&1; then
-	    printf '%s' "ERROR: Dependency $CurDep not met."  1>&2
-	fi
+	command -v "$CurDep" 1> /dev/null 2>&1 || printf '%s' "ERROR: Dependency $CurDep not met."  1>&2
     done
     unset CurDep
 }
@@ -88,7 +86,6 @@ UsageInfo () {
 		\r            -r | --rollingmenu        - Rolling menu based on selected files.
 		\r            -t | --termpath           - Print out the path of file / directory.
 	EOF
-
 	unset CurLine
 }
 
@@ -121,7 +118,6 @@ done
 ### RUN THE MAIN FUNCTION
 
 # --lastpath option:
-
 [ -n "$outputpath" ] && cd "$(cat -u "$FM_LASTPATH")"
 
 if [ "$(id -u)" -eq 0 ]; then

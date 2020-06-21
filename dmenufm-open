@@ -9,11 +9,14 @@ Extract () { # Usage: Extract [CMD] [FILE]
     CheckDeps "${1%% *}" || exit 1
     [ ! -d "DirName" ] && mkdir -p "$DirName"
     cd "$DirName" || return
-    if $1 "$2"; then
-	NotiPrompt "$CHOICE extracted to $DirName"
-    else
+    $1 "$2" &&
+	NotiPrompt "$CHOICE extracted to $DirName" ||
 	NotiPrompt "Extraction fail"
-    fi
+    # if $1 "$2"; then
+	# NotiPrompt "$CHOICE extracted to $DirName"
+    # else
+	# NotiPrompt "Extraction fail"
+    # fi
 }
 
 FileOpen () { # Usage: FileOpen [File/Dir]
@@ -35,23 +38,32 @@ FileOpen () { # Usage: FileOpen [File/Dir]
 	    case "$mimetype" in
 		text/*|*x-empty*|*json*)
 		    # Text file opened in $EDITOR or default opener
-		    if [ -n "$TERMINAL" ]; then
-			printf '%s' "$PWD" > "$FM_LASTPATH"
-			$TERMINAL -e "${EDITOR:-vi}" "$1"
-		    else
-			printf '%s' "$PWD" > "$FM_LASTPATH"
-			"${FM_OPENER:-xdg-open}" "$1"
-		    fi
+		    printf '%s' "$PWD" > "$FM_LASTPATH"
+		    case "$TERMINAL" in
+			"") "${FM_OPENER:-xdg-open}" "$1" ;;
+			*) $TERMINAL -e "${EDITOR:-vi}" "$1" ;;
+		    esac
+		    # if [ -n "$TERMINAL" ]; then
+			# printf '%s' "$PWD" > "$FM_LASTPATH"
+			# $TERMINAL -e "${EDITOR:-vi}" "$1"
+		    # else
+			# printf '%s' "$PWD" > "$FM_LASTPATH"
+			# "${FM_OPENER:-xdg-open}" "$1"
+		    # fi
 		    ;;
 		*)
 		    appdesktop=$(xdg-mime query default "$mimetype")
-		    if grep -q "Terminal=false" < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" ; then
-			printf '%s' "$PWD" > "$FM_LASTPATH"
-			${FM_OPENER:-xdg-open} "$1"
-		    else
-			printf '%s' "$PWD" > "$FM_LASTPATH"
+		    printf '%s' "$PWD" > "$FM_LASTPATH"
+		    grep -q "Terminal=false" < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" &&
+			${FM_OPENER:-xdg-open} "$1" ||
 			$TERMINAL -e "${FM_OPENER:-xdg-open}" "$1"
-		    fi
+		    # if grep -q "Terminal=false" < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" ; then
+			# printf '%s' "$PWD" > "$FM_LASTPATH"
+			# ${FM_OPENER:-xdg-open} "$1"
+		    # else
+			# printf '%s' "$PWD" > "$FM_LASTPATH"
+			# $TERMINAL -e "${FM_OPENER:-xdg-open}" "$1"
+		    # fi
 		    ;;
 	    esac
     esac

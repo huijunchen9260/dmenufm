@@ -82,16 +82,21 @@ UpdateMenu () { # Generate menu based on arguments
 
 ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
     while [ -n "$actCHOICE" ]; do
-	if [ -n "$keeplist" ]; then
-	    UpdateMenu
-	else
-	    Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
-	fi
-	if [ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "$PWD" = "$rolldir" ]; then
-		list="$(printf '%s\n' "$rollmenu" "${list#*"$rollmenu"}" "${list%%"$rollmenu"*}")"
-		rollmenu=""
+	[ -z "$keeplist" ] && Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs") || UpdateMenu
+	# if [ -n "$keeplist" ]; then
+	#     UpdateMenu
+	# else
+	#     Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
+	# fi
+	# if [ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "$PWD" = "$rolldir" ]; then
+	# 	list="$(printf '%s\n' "$rollmenu" "${list#*"$rollmenu"}" "${list%%"$rollmenu"*}")"
+	# 	rollmenu=""
+	# 	rolldir=""
+	# fi
+	[ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "$PWD" = "$rolldir" ] &&
+		list="$(printf '%s\n' "$rollmenu" "${list#*"$rollmenu"}" "${list%%"$rollmenu"*}")" &&
+		rollmenu="" &&
 		rolldir=""
-	fi
 	if [ "$bulkselection" = "true" ]; then
 	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$ENDSELECTION" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
 	elif [ "$allowbulk" != "NotAllowed" ]; then
@@ -102,69 +107,159 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
 	fi
 	# Outcome matching
-	if [ "$actCHOICE" = "$TARGET" ]; then
-	    if [ "$termpath" = "true" ]; then
-		printf '%s' "$PWD" && actCHOICE=""
+	case "$actCHOICE" in
+	    "$TARGET")
+		case "$termpath" in
+		    "true")
+			printf '%s' "$PWD" && actCHOICE=""
+			break
+			;;
+		    *)
+			HERE=$(printf '%s' "$PWD")
+			name=$(printf '%s' "${PWD##*/}")
+			[ "$bulkselection" = "true" ] && bulklist=$(printf '%s\n' "$bulklist" "$HERE") && cd "../"
+			break
+			;;
+		esac
+		;;
+	    "$BACKWARD")
+		case "$rollingmenu" in
+		    "true")
+			rollmenu="$PWD"
+			cd "../" || NotiPrompt "Need super user permission to enter this directory"
+			rolldir="${PWD##*/}"
+			History "$actCHOICE"
+			;;
+		    *)
+			cd "../" || NotiPrompt "Need super user permission to enter this directory"
+			History "$actCHOICE"
+		esac
+		;;
+	    "$ENDSELECTION")
+		bulkselection="false"
 		break
-	    else
+		;;
+	    "$allowbulk")
+		bulkselection="true"
+		break
+		;;
+	    "$allselection")
+		bulkselection="false"
 		HERE=$(printf '%s' "$PWD")
 		name=$(printf '%s' "${PWD##*/}")
-		[ "$bulkselection" = "true" ] && bulklist=$(printf '%s\n' "$bulklist" "$HERE") && cd "../"
 		break
-	    fi
-	elif [ "$actCHOICE" = "$BACKWARD" ]; then
-	    if [ "$rollingmenu" = "true" ]; then
-		rollmenu="$PWD"
-		cd "../" || NotiPrompt "Need super user permission to enter this directory"
-		rolldir="${PWD##*/}"
-		History "$actCHOICE"
-	    else
-		cd "../" || NotiPrompt "Need super user permission to enter this directory"
-		History "$actCHOICE"
-	    fi
-	elif [ "$actCHOICE" = "$ENDSELECTION" ]; then
-	    bulkselection="false"
-	    break
-	elif [ "$actCHOICE" = "$allowbulk" ]; then
-	    bulkselection="true"
-	    break
-	elif [ "$actCHOICE" = "$allselection" ] || [ "$actCHOICE" = "$masselection" ]; then
-	    bulkselection="false"
-	    HERE=$(printf '%s' "$PWD")
-	    name=$(printf '%s' "${PWD##*/}")
-	    break
-	elif [ "$actCHOICE" = "$FM_HIS" ]; then
-	    FM_HIS
-	    continue
-	elif [ -d "$actCHOICE" ]; then
-	    if [ "$rollingmenu" = "true" ]; then
-		rolldir="$PWD"
-		cd "$actCHOICE" || NotiPrompt "Need super user permission to enter this directory"
-		rollmenu="$actCHOICE"
-		History "$actCHOICE"
-	    else
-		cd "$actCHOICE" || NotiPrompt "Need super user permission to enter this directory"
-		History "$actCHOICE"
-	    fi
-	    continue
-	elif [ -f "$actCHOICE" ]; then
-	    if [ "$termpath" = "true" ]; then
-		printf '%s' "$PWD/$actCHOICE" && actCHOICE=""
+		;;
+	    "$masselection" )
+		bulkselection="false"
+		HERE=$(printf '%s' "$PWD")
+		name=$(printf '%s' "${PWD##*/}")
 		break
-	    else
-		rollmenu="$actCHOICE"
-		HERE=$(printf '%s' "$PWD/$actCHOICE")
-		name=$(printf '%s' "$actCHOICE")
-		[ "$bulkselection" = "true" ] && bulklist=$(printf '%s\n' "$bulklist" "$HERE")
-		break
-	    fi
-	else
-	    HERE=""
-	    name=""
-	    bulkselection="false"
-	    actCHOICE="placeholder"
-	    break
-	fi
+		;;
+	    "$FM_HIS")
+		FM_HIS
+		continue
+		;;
+	    *)
+		if [ -d "$actCHOICE" ]; then
+		    case "$rollingmenu" in
+		        "true")
+			    rolldir="$PWD"
+			    cd "$actCHOICE" || NotiPrompt "Need super user permission to enter this directory"
+			    rollmenu="$actCHOICE"
+			    History "$actCHOICE"
+			    ;;
+			*)
+			    cd "$actCHOICE" || NotiPrompt "Need super user permission to enter this directory"
+			    History "$actCHOICE"
+			    ;;
+		    esac
+		    continue
+		elif [ -f "$actCHOICE" ]; then
+		    case "$termpath" in
+		        "true")
+			    printf '%s' "$PWD/$actCHOICE" && actCHOICE=""
+			    break
+			    ;;
+			*)
+			    rollmenu="$actCHOICE"
+			    HERE=$(printf '%s' "$PWD/$actCHOICE")
+			    name=$(printf '%s' "$actCHOICE")
+			    [ "$bulkselection" = "true" ] && bulklist=$(printf '%s\n' "$bulklist" "$HERE")
+			    break
+			    ;;
+		    esac
+		else
+		    HERE=""
+		    name=""
+		    bulkselection="false"
+		    actCHOICE="placeholder"
+		    break
+		fi
+		;;
+	esac
+	# if [ "$actCHOICE" = "$TARGET" ]; then
+	#     if [ "$termpath" = "true" ]; then
+	# 	printf '%s' "$PWD" && actCHOICE=""
+	# 	break
+	#     else
+	# 	HERE=$(printf '%s' "$PWD")
+	# 	name=$(printf '%s' "${PWD##*/}")
+	# 	[ "$bulkselection" = "true" ] && bulklist=$(printf '%s\n' "$bulklist" "$HERE") && cd "../"
+	# 	break
+	#     fi
+	# elif [ "$actCHOICE" = "$BACKWARD" ]; then
+	#     if [ "$rollingmenu" = "true" ]; then
+	# 	rollmenu="$PWD"
+	# 	cd "../" || NotiPrompt "Need super user permission to enter this directory"
+	# 	rolldir="${PWD##*/}"
+	# 	History "$actCHOICE"
+	#     else
+	# 	cd "../" || NotiPrompt "Need super user permission to enter this directory"
+	# 	History "$actCHOICE"
+	#     fi
+	# elif [ "$actCHOICE" = "$ENDSELECTION" ]; then
+	#     bulkselection="false"
+	#     break
+	# elif [ "$actCHOICE" = "$allowbulk" ]; then
+	#     bulkselection="true"
+	#     break
+	# elif [ "$actCHOICE" = "$allselection" ] || [ "$actCHOICE" = "$masselection" ]; then
+	#     bulkselection="false"
+	#     HERE=$(printf '%s' "$PWD")
+	#     name=$(printf '%s' "${PWD##*/}")
+	#     break
+	# elif [ "$actCHOICE" = "$FM_HIS" ]; then
+	#     FM_HIS
+	#     continue
+	# elif [ -d "$actCHOICE" ]; then
+	#     if [ "$rollingmenu" = "true" ]; then
+	# 	rolldir="$PWD"
+	# 	cd "$actCHOICE" || NotiPrompt "Need super user permission to enter this directory"
+	# 	rollmenu="$actCHOICE"
+	# 	History "$actCHOICE"
+	#     else
+	# 	cd "$actCHOICE" || NotiPrompt "Need super user permission to enter this directory"
+	# 	History "$actCHOICE"
+	#     fi
+	#     continue
+	# elif [ -f "$actCHOICE" ]; then
+	#     if [ "$termpath" = "true" ]; then
+	# 	printf '%s' "$PWD/$actCHOICE" && actCHOICE=""
+	# 	break
+	#     else
+	# 	rollmenu="$actCHOICE"
+	# 	HERE=$(printf '%s' "$PWD/$actCHOICE")
+	# 	name=$(printf '%s' "$actCHOICE")
+	# 	[ "$bulkselection" = "true" ] && bulklist=$(printf '%s\n' "$bulklist" "$HERE")
+	# 	break
+	#     fi
+	# else
+	#     HERE=""
+	#     name=""
+	#     bulkselection="false"
+	#     actCHOICE="placeholder"
+	#     break
+	# fi
     done
 }
 
@@ -181,63 +276,129 @@ TwoPWD () { # Usage: Show last two level of PWD
 
 MainMenu () { # Usage: MainMenu
     while [ -n "$CHOICE" ]; do
-	if [ -n "$keeplist" ]; then
-	    UpdateMenu
-	else
-	    Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
-	fi
-	if [ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "$PWD" = "$rolldir" ]; then
-		list="$(printf '%s\n' "$rollmenu" "${list#*"$rollmenu"}" "${list%%"$rollmenu"*}")"
-		rollmenu=""
+	[ -z "$keeplist" ] && Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs") || UpdateMenu
+	# if [ -n "$keeplist" ]; then
+	#     UpdateMenu
+	# else
+	#     Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs")
+	# fi
+	# if [ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "$PWD" = "$rolldir" ]; then
+	# 	list="$(printf '%s\n' "$rollmenu" "${list#*"$rollmenu"}" "${list%%"$rollmenu"*}")"
+	# 	rollmenu=""
+	# 	rolldir=""
+	# fi
+	[ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "$PWD" = "$rolldir" ] &&
+		list="$(printf '%s\n' "$rollmenu" "${list#*"$rollmenu"}" "${list%%"$rollmenu"*}")" &&
+		rollmenu="" &&
 		rolldir=""
-	fi
 	TwoPWD
 	CHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$list" | sed "/^$/ d" | yprompt "$TwoPWD" "$FM_GENERIC_COLOR")
 	# Outcome matching
-	if [ "$CHOICE" = "$TARGET" ]; then
-	    if [ "$termpath" = "true" ]; then
-		printf '%s' "$PWD" && CHOICE=""
-		break
-	    else
-		FileOpen "$PWD"
-		History "$CHOICE"
-	    fi
-	elif [ "$CHOICE" = "$BACKWARD" ]; then
-	    if [ "$rollingmenu" = "true" ]; then
-		rollmenu="${PWD##*/}/"
-		cd "../" || NotiPrompt "Need super user permission to enter this directory"
-		rolldir="$PWD"
-		History "$CHOICE"
-	    else
-		cd "../" || NotiPrompt "Need super user permission to enter this directory"
-		History "$CHOICE"
-	    fi
-	elif [ "$CHOICE" = "$ACTION" ]; then
-	    FM_Action
-	elif [ "$CHOICE" = "$TERM" ]; then
-	    $TERMINAL
-	elif [ -d "$CHOICE" ]; then
-	    if [ "$rollingmenu" = "true" ]; then
-		rolldir="$PWD"
-		cd "$CHOICE" || NotiPrompt "Need super user permission to enter this directory"
-		rollmenu="$CHOICE"
-		History "$CHOICE"
-	    else
-		cd "$CHOICE" || NotiPrompt "Need super user permission to enter this directory"
-		History "$CHOICE"
-	    fi
-	    continue
-	elif [ -f "$CHOICE" ]; then
-	    if [ "$termpath" = "true" ]; then
-		printf '%s' "$PWD/$CHOICE" && CHOICE=""
-		break
-	    else
-		rollmenu="$CHOICE"
-		FileOpen "$PWD/$CHOICE"
-		History "$CHOICE"
-	    fi
-	else
-	    break
-	fi
+	case "$CHOICE" in
+	    "$TARGET")
+		case "$termpath" in
+		    "true")
+			printf '%s' "$PWD" && CHOICE=""
+			break
+			;;
+		    *)
+			FileOpen "$PWD"
+			History "$CHOICE"
+			;;
+		esac
+		;;
+	    "$BACKWARD")
+		case "$rollingmenu" in
+		    "true")
+			rollmenu="${PWD##*/}/"
+			cd "../" || NotiPrompt "Need super user permission to enter this directory"
+			rolldir="$PWD"
+			History "$CHOICE"
+			;;
+		    *)
+			cd "../" || NotiPrompt "Need super user permission to enter this directory"
+			History "$CHOICE"
+			;;
+		esac
+		;;
+	    "$ACTION") FM_Action ;;
+	    "$TERM") $TERMINAL ;;
+	    *)
+		if [ -d "$CHOICE" ]; then
+		    case "$rollingmenu" in
+			"true")
+			    rolldir="$PWD"
+			    cd "$CHOICE" || NotiPrompt "Need super user permission to enter this directory"
+			    rollmenu="$CHOICE"
+			    History "$CHOICE"
+			    ;;
+			*)
+			    cd "$CHOICE" || NotiPrompt "Need super user permission to enter this directory"
+			    History "$CHOICE"
+			    ;;
+		    esac
+		    continue
+		elif [ -f "$CHOICE" ]; then
+		    case "$termpath" in
+		        "true")
+			    printf '%s' "$PWD/$CHOICE" && CHOICE=""
+			    break
+			    ;;
+			*)
+			    rollmenu="$CHOICE"
+			    FileOpen "$PWD/$CHOICE"
+			    History "$CHOICE"
+			    ;;
+		    esac
+		else
+		    break
+		fi
+		;;
+	esac
+	# if [ "$CHOICE" = "$TARGET" ]; then
+	#     if [ "$termpath" = "true" ]; then
+	# 	printf '%s' "$PWD" && CHOICE=""
+	# 	break
+	#     else
+	# 	FileOpen "$PWD"
+	# 	History "$CHOICE"
+	#     fi
+	# elif [ "$CHOICE" = "$BACKWARD" ]; then
+	#     if [ "$rollingmenu" = "true" ]; then
+	# 	rollmenu="${PWD##*/}/"
+	# 	cd "../" || NotiPrompt "Need super user permission to enter this directory"
+	# 	rolldir="$PWD"
+	# 	History "$CHOICE"
+	#     else
+	# 	cd "../" || NotiPrompt "Need super user permission to enter this directory"
+	# 	History "$CHOICE"
+	#     fi
+	# elif [ "$CHOICE" = "$ACTION" ]; then
+	#     FM_Action
+	# elif [ "$CHOICE" = "$TERM" ]; then
+	#     $TERMINAL
+	# elif [ -d "$CHOICE" ]; then
+	#     if [ "$rollingmenu" = "true" ]; then
+	# 	rolldir="$PWD"
+	# 	cd "$CHOICE" || NotiPrompt "Need super user permission to enter this directory"
+	# 	rollmenu="$CHOICE"
+	# 	History "$CHOICE"
+	#     else
+	# 	cd "$CHOICE" || NotiPrompt "Need super user permission to enter this directory"
+	# 	History "$CHOICE"
+	#     fi
+	#     continue
+	# elif [ -f "$CHOICE" ]; then
+	#     if [ "$termpath" = "true" ]; then
+	# 	printf '%s' "$PWD/$CHOICE" && CHOICE=""
+	# 	break
+	#     else
+	# 	rollmenu="$CHOICE"
+	# 	FileOpen "$PWD/$CHOICE"
+	# 	History "$CHOICE"
+	#     fi
+	# else
+	#     break
+	# fi
     done
 }
