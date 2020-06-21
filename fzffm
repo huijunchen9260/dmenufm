@@ -14,6 +14,10 @@ case $FM_PROG in
 		[ -z "$FM_OPTS" ] && FM_OPTS="-l 10"
 		FM_OPT_PROMPT="-p"
 		;;
+	"rofi")
+		[ -z "$FM_OPTS" ] && FM_OPTS="-dmenu -l 10"
+		FM_OPT_PROMPT="-p"
+		;;
 	"")
 		echo "No program selected, falling back to fzf."
 		[ -z "$FM_OPTS" ] && FM_OPTS="--reverse"
