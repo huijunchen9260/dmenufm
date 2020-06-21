@@ -137,11 +137,6 @@ BulkCMD () { # Usage: BulkCMD
 ExecCMD () { # Usage: ExecCMD [CMD]
     software=$(printf '%s' "${1%% *}")
     appdesktop=$(find "$XDGDIR1" "$XDGDIR2" -name "*$software*.desktop" | tail -n 1)
-    # if [ -n "$appdesktop" ] && grep 'Terminal=false' "$appdesktop"; then
-	# printf '%s' "$1" | ${SHELL:-"/bin/sh"}
-    # else
-	# $TERMINAL -e $1 | ${SHELL:-"/bin/sh"}
-    # fi
     [ -n "$appdesktop" ] &&
 	grep 'Terminal=false' "$appdesktop" &&
 	printf '%s' "$1" | ${SHELL:-"/bin/sh"} ||

@@ -66,6 +66,17 @@ CheckDeps () {
 
 CheckDeps find tail xdg-mime xdg-open sed grep wc cp mv rm paste cut id wmctrl xclip touch
 
+GetOS () {
+    # Stolen from fff
+    case $OSTYPE in
+        # Mac OS X / macOS.
+        darwin*)
+            opener=open
+        ;;
+    esac
+}
+
+
 UsageInfo () {
 	while read -r CurLine; do
 		printf "%b\n" "$CurLine"
@@ -136,8 +147,10 @@ if [ "$(id -u)" -eq 0 ]; then
 
     FM_GENERIC_COLOR="$FM_SUDO_COLOR"
 
+    GetOS
     MainMenu
 else
+    GetOS
     MainMenu
 fi
 

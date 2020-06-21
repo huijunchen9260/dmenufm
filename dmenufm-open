@@ -20,7 +20,7 @@ Extract () { # Usage: Extract [CMD] [FILE]
 }
 
 FileOpen () { # Usage: FileOpen [File/Dir]
-    mimetype=$(xdg-mime query filetype "$1")
+    mimetype=$(file --mime-type -b "$1" 2>/dev/null)
     case "$1" in
 	*.tar.bz2|*.tar.xz|*.tbz2) Extract "tar xvjf" "$1" ;;
 	*.tar.gz|*.tgz) Extract "tar xvzf" "$1" ;;
@@ -35,35 +35,17 @@ FileOpen () { # Usage: FileOpen [File/Dir]
 	*.xz) Extract "unxz" "$1" ;;
 	*.cab) Extract "cabextract" "$1" ;;
 	*)
+	    printf '%s' "$PWD" > "$FM_LASTPATH"
 	    case "$mimetype" in
+		# Stolen from fff.
 		text/*|*x-empty*|*json*)
-		    # Text file opened in $EDITOR or default opener
-		    printf '%s' "$PWD" > "$FM_LASTPATH"
 		    case "$TERMINAL" in
-			"") "${FM_OPENER:-xdg-open}" "$1" ;;
+			"") "${FM_OPENER:-${opener:-xdg-open}}" "$1" ;;
 			*) $TERMINAL -e "${EDITOR:-vi}" "$1" ;;
 		    esac
-		    # if [ -n "$TERMINAL" ]; then
-			# printf '%s' "$PWD" > "$FM_LASTPATH"
-			# $TERMINAL -e "${EDITOR:-vi}" "$1"
-		    # else
-			# printf '%s' "$PWD" > "$FM_LASTPATH"
-			# "${FM_OPENER:-xdg-open}" "$1"
-		    # fi
 		    ;;
 		*)
-		    appdesktop=$(xdg-mime query default "$mimetype")
-		    printf '%s' "$PWD" > "$FM_LASTPATH"
-		    grep -q "Terminal=false" < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" &&
-			${FM_OPENER:-xdg-open} "$1" ||
-			$TERMINAL -e "${FM_OPENER:-xdg-open}" "$1"
-		    # if grep -q "Terminal=false" < "$(find "$XDGDIR1" "$XDGDIR2" -name "$appdesktop" | tail -n 1)" ; then
-			# printf '%s' "$PWD" > "$FM_LASTPATH"
-			# ${FM_OPENER:-xdg-open} "$1"
-		    # else
-			# printf '%s' "$PWD" > "$FM_LASTPATH"
-			# $TERMINAL -e "${FM_OPENER:-xdg-open}" "$1"
-		    # fi
+		    ${FM_OPENER:-${opener:-xdg-open}} "$1"
 		    ;;
 	    esac
     esac
