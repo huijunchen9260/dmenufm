@@ -11,6 +11,28 @@ else
     echo 'Run `sudo make install` first to install all dmenufm files.'
 fi
 
+case $FM_PROG in
+	"fzf")
+		[ -z "$FM_OPTS" ] && FM_OPTS='--reverse'
+		FM_OPT_PROMPT="--prompt"
+		;;
+	"bemenu")
+		[ -z "$FM_OPTS" ] && FM_OPTS='-l 10'
+		FM_OPT_PROMPT="-p"
+		;;
+	"rofi")
+		[ -z "$FM_OPTS" ] && FM_OPTS="-dmenu -l 10"
+		FM_OPT_PROMPT="-p"
+		;;
+	"")
+		echo "No program selected, falling back to dmenu."
+		;;
+	*)
+		[ -z "$FM_OPTS" ] && FM_OPTS=""
+		[ -z "$FM_OPT_PROMPT" ] && FM_OPT_PROMPT="--prompt" && echo "Program \`$FM_PROG\` not recognized, trying to run with prompt option '--prompt'. If this does not work, please use the FM_OPT_PROMPT variable to set it!"
+		;;
+esac
+
 # SUDO setting
 export SUDO_ASKPASS="$FM_SDOPROP"
 
@@ -70,9 +92,7 @@ GetOS () {
     # Stolen from fff
     case $OSTYPE in
         # Mac OS X / macOS.
-        darwin*)
-            opener=open
-        ;;
+        darwin*) opener=open ;;
     esac
 }
 
@@ -132,19 +152,24 @@ done
 [ -n "$outputpath" ] && cd "$(cat -u "$FM_LASTPATH")"
 
 if [ "$(id -u)" -eq 0 ]; then
+
     # super user privilege
     yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-	dmenu -f -fn "$FM_DANGER_FONT" -nb darkred -sb "$2" -sf white -nf gray -i -l 10 -p "SUDO: $1"
+	${FM_PROG:-dmenu} ${FM_OPTS:--f -fn "$FM_GENERIC_FONT" -sb "$2" -i -l 10} ${FM_OPT_PROMPT:--p} "SUDO: $1 "
     }
 
     xprompt () { # Usage xprompt [MSG] [BG_COLOR]
-	dmenu -f -fn "$FM_DANGER_FONT" -nb darkred -sb "$2" -sf white -nf gray -i -p "SUDO: $1" <&-
+	printf '%s' "" | ${FM_PROG:-dmenu} ${FM_OPTS:--f -fn "$FM_GENERIC_FONT" -sb "$2" -i -l 10} ${FM_OPT_PROMPT:--p} "SUDO: $1 "
+    }
+
+    NotiPrompt () { # Usage NotiPrompt [MSG]
+	printf '%s' "" | ${FM_PROG:-dmenu} ${FM_NOTIF_OPTS:-${FM_OPTS:--f -fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000"}} ${FM_OPT_PROMPT:--p} "SUDO: $1 "
+
     }
 
     DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
-	[ "$(printf "No\\nYes" | dmenu -f -fn "$FM_DANGER_FONT" -i -p "SUDO: $1" -nb darkred -sb red -sf white -nf gray )" = "Yes" ]
+	[ "$(printf "No\\nYes" | ${FM_PROG:-dmenu} ${FM_DANGER_OPTS:-${FM_OPTS:--f -fn $FM_DANGER_FONT -i -nb darkred -sb red -sf white -nf gray}} ${FM_OPT_PROMPT:--p} "SUDO: $1")" = "Yes" ]
     }
-
     FM_GENERIC_COLOR="$FM_SUDO_COLOR"
 
     GetOS

@@ -12,11 +12,6 @@ Extract () { # Usage: Extract [CMD] [FILE]
     $1 "$2" &&
 	NotiPrompt "$CHOICE extracted to $DirName" ||
 	NotiPrompt "Extraction fail"
-    # if $1 "$2"; then
-	# NotiPrompt "$CHOICE extracted to $DirName"
-    # else
-	# NotiPrompt "Extraction fail"
-    # fi
 }
 
 FileOpen () { # Usage: FileOpen [File/Dir]
