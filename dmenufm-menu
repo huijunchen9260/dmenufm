@@ -2,9 +2,7 @@
 
 ## PROMPT FUNCTIONS
 yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-    set -x
     ${FM_PROG:-dmenu} ${FM_OPTS:--f -fn "$FM_GENERIC_FONT" -sb "$2" -i -l 10} ${FM_OPT_PROMPT:--p} "$1 "
-    set +x
 }
 
 xprompt () { # Usage xprompt [MSG] [BG_COLOR]
@@ -136,13 +134,7 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 		bulkselection="true"
 		break
 		;;
-	    "$allselection")
-		bulkselection="false"
-		HERE=$(printf '%s' "$PWD")
-		name=$(printf '%s' "${PWD##*/}")
-		break
-		;;
-	    "$masselection" )
+	    "$allselection"|"$masselection")
 		bulkselection="false"
 		HERE=$(printf '%s' "$PWD")
 		name=$(printf '%s' "${PWD##*/}")

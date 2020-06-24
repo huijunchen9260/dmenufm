@@ -11,27 +11,27 @@ else
     echo 'Run `sudo make install` first to install all dmenufm files.'
 fi
 
-case $FM_PROG in
+Program () {
+    case $FM_PROG in
 	"fzf")
-		[ -z "$FM_OPTS" ] && FM_OPTS='--reverse'
-		FM_OPT_PROMPT="--prompt"
-		;;
+	    [ -z "$FM_OPTS" ] && FM_OPTS='--reverse'
+	    FM_OPT_PROMPT="--prompt"
+	    ;;
 	"bemenu")
-		[ -z "$FM_OPTS" ] && FM_OPTS='-l 10'
-		FM_OPT_PROMPT="-p"
-		;;
+	    [ -z "$FM_OPTS" ] && FM_OPTS='-l 10'
+	    FM_OPT_PROMPT="-p"
+	    ;;
 	"rofi")
-		[ -z "$FM_OPTS" ] && FM_OPTS="-dmenu -l 10"
-		FM_OPT_PROMPT="-p"
-		;;
-	"")
-		echo "No program selected, falling back to dmenu."
-		;;
+	    [ -z "$FM_OPTS" ] && FM_OPTS="-dmenu -l 10"
+	    FM_OPT_PROMPT="-p"
+	    ;;
+	"") echo "No program selected, falling back to dmenu." ;;
 	*)
-		[ -z "$FM_OPTS" ] && FM_OPTS=""
-		[ -z "$FM_OPT_PROMPT" ] && FM_OPT_PROMPT="--prompt" && echo "Program \`$FM_PROG\` not recognized, trying to run with prompt option '--prompt'. If this does not work, please use the FM_OPT_PROMPT variable to set it!"
-		;;
-esac
+	    [ -z "$FM_OPTS" ] && FM_OPTS=""
+	    [ -z "$FM_OPT_PROMPT" ] && FM_OPT_PROMPT="--prompt" && echo "Program \`$FM_PROG\` not recognized, trying to run with prompt option '--prompt'. If this does not work, please use the FM_OPT_PROMPT variable to set it!"
+	    ;;
+    esac
+}
 
 # SUDO setting
 export SUDO_ASKPASS="$FM_SDOPROP"
@@ -81,18 +81,18 @@ chmod +x "$FM_SDOPROP"
 
 CheckDeps () {
     for CurDep in "$@"; do
-	command -v "$CurDep" 1> /dev/null 2>&1 || printf '%s' "ERROR: Dependency $CurDep not met."  1>&2
+	command -v "$CurDep" 1> /dev/null 2>&1 || printf '%s\n' "ERROR: Dependency $CurDep not met."  1>&2
     done
     unset CurDep
 }
 
-CheckDeps find tail xdg-mime xdg-open sed grep wc cp mv rm paste cut id wmctrl xclip touch
+CheckDeps find tail sed grep cp mv rm paste cut id wmctrl touch
 
 GetOS () {
     # Stolen from fff
     case $OSTYPE in
-        # Mac OS X / macOS.
-        darwin*) opener=open ;;
+	darwin*) opener=open; clipcopy=pbcopy ;;
+	*) { command -v xclip 1> /dev/null 2>&1 && clipcopy=xclip; } || { command -v xsel 1> /dev/null 2>&1 && clipcopy=xsel; } ;;
     esac
 }
 
@@ -116,6 +116,10 @@ UsageInfo () {
 		\r            -p | --lastpath           - Opens in last working directory. (cd on exit)
 		\r            -r | --rollingmenu        - Rolling menu based on selected files.
 		\r            -t | --termpath           - Print out the path of file / directory.
+		\r	      -m | --menu               - Choose other menu system
+		\r	      -o | --option             - Choose options for other menu system
+		\r	      -no | --notif-option      - Choose NotiPrompt options for other menu system
+		\r	      -do | --danger-option     - Choose DangerPrompt options for other menu system
 	EOF
 	unset CurLine
 }
@@ -131,6 +135,10 @@ while [ -n "$1" ]; do
 	"-p"|"--lastpath" ) outputpath="placeholder" ;;
 	"-r"|"--rollingmenu") rollingmenu="true" ;;
 	"-t"|"--termpath") termpath="true" ;;
+	"-m"|"--menu") shift; FM_PROG="$1" ;;
+	"-o"|"--option") shift; FM_OPTS="$1" ;;
+	"-no"|"--notif-option") shift; FM_NOTIF_OPTS="$1" ;;
+	"-do"|"--danger-option") shift; FM_DANGER_OPTS="$1" ;;
 	"-h"|"--help" ) UsageInfo; exit 0; ;;
 	*)
 	    if [ -d "$1" ]; then
@@ -173,9 +181,11 @@ if [ "$(id -u)" -eq 0 ]; then
     FM_GENERIC_COLOR="$FM_SUDO_COLOR"
 
     GetOS
+    Program
     MainMenu
 else
     GetOS
+    Program
     MainMenu
 fi
 

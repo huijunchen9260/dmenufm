@@ -75,9 +75,6 @@ DirCheck () {
 FM_BMK () { # Usage: FM_BMK
     markmenu=$(printf '%s\n' "$(cat -u "$FM_BMKFILE")" "Add BMK" "Delete BMK" | yprompt "Dmenufm Bookmark" "$FM_GENERIC_COLOR")
     # Add \n at end of file
-    # if [ "$(tail -c 1 "$FM_BMKFILE")" != "" ]; then
-	# echo >> "$FM_BMKFILE"
-    # fi
     [ "$(tail -c 1 "$FM_BMKFILE")" != "" ] && echo >> "$FM_BMKFILE"
     case "$markmenu" in
 	"Add BMK")
@@ -238,7 +235,7 @@ History () { # Usage: History [DIR/FILE]
 	    ;;
     esac
     # Limit the max number of history
-    TMP=$(wc -l "$FM_HISFILE")
+    TMP=$(wc -l "$FM_HISFILE" || grep -c ^ "$FM_HISFILE")
     hisnum=${TMP%% *}
     unset TMP
     [ "$hisnum" -ge "$FM_MAX_HIS_LENGTH" ] &&
@@ -347,14 +344,11 @@ FM_PCP () { # Usage: FM_PCP
     # Copy path to xclip/xsel, and send notification.
     ActionMenu "Copy file / directory path: " "$FM_ACTION_COLOR_LV1" || return
     [ -n "$HERE" ] &&
-	if command -v xclip; then
-	    printf '%s' "$HERE" | xclip -selection clipboard && NotiPrompt "Path $name copied to clipboard."
-	elif command -v xsel; then
-	    printf '%s' "$HERE" | xsel --clipboard && NotiPrompt "Path $name copied to clipboard."
-	else
-	    NotiPrompt "Need to install xclip or xsel as dependency"
-	    continue
-	fi
+	case "$clipcopy" in
+	    "pbcopy") printf '%s' "$HERE" | pbcopy && NotiPrompt "Path $name copied to clipboard." ;;
+	    "xclip") printf '%s' "$HERE" | xclip -selection clipboard && NotiPrompt "Path $name copied to clipboard." ;;
+	    "xsel") printf '%s' "$HERE" | xsel --clipboard && NotiPrompt "Path $name copied to clipboard." ;;
+	esac
 }
 
 BulkRename () { # Usage: BulkRename
@@ -374,7 +368,7 @@ BulkRename () { # Usage: BulkRename
 
 	FileOpen "$FM_REMFILE"
 
-	if [ "$(wc -l < "$FM_REMFILE" )" -ne "$(wc -l < "$FM_REMFILE.backup")" ]; then
+	if [ "$(grep -c ^ "$FM_REMFILE")" -ne "$(grep -c ^ "$FM_REMFILE.backup")" ]; then
 	    NotiPrompt "ERROR: Lines mismatch in rename file; do nothing." && return
 	else
 	    renamevar=$(paste -d ':' "$FM_REMFILE.backup" "$FM_REMFILE.dirname" "$FM_REMFILE")
