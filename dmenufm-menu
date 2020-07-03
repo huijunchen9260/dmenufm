@@ -2,21 +2,21 @@
 
 ## PROMPT FUNCTIONS
 yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-    ${FM_PROG:-dmenu} ${FM_OPTS:--f -fn "$FM_GENERIC_FONT" -sb "$2" -i -l 10} ${FM_OPT_PROMPT:--p} "$1 "
+    ${FM_PROG:-dmenu} ${FM_OPTS--f -fn "$FM_GENERIC_FONT" -sb "$2" -i -l 10} ${FM_OPT_PROMPT--p} "$1 "
 }
 
 xprompt () { # Usage xprompt [MSG] [BG_COLOR]
-    printf '%s' "" | ${FM_PROG:-dmenu} ${FM_OPTS:--f -fn "$FM_GENERIC_FONT" -sb "$2" -i -l 10} ${FM_OPT_PROMPT:--p} "$1 "
+    printf '%s' "" | ${FM_PROG:-dmenu} ${FM_OPTS--f -fn "$FM_GENERIC_FONT" -sb "$2" -i -l 10} ${FM_OPT_PROMPT--p} "$1 "
 }
 
 
 NotiPrompt () { # Usage NotiPrompt [MSG]
-    printf '%s' "" | ${FM_PROG:-dmenu} ${FM_NOTIF_OPTS:-${FM_OPTS:--f -fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000"}} ${FM_OPT_PROMPT:--p} "$1 "
+    printf '%s' "" | ${FM_PROG:-dmenu} ${FM_NOTIF_OPTS:-${FM_OPTS--f -fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000"}} ${FM_OPT_PROMPT--p} "$1 "
 
 }
 
 DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
-    [ "$(printf "No\\nYes" | ${FM_PROG:-dmenu} ${FM_DANGER_OPTS:-${FM_OPTS:--f -fn $FM_DANGER_FONT -i -nb darkred -sb red -sf white -nf gray}} ${FM_OPT_PROMPT:--p} "$1")" = "Yes" ]
+    [ "$(printf "No\\nYes" | ${FM_PROG:-dmenu} ${FM_DANGER_OPTS:-${FM_OPTS--f -fn $FM_DANGER_FONT -i -nb darkred -sb red -sf white -nf gray}} ${FM_OPT_PROMPT--p} "$1")" = "Yes" ]
 }
 
 
