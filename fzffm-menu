@@ -3,15 +3,15 @@
 
 ## PROMPT FUNCTIONS
 yprompt () { # Usage yprompt [MSG] [OPTS]
-	${FM_PROG} ${FM_OPTS} ${FM_OPT_PROMPT} "$1 "
+	${FM_PROG} ${FM_OPTS} "$2" ${FM_OPT_PROMPT} "$1 "
 }
 
 xprompt () { # Usage xprompt [MSG] [OPTS]
-    printf '%s' "" | ${FM_PROG} ${FM_OPTS} ${FM_OPT_PROMPT} "$1 "
+    printf '%s' "" | ${FM_PROG} ${FM_OPTS} "$2" ${FM_OPT_PROMPT} "$1 "
 }
 
 NotiPrompt () { # Usage NotiPrompt [MSG]
-    printf '%s' "" | ${FM_PROG} ${FM_OPTS} ${FM_OPT_PROMPT} "$1 "
+    printf '%s' "" | ${FM_PROG} ${FM_OPTS} "$2" ${FM_OPT_PROMPT} "$1 "
 }
 
 DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
