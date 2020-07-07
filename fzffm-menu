@@ -2,11 +2,11 @@
 
 
 ## PROMPT FUNCTIONS
-yprompt () { # Usage yprompt [MSG] [BG_COLOR]
+yprompt () { # Usage yprompt [MSG] [OPTS]
 	${FM_PROG} ${FM_OPTS} ${FM_OPT_PROMPT} "$1 "
 }
 
-xprompt () { # Usage xprompt [MSG] [BG_COLOR]
+xprompt () { # Usage xprompt [MSG] [OPTS]
     printf '%s' "" | ${FM_PROG} ${FM_OPTS} ${FM_OPT_PROMPT} "$1 "
 }
 
@@ -80,7 +80,7 @@ UpdateMenu () { # Generate menu based on arguments
     done
 }
 
-ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
+ActionMenu () { # Usage: ActionMenu [MSG] [OPTS]
     while [ -n "$actCHOICE" ]; do
 	if [ -n "$keeplist" ]; then
 	    UpdateMenu
@@ -192,7 +192,7 @@ MainMenu () { # Usage: MainMenu
 		rolldir=""
 	fi
 	TwoPWD
-	CHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$list" | sed "/^$/ d" | yprompt "$TwoPWD" "$FM_GENERIC_COLOR")
+	CHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$list" | sed "/^$/ d" | yprompt "$TwoPWD" "$FM_OPTS_GENERIC")
 	# Outcome matching
 	if [ "$CHOICE" = "$TARGET" ]; then
 	    if [ "$termpath" = "true" ]; then

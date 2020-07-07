@@ -12,10 +12,18 @@ case $FM_PROG in
 		;;
 	"bemenu")
 		[ -z "$FM_OPTS" ] && FM_OPTS="-l 10"
+		[ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC="--sb='#005577'"
+		[ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1="--sb='#33691e'"
+		[ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2="--sb='#FF8C00'"
+		[ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK="--sb='#CB06CB'"
 		FM_OPT_PROMPT="-p"
 		;;
 	"rofi")
 		[ -z "$FM_OPTS" ] && FM_OPTS="-dmenu -l 10"
+		[ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC="-sb '#005577'"
+		[ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1="-sb '#33691e'"
+		[ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2="-sb '#FF8C00'"
+		[ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK="-sb '#CB06CB'"
 		FM_OPT_PROMPT="-p"
 		;;
 	"")
