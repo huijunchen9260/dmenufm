@@ -164,7 +164,7 @@ if [ "$(id -u)" -eq 0 ]; then
 	[ "$(printf "No\\nYes" | ${FM_PROG} ${FM_OPTS} ${FM_OPT_PROMPT} "SUDO: $1 ")" = "Yes" ]
     }
 
-    FM_GENERIC_COLOR="$FM_SUDO_COLOR"
+    FM_OPTS_GENERIC="-sb $FM_SUDO_COLOR"
 
     MainMenu
 else
