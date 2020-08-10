@@ -2,100 +2,95 @@
 
 ## PROMPT FUNCTIONS
 yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-    ${FM_PROG:-dmenu} ${FM_OPTS--f -fn "$FM_GENERIC_FONT" -sb "$2" -i -l 10} ${FM_OPT_PROMPT--p} "$1 "
+    ${FM_PROG:-dmenu} ${FM_OPTS:--f -i -l 10} $2 ${FM_OPT_PROMPT:--p} "$1 "
 }
 
 xprompt () { # Usage xprompt [MSG] [BG_COLOR]
-    printf '%s' "" | ${FM_PROG:-dmenu} ${FM_OPTS--f -fn "$FM_GENERIC_FONT" -sb "$2" -i -l 10} ${FM_OPT_PROMPT--p} "$1 "
+    printf '%s' "" | ${FM_PROG:-dmenu} ${FM_OPTS--f -i -l 10} $2 ${FM_OPT_PROMPT:--p} "$1 "
 }
 
 
 NotiPrompt () { # Usage NotiPrompt [MSG]
-    printf '%s' "" | ${FM_PROG:-dmenu} ${FM_NOTIF_OPTS:-${FM_OPTS--f -fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000"}} ${FM_OPT_PROMPT--p} "$1 "
+    printf '%s' "" | ${FM_PROG:-dmenu} ${FM_OPTS--f -i -l 10} ${FM_NOTIF_OPTS:--fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000"} ${FM_OPT_PROMPT:--p} "$1 "
 
 }
 
 DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
-    [ "$(printf "No\\nYes" | ${FM_PROG:-dmenu} ${FM_DANGER_OPTS:-${FM_OPTS--f -fn $FM_DANGER_FONT -i -nb darkred -sb red -sf white -nf gray}} ${FM_OPT_PROMPT--p} "$1")" = "Yes" ]
+    [ "$(printf "No\\nYes" | ${FM_PROG:-dmenu} ${FM_OPTS--f -i -l 10} ${FM_DANGER_OPTS:--fn $FM_DANGER_FONT -nb darkred -sb red -sf white -nf gray} ${FM_OPT_PROMPT--p} "$1")" = "Yes" ]
 }
 
 
 ## MENUFUNCTIONS
 
 MenuDir () { # Generate dir
-    IFS="$nl"
-    DIRs=$(
-    for dir in *; do
-	[ -d "$dir" ] && printf '%s\n' "$dir/"
-    done
-)
-unset IFS
+    set -- *
+    DIRs=$( for d do [ -d "$d" ] && printf '%s\n' "$d"; done )
 }
 
 MenuDotDir () { # Generate dotdir
-    IFS="$nl"
-    DOTDIRs=$(
-    for dir in .*; do
-	[ -d "$dir" ] && printf '%s\n' "$dir/"
-    done | sed "\|^./$| d; \|^../$| d"
-)
-unset IFS
+    set -- .[!.]*
+    DOTDIRs=$( for dd do [ -d "$dd" ] && printf '%s\n' "$dd"; done )
 }
 
 MenuFile () { # Generate file
-    IFS="$nl"
-    FILEs=$(
-    for file in *; do
-	[ -f "$file" ] && printf '%s\n' "$file"
-    done
-)
-unset IFS
+    set -- *
+    FILEs=$( for f do [ -f "$f" ] && printf '%s\n' "$f"; done )
 }
 
-MenuDotFile () { # Generate dorfile
-    IFS="$nl"
-    DOTFILEs=$(
-    for file in .*; do
-	[ -f "$file" ] && printf '%s\n' "$file"
-    done
-)
-unset IFS
+MenuDotFile () { # Generate dotfile
+    set -- .[!.]*
+    DOTFILEs=$( for df do [ -f "$df" ] && printf '%s\n' "$df"; done )
 }
 
 Menu () { # Generate default menu
-    MenuDir
-    MenuDotDir
-    MenuFile
-    MenuDotFile
+    set -- *
+    norm=$( for f do printf '%s\n' "$f"; done )
+    set -- .[!.]*
+    hidden=$( for df do printf '%s\n' "$df"; done )
+    case $norm in
+	'*')
+	    case $hidden in
+		'.[!.]*') list= ;;
+		*) list="$hidden" ;;
+	    esac
+	    ;;
+	*)
+	    case $hidden in
+		'.[!.]*') list="$norm" ;;
+		*) list="$norm${nl}$hidden" ;;
+	    esac
+	    ;;
+    esac
 }
 
 UpdateMenu () { # Generate menu based on arguments
     list=
     for element in $keeplist; do
 	case $element in
-	    DIRs) MenuDir && list=$(printf '%s\n' "$list" "$DIRs") ;;
-	    FILEs) MenuFile && list=$(printf '%s\n' "$list" "$FILEs") ;;
-	    DOTDIRs) MenuDotDir && list=$(printf '%s\n' "$list" "$DOTDIRs") ;;
-	    DOTFILEs) MenuDotFile && list=$(printf '%s\n' "$list" "$DOTFILEs") ;;
+	    DIRs) MenuDir && list="$list${nl}$DIRs" ;;
+	    FILEs) MenuFile && list="$list${nl}$FILEs" ;;
+	    DOTDIRs) MenuDotDir && list="$list${nl}$DOTDIRs" ;;
+	    DOTFILEs) MenuDotFile && list="$list${nl}$DOTFILEs" ;;
 	esac
     done
+    list=${list#${nl}}
 }
 
 ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
     while [ -n "$actCHOICE" ]; do
-	[ -z "$keeplist" ] && Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs") || UpdateMenu
+	[ -z "$keeplist" ] && Menu || UpdateMenu
 	[ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "$PWD" = "$rolldir" ] &&
-		list="$(printf '%s\n' "$rollmenu" "${list#*"$rollmenu"}" "${list%%"$rollmenu"*}")" &&
+		list="$rollmenu${list#*"$rollmenu"}${nl}${list%%"$rollmenu"*}" &&
 		rollmenu="" &&
 		rolldir=""
 	if [ "$bulkselection" = "true" ]; then
-	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$ENDSELECTION" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
+	    actCHOICE=$(printf '%s\n%s\n%s\n%s\n%s' "$BACKWARD" "$TARGET" "$ENDSELECTION" "$FM_HIS" "$list" | yprompt "$1" "$2")
 	elif [ "$allowbulk" != "NotAllowed" ]; then
-	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$allowbulk" "$allselection" "$masselection" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
+	    actCHOICE=$(printf '%s\n%s\n%s\n%s\n%s\n%s\n%s' "$BACKWARD" "$TARGET" "$allowbulk" "$allselection" "$masselection" "$FM_HIS" "$list" | yprompt "$1" "$2")
 	elif [ "$preview" = "true" ]; then
-	    actCHOICE=$(printf '%s\n' "$list" "$BACKWARD" "$FM_HIS" | sed "/^$/ d" | yprompt "$1" "$2")
+	    actCHOICE=$(printf '%s\n%s\n%s' "$list" "$BACKWARD" "$FM_HIS" | yprompt "$1" "$2")
 	else
-	    actCHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$FM_HIS" "$list" | sed "/^$/ d" | yprompt "$1" "$2")
+	    actCHOICE=$(printf '%s\n%s\n%s\n%s' "$BACKWARD" "$TARGET" "$FM_HIS" "$list" | yprompt "$1" "$2")
 	fi
 	# Outcome matching
 	case "$actCHOICE" in
@@ -106,9 +101,9 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 			break
 			;;
 		    *)
-			HERE=$(printf '%s' "$PWD")
-			name=$(printf '%s' "${PWD##*/}")
-			[ "$bulkselection" = "true" ] && bulklist=$(printf '%s\n' "$bulklist" "$HERE") && cd "../"
+			HERE="$PWD"
+			name="${PWD##*/}"
+			[ "$bulkselection" = "true" ] && bulklist="$bulklist${nl}$HERE" && cd "../"
 			break
 			;;
 		esac
@@ -136,8 +131,8 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 		;;
 	    "$allselection"|"$masselection")
 		bulkselection="false"
-		HERE=$(printf '%s' "$PWD")
-		name=$(printf '%s' "${PWD##*/}")
+		HERE="$PWD"
+		name="${PWD##*/}"
 		break
 		;;
 	    "$FM_HIS")
@@ -167,9 +162,9 @@ ActionMenu () { # Usage: ActionMenu [MSG] [BG_COLOR]
 			    ;;
 			*)
 			    rollmenu="$actCHOICE"
-			    HERE=$(printf '%s' "$PWD/$actCHOICE")
-			    name=$(printf '%s' "$actCHOICE")
-			    [ "$bulkselection" = "true" ] && bulklist=$(printf '%s\n' "$bulklist" "$HERE")
+			    HERE="$PWD/$actCHOICE"
+			    name="$actCHOICE"
+			    [ "$bulkselection" = "true" ] && bulklist="$bulklist${nl}$HERE"
 			    break
 			    ;;
 		    esac
@@ -189,22 +184,22 @@ TwoPWD () { # Usage: Show last two level of PWD
     # Need "${PWD##*/}" to prevent special character
     TMP="${PWD%%/"${PWD##*/}"}"
     TMP="${TMP##*/}"
-    [ ${#TMP} -ge 30 ] && TMP="$(printf '%s' "$(printf '%s' "$TMP" | cut -b 1-30)...")"
+    [ ${#TMP} -ge 30 ] && TMP="$(printf '%.30s...' "$TMP")"
     TMP2="${PWD##*/}"
-    [ ${#TMP2} -ge 30 ] && TMP2="$(printf '%s' "$(printf '%s' "$TMP2" | cut -b 1-30)...")"
-    TwoPWD="$(printf '%s' "$TMP/$TMP2")"
+    [ ${#TMP2} -ge 30 ] && TMP2="$(printf '%.30s...' "$TMP2")"
+    TwoPWD="$TMP/$TMP2"
     unset TMP TMP2
 }
 
 MainMenu () { # Usage: MainMenu
     while [ -n "$CHOICE" ]; do
-	[ -z "$keeplist" ] && Menu && list=$(printf '%s\n' "$DIRs" "$FILEs" "$DOTDIRs" "$DOTFILEs") || UpdateMenu
+	[ -z "$keeplist" ] && Menu || UpdateMenu
 	[ "$rollingmenu" = "true" ] && [ -f "$rollmenu" ] || [ "$PWD" = "$rolldir" ] &&
-		list="$(printf '%s\n' "$rollmenu" "${list#*"$rollmenu"}" "${list%%"$rollmenu"*}")" &&
+		list="$rollmenu${list#*"$rollmenu"}${nl}${list%%"$rollmenu"*}" &&
 		rollmenu="" &&
 		rolldir=""
 	TwoPWD
-	CHOICE=$(printf '%s\n' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$list" | sed "/^$/ d" | yprompt "$TwoPWD" "$FM_GENERIC_COLOR")
+	CHOICE=$(printf '%s\n%s\n%s\n%s\n%s' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$list" | yprompt "$TwoPWD" "${FM_OPTS_GENERIC:--fn "$FM_GENERIC_FONT" -sb "$FM_GENERIC_COLOR"}")
 	# Outcome matching
 	case "$CHOICE" in
 	    "$TARGET")
@@ -222,7 +217,7 @@ MainMenu () { # Usage: MainMenu
 	    "$BACKWARD")
 		case "$rollingmenu" in
 		    "true")
-			rollmenu="${PWD##*/}/"
+			rollmenu="${PWD##*/}"
 			cd "../" || NotiPrompt "Need super user permission to enter this directory"
 			rolldir="$PWD"
 			History "$CHOICE"

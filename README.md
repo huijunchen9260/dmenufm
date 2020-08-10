@@ -6,7 +6,7 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 - File management (*yank, move, symbolic link, **ranger style bulk rename**, etc*)
 - Remember you last path ([CD on Exit](#cd-on-exit))
 - Rolling menu for dynamic file browsing ([Rolling Menu](#rolling-menu))
-- Able to **Preview** you file. (use [`EYE` to preview your file](#eye-to-preview-your-file))
+- Compatible with other menu system
 
 
 [![Distrotube introduced my project much better than I would](https://img.youtube.com/vi/EyW6pRlWv6Q/0.jpg)](https://www.youtube.com/watch?v=EyW6pRlWv6Q)
@@ -42,11 +42,13 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 		* [`EYE` to preview your file](#eye-to-preview-your-file)
 	* [Open files](#open-files)
 * [Configuration](#configuration)
+	* [Use other menu system](#use-other-menu-system)
 * [Note](#note)
 * [Troubleshooting](#troubleshooting)
 	* [Why some of my GUI app will open in terminal?](#why-some-of-my-gui-app-will-open-in-terminal)
 	* [Why files do not open in the right application](#why-files-do-not-open-in-the-right-application)
 	* [I want to configure the color and font of dmenufm](#i-want-to-configure-the-color-and-font-of-dmenufm)
+	* [I want to use menu system other than `dmenu`](#i-want-to-use-menu-system-other-than-dmenu)
 * [TODO](#todo)
 * [License](#license)
 
@@ -62,7 +64,7 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 With POSIX-compliance in mind, dmenufm makes use of and requires (or recommends) the below utilities.
 
 - `sed`, `grep`
-- `xclip`, `find`, `
+- `xclip`, `find`
 - `cat`, `wc`, `cp`, `mv`, `rm`, `mkdir`, `touch` (GNU coreutils)
 - `wmctrl` for [`EYE`](#eye-to-preview-your-file) action
 - `tar`, `unlzma`, `bunzip2`, `unrar`, `unzip`, `uncompress`, `7z`, `unxz`, `cabextract`
@@ -114,6 +116,10 @@ OPTS:       -h | --help               - Show this usage information.
             -p | --lastpath           - Opens in last working directory. (cd on exit)
             -r | --rollingmenu        - Rolling menu based on selected files.
             -t | --termpath           - Print out the path of file / directory.
+	    -m | --menu               - Choose other menu system
+	    -o | --option             - Choose options for other menu system
+	   -no | --notif-option      - Choose NotiPrompt options for other menu system
+	   -do | --danger-option     - Choose DangerPrompt options for other menu system
 ```
 
 ### Terminal
@@ -288,6 +294,20 @@ There are many environment variables you can use to configure dmenufm by exporti
 
 Alternatively, you can `cp /etc/dmenufm.conf $HOME/.config/dmenufm/dmenufm.conf` and modify `$HOME/.config/dmenufm/dmenufm.conf` to your needs.
 
+### Use other menu system
+
+To use other menu system, you need to specify seven additional variables in `dmenufm.conf`. Take the default value for `bemenu` as example:
+
+```sh
+FM_PROG="bemenu"
+FM_OPTS="-l 10"
+FM_OPT_PROMPT="-p"
+FM_OPTS_GENERIC="--sb='#005577'"
+FM_OPTS_ACTION_LV1="--sb='#33691e'"
+FM_OPTS_ACTION_LV2="--sb='#FF8C00'"
+FM_OPTS_ACTION_BULK="--sb='#CB06CB'"
+```
+
 ## Note
 
 If you hate GUIarrowy world like me, based on `man dmenu`, you can
@@ -355,6 +375,10 @@ and you are all set.
 ### I want to configure the color and font of dmenufm
 
 See [Configuration](#configuration)
+
+### I want to use menu system other than `dmenu`
+
+See
 
 ## TODO
 

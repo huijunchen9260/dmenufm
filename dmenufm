@@ -14,15 +14,23 @@ fi
 Program () {
     case $FM_PROG in
 	"fzf")
-	    [ -z "$FM_OPTS" ] && FM_OPTS='--reverse'
+	    [ -z "$FM_OPTS" ] && FM_OPTS="--reverse"
 	    FM_OPT_PROMPT="--prompt"
 	    ;;
 	"bemenu")
-	    [ -z "$FM_OPTS" ] && FM_OPTS='-l 10'
+	    [ -z "$FM_OPTS" ] && FM_OPTS="-l 10"
+	    [ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC="--sb='#005577'"
+	    [ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1="--sb='#33691e'"
+	    [ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2="--sb='#FF8C00'"
+	    [ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK="--sb='#CB06CB'"
 	    FM_OPT_PROMPT="-p"
 	    ;;
 	"rofi")
 	    [ -z "$FM_OPTS" ] && FM_OPTS="-dmenu -l 10"
+	    [ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC="-sb '#005577'"
+	    [ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1="-sb '#33691e'"
+	    [ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2="-sb '#FF8C00'"
+	    [ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK="-sb '#CB06CB'"
 	    FM_OPT_PROMPT="-p"
 	    ;;
 	"") echo "No program selected, falling back to dmenu." ;;
@@ -71,7 +79,8 @@ nl='
 [ ! -f "$FM_PATH/dmenufm.conf" ] && cp "/etc/dmenufm.conf" "$FM_PATH/dmenufm.conf"
 [ ! -d "$FM_CACHE_PATH" ] && mkdir -p "$FM_CACHE_PATH"
 [ ! -d "$FM_TRASH" ] && mkdir -p "$FM_TRASH"
-printf '%s\n' '#!/bin/sh' 'dmenu -fn Monospace-18 -sb "#FEE12B" -sf "#1d2021" -nf "#000000" -nb "#000000" -p "$1" <&- && echo' > "$FM_SDOPROP"
+printf '%s\n' '#!/bin/sh' > "$FM_SDOPROP"
+printf '%s ' "printf '%s' \"\" | ${FM_PROG:-dmenu} ${FM_OPTS:--fn Monospace-18 -sb \"#FEE12B\" -sf \"#1d2021\" -nf \"#000000\" -nb \"#000000\"} ${FM_OPT_PROMPT:--p}"  '"$1 " && echo' >> "$FM_SDOPROP"
 chmod +x "$FM_SDOPROP"
 
 . dmenufm-open
@@ -118,8 +127,8 @@ UsageInfo () {
 		\r            -t | --termpath           - Print out the path of file / directory.
 		\r	      -m | --menu               - Choose other menu system
 		\r	      -o | --option             - Choose options for other menu system
-		\r	      -no | --notif-option      - Choose NotiPrompt options for other menu system
-		\r	      -do | --danger-option     - Choose DangerPrompt options for other menu system
+		\r	     -no | --notif-option      - Choose NotiPrompt options for other menu system
+		\r	     -do | --danger-option     - Choose DangerPrompt options for other menu system
 	EOF
 	unset CurLine
 }
@@ -163,20 +172,20 @@ if [ "$(id -u)" -eq 0 ]; then
 
     # super user privilege
     yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-	${FM_PROG:-dmenu} ${FM_OPTS--f -fn "$FM_GENERIC_FONT" -sb "$2" -i -l 10} ${FM_OPT_PROMPT--p} "SUDO: $1 "
+	${FM_PROG:-dmenu} ${FM_OPTS:--f -i -l 10} $2 ${FM_OPT_PROMPT:--p} "SUDO: $1 "
     }
 
     xprompt () { # Usage xprompt [MSG] [BG_COLOR]
-	printf '%s' "" | ${FM_PROG:-dmenu} ${FM_OPTS--f -fn "$FM_GENERIC_FONT" -sb "$2" -i -l 10} ${FM_OPT_PROMPT--p} "SUDO: $1 "
+	printf '%s' "" | ${FM_PROG:-dmenu} ${FM_OPTS:--f -i -l 10} $2 ${FM_OPT_PROMPT:--p} "SUDO: $1 "
     }
 
     NotiPrompt () { # Usage NotiPrompt [MSG]
-	printf '%s' "" | ${FM_PROG:-dmenu} ${FM_NOTIF_OPTS:-${FM_OPTS--f -fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000"}} ${FM_OPT_PROMPT--p} "SUDO: $1 "
+	printf '%s' "" | ${FM_PROG:-dmenu} ${FM_OPTS:--f -i -l 10} ${FM_NOTIF_OPTS:--fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000"} ${FM_OPT_PROMPT:--p} "SUDO: $1 "
 
     }
 
     DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
-	[ "$(printf "No\\nYes" | ${FM_PROG:-dmenu} ${FM_DANGER_OPTS:-${FM_OPTS--f -fn $FM_DANGER_FONT -i -nb darkred -sb red -sf white -nf gray}} ${FM_OPT_PROMPT--p} "SUDO: $1")" = "Yes" ]
+	[ "$(printf "No\\nYes" | ${FM_PROG:-dmenu} ${FM_OPTS:--f -i -l 10} ${FM_DANGER_OPTS:--fn $FM_DANGER_FONT -nb darkred -sb red -sf white -nf gray} ${FM_OPT_PROMPT--p} "$1")" = "Yes" ]
     }
     FM_GENERIC_COLOR="$FM_SUDO_COLOR"
 

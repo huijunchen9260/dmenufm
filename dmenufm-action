@@ -1,7 +1,7 @@
 #!/bin/sh
 
 FM_Action () { # Usage: FM_Action
-    move=$(printf '%s\n' "$ACTLIST" | yprompt "Actions:" "$FM_GENERIC_COLOR")
+    move=$(printf '%s\n' "$ACTLIST" | yprompt "Actions:" "${FM_OPTS_GENERIC:--fn "$FM_GENERIC_FONT" -sb "$FM_GENERIC_COLOR"}")
     case $move in
 	"$FM_PCP") FM_PCP ;;
 	"$FM_NEW") FM_NEW ;;
@@ -20,21 +20,21 @@ FM_Action () { # Usage: FM_Action
 }
 
 BulkListAll () { # Usage: BulkListAll
-    SELECTED=$(printf '%s' "$list" | sed "/^$/ d; s=^=$PWD/=g")
-    [ -n "$SELECTED" ] && check=$(printf '%s' "$SELECTED" | yprompt "Check selections. (Enter to continue, ESC to quit)" "$FM_ACTION_COLOR_LV1")
+    SELECTED="$list"
+    [ -n "$SELECTED" ] && check=$(printf '%s' "$SELECTED" | yprompt "Check selections. (Enter to continue, ESC to quit)" "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}")
 }
 
 
 BulkListMass () { # Usage: BulkListMass
-    SELECTED=$(printf '%s' "$list" | sed "/^$/ d; s=^=$PWD/=g")
+    SELECTED="$list"
     [ -f "$FM_MASFILE" ] && rm "$FM_MASFILE"
 
-    printf '%s\n' "$SELECTED" | sed "s=/$==g; /^$/ d" > "$FM_MASFILE"
+    printf '%s\n' "$SELECTED" > "$FM_MASFILE"
     NotiPrompt "Remove unwanted names and remain the desire ones."
     FileOpen "$FM_MASFILE"
 
-    SELECTED="$(cat -u $FM_MASFILE | sed "/^$/ d")"
-    [ -n "$SELECTED" ] && check=$(printf '%s' "$SELECTED" | yprompt "Check selections. (Enter to continue, ESC to quit)" "$FM_ACTION_COLOR_LV1")
+    SELECTED="$(cat -u $FM_MASFILE)"
+    [ -n "$SELECTED" ] && check=$(printf '%s' "$SELECTED" | yprompt "Check selections. (Enter to continue, ESC to quit)" "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}")
 
     rm "$FM_MASFILE"
 }
@@ -42,20 +42,20 @@ BulkListMass () { # Usage: BulkListMass
 BulkMode () { # Usage: BulkMode [MSG]
     HERE=""
     bulklist=""
-    ActionMenu "$1" "$FM_ACTION_COLOR_BULK" || return && allowbulk="NotAllowed"
+    ActionMenu "$1" "${FM_OPTS_ACTION_BULK:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_BULK"}" || return && allowbulk="NotAllowed"
 
     while [ "$bulkselection" = "true" ]; do
-	ActionMenu "$1" "$FM_ACTION_COLOR_BULK" || return && allowbulk="NotAllowed"
+	ActionMenu "$1" "${FM_OPTS_ACTION_BULK:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_BULK"}" || return && allowbulk="NotAllowed"
 	HERE=$bulklist
 	allowbulk="NotAllowed"
     done
 
-    SELECTED=$(printf '%s' "$HERE" | uniq)
+    SELECTED=$(printf '%s' "${HERE#${nl}}" | uniq)
     allowbulk="NotAllowed"
 
     [ "$actCHOICE" = "$ENDSELECTION" ] &&
 	[ -n "$SELECTED" ] &&
-	check=$(printf '%s' "$SELECTED" | sed "/^$/ d" | yprompt "Check selections. (Enter to continue, ESC to quit) " "$FM_ACTION_COLOR_LV1")
+	check=$(printf '%s' "$SELECTED" | yprompt "Check selections. (Enter to continue, ESC to quit) " "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}")
 }
 
 DirCheck () {
@@ -73,12 +73,12 @@ DirCheck () {
 }
 
 FM_BMK () { # Usage: FM_BMK
-    markmenu=$(printf '%s\n' "$(cat -u "$FM_BMKFILE")" "Add BMK" "Delete BMK" | yprompt "Dmenufm Bookmark" "$FM_GENERIC_COLOR")
+    markmenu=$(printf '%s\n%s\n%s' "$(cat -u "$FM_BMKFILE")" "Add BMK" "Delete BMK" | yprompt "Dmenufm Bookmark" "${FM_OPTS_GENERIC:--fn "$FM_GENERIC_FONT" -sb "$FM_GENERIC_COLOR"}")
     # Add \n at end of file
     [ "$(tail -c 1 "$FM_BMKFILE")" != "" ] && echo >> "$FM_BMKFILE"
     case "$markmenu" in
 	"Add BMK")
-	    ActionMenu "Choose file / directory and add to BMK: " "$FM_ACTION_COLOR_LV1" || return
+	    ActionMenu "Choose file / directory and add to BMK: " "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}" || return
 	    mark=${HERE##*/}
 	    [ -n "$mark" ] && printf '%s' "$mark - $HERE" >> "$FM_BMKFILE" && NotiPrompt "$mark added."
 	    ;;
@@ -107,13 +107,18 @@ FM_BMK () { # Usage: FM_BMK
 }
 
 BulkCMD () { # Usage: BulkCMD
-    execfile=$(printf '%s' "$SELECTED")
-    execmd=$(printf '%s' "$execmd" | sed "1 s/$.*//")
+    execfile="$SELECTED"
+    execmd=${execmd##$*}
+
     IFS="$nl"
-    for selection in $(printf '%s' "$execfile"); do
-	unset IFS
-	$execmd "$selection"
-    done && NotiPrompt "Command executed on selected."
+    set -- $execfile
+    unset IFS
+    for selection do eval "$execmd \"$selection\""; done && NotiPrompt "Command executed on selected."
+    # IFS="$nl"
+    # for selection in $(printf '%s' "$execfile"); do
+	# unset IFS
+	# $execmd "$selection"
+    # done && NotiPrompt "Command executed on selected."
 }
 
 ExecCMD () { # Usage: ExecCMD [CMD]
@@ -126,12 +131,12 @@ ExecCMD () { # Usage: ExecCMD [CMD]
 }
 
 FM_CMD () { # Usage: FM_CMD
-    cmdmenu=$(printf '%s\n' "$(cat -u "$FM_CMDFILE")" "Add CMD" "Delete CMD" | yprompt "Dmenufm Custom Command" "$FM_GENERIC_COLOR")
+    cmdmenu=$(printf '%s\n' "$(cat -u "$FM_CMDFILE")" "Add CMD" "Delete CMD" | yprompt "Dmenufm Custom Command" "${FM_OPTS_GENERIC:--fn "$FM_GENERIC_FONT" -sb "$FM_GENERIC_COLOR"}")
     [ "$(tail -c 1 "$FM_CMDFILE")" != "" ] && echo >> "$FM_CMDFILE"
     case "$cmdmenu" in
 	"Add CMD")
-	    addcmd=$(xprompt "Recording your command: " "$FM_ACTION_COLOR_LV1") || return
-	    desp=$(xprompt "Enter command description: " "$FM_ACTION_COLOR_LV1") || return
+	    addcmd=$(xprompt "Recording your command: " "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}") || return
+	    desp=$(xprompt "Enter command description: " "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}") || return
 	    [ -n "$addcmd" ] &&
 		printf '%s' "$addcmd - $desp" >> "$FM_CMDFILE" &&
 		NotiPrompt "$addcmd added."
@@ -149,7 +154,7 @@ FM_CMD () { # Usage: FM_CMD
 		allowbulk="Bulk Execute"
 		allselection="Bulk Execute All"
 		masselection="Bulk Execute Mass"
-		ActionMenu "Choose and execute: " "$FM_ACTION_COLOR_LV1"
+		ActionMenu "Choose and execute: " "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}"
 		case "$actCHOICE" in
 		    "$allselection")
 			BulkListAll
@@ -180,14 +185,18 @@ FM_CMD () { # Usage: FM_CMD
 }
 
 DangerMenu () { # Usage: DangerMenu [CMD] [MSG] (OPT: [Dest])
+    cmd="$1"
     if DangerPrompt "$2"; then
 	IFS="$nl"
-	for selection in $(printf '%s' "$SELECTED"); do
-	    unset IFS
-	    [ -z "$destination" ] &&
-		$1 "$selection" ||
-		$1 "$selection" "$3"
-	done && NotiPrompt "Selected removed."
+	set -- $SELECTED
+	unset IFS
+	for selection do [ -z "$destination" ] && eval "$cmd \"$selection\"" || eval "$cmd \"$selection\" \"$3\""; done && NotiPrompt "Selected removed."
+	# for selection in $(printf '%s' "$SELECTED"); do
+	#     unset IFS
+	#     [ -z "$destination" ] &&
+	# 	$1 "$selection" ||
+	# 	$1 "$selection" "$3"
+	# done && NotiPrompt "Selected removed."
     fi
 }
 
@@ -195,7 +204,7 @@ FM_DEL () { # Usage: FM_DEL
     allowbulk="Bulk Delete"
     allselection="Bulk Delete All"
     masselection="Bulk Delete Mass"
-    ActionMenu "Remove file / directory: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+    ActionMenu "Remove file / directory: " "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}" || return && allowbulk="NotAllowed"
     case "$actCHOICE" in
 	"$allselection")
 	    BulkListAll
@@ -227,7 +236,7 @@ FM_DEL () { # Usage: FM_DEL
 History () { # Usage: History [DIR/FILE]
     dirmark="${PWD##*/}"
     case "$1" in
-        "$BACKWARD"|"$TARGET"|"$dirmark/")
+        "$BACKWARD"|"$TARGET"|"$dirmark")
 	    printf '%s\n' "$dirmark - $PWD" >> "$FM_HISFILE"
 	    ;;
 	*)
@@ -245,21 +254,30 @@ History () { # Usage: History [DIR/FILE]
 
 FM_HIS () { # Usage: FM_HIS
     # Use sed command to mimic reverse of cat for POSIX.
-    goto=$(sed '1!G;h;$!d' "$FM_HISFILE" | yprompt "Dmenufm History" "$FM_GENERIC_COLOR")
+    goto=$(sed '1!G;h;$!d' "$FM_HISFILE" | yprompt "Dmenufm History" "${FM_OPTS_GENERIC:--fn "$FM_GENERIC_FONT" -sb "$FM_GENERIC_COLOR"}")
     destination=${goto##* - }
     cd "$destination" || FileOpen "$destination"
 }
 
 DestMenu () { # Usage: DestMenu
-    ActionMenu "Destination: " "$FM_ACTION_COLOR_LV2" || return && allowbulk="NotAllowed" && actCHOICE="placeholder"
-    [ -n "$HERE" ] &&
-	destination="$HERE" &&
-	destname="$name" &&
-	IFS="$nl" &&
-	for selection in $(printf '%s' "$SELECTED"); do
+    ActionMenu "Destination: " "${FM_OPTS_ACTION_LV2:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV2"}" || return && allowbulk="NotAllowed" && actCHOICE="placeholder"
+    case "$HERE" in
+        '') ;;
+	*)
+	    destination="$HERE"
+	    destname="$name"
+	    IFS="$nl"
+	    set -- $SELECTED
 	    unset IFS
-	    $cmd "$selection" "$destination"
-	done && NotiPrompt "Selected files / directories $cmdname to $destname"
+	    for selection do eval "$cmd \"$selection\" \"$destination\""; done && NotiPrompt "Selected files / directories $cmdname to $destname"
+	    ;;
+    esac
+
+    # [ -n "$HERE" ] &&
+	# for selection in $(printf '%s' "$SELECTED"); do
+	#     unset IFS
+	#     $cmd "$selection" "$destination"
+	# done && NotiPrompt "Selected files / directories $cmdname to $destname"
 }
 
 FM_MYL () { # Usage: FM_MYL
@@ -289,7 +307,7 @@ FM_MYL () { # Usage: FM_MYL
 	    masselection="Bulk Link Mass"
 	    ;;
     esac
-    ActionMenu "Source: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+    ActionMenu "Source: " "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}" || return && allowbulk="NotAllowed"
     case "$actCHOICE" in
         "$allselection")
 	    BulkListAll
@@ -317,7 +335,7 @@ FM_MYL () { # Usage: FM_MYL
 }
 
 NewFileDir () { # Usage: NewFileDir
-    name=$(xprompt "Type name for $newmenu; Press ESC to leave" "$FM_ACTION_COLOR_LV1") || return
+    name=$(xprompt "Type name for $newmenu; Press ESC to leave" "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}") || return
     case "$name" in
 	'~') NotiPrompt "Alias to $HOME; not a proper name." && continue ;;
 	'/') NotiPrompt "Alias to root; not a proper name." && continue ;;
@@ -331,7 +349,7 @@ NewFileDir () { # Usage: NewFileDir
 
 FM_NEW () { # Usage: FM_NEW
     name="placeholder"
-    newmenu=$(printf '%s\n' "File" "Directory" | yprompt "Create new files or directories" "$FM_GENERIC_COLOR")
+    newmenu=$(printf '%s\n' "File" "Directory" | yprompt "Create new files or directories" "${FM_OPTS_GENERIC:--fn "$FM_GENERIC_FONT" -sb "$FM_GENERIC_COLOR"}")
     while [ -n "$newmenu" ] && [ -n "$name" ]; do
 	[ "$newmenu" = "File" ] &&
 	    cmd='touch' ||
@@ -342,7 +360,7 @@ FM_NEW () { # Usage: FM_NEW
 
 FM_PCP () { # Usage: FM_PCP
     # Copy path to xclip/xsel, and send notification.
-    ActionMenu "Copy file / directory path: " "$FM_ACTION_COLOR_LV1" || return
+    ActionMenu "Copy file / directory path: " "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}" || return
     [ -n "$HERE" ] &&
 	case "$clipcopy" in
 	    "pbcopy") printf '%s' "$HERE" | pbcopy && NotiPrompt "Path $name copied to clipboard." ;;
@@ -352,48 +370,65 @@ FM_PCP () { # Usage: FM_PCP
 }
 
 BulkRename () { # Usage: BulkRename
-    if [ -n "$SELECTED" ]; then
-	[ -f "$FM_REMFILE" ] && rm "$FM_REMFILE" "$FM_REMFILE.dirname" "$FM_REMFILE.backup"
+    case "$SELECTED" in
+        '') return ;;
+	*)
+	    [ -f "$FM_REMFILE" ] && rm "$FM_REMFILE" "$FM_REMFILE.dirname" "$FM_REMFILE.backup"
 
-	printf '%s\n' "$SELECTED" | sed "s=/$==g; /^$/ d" > "$FM_REMFILE.backup"
+	    # printf '%s\n' "$SELECTED" | sed "s=/$==g; /^$/ d" > "$FM_REMFILE.backup"
+	    printf '%s' "$SELECTED" > "$FM_REMFILE.backup"
+	    printf '%s' "$SELECTED" > "$FM_REMFILE"
 
-	IFS="$nl"
-	while read -r line; do
-	     printf '%s\n' "${line##*/}" >> "$FM_REMFILE"
-	done < "$FM_REMFILE.backup"
-	while read -r line; do
-	    printf '%s\n' "${line%%/"${line##*/}"}" >> "$FM_REMFILE.dirname"
-	done < "$FM_REMFILE.backup"
-	unset IFS
+	    # IFS="$nl"
+	    # while read -r line; do
+		# printf '%s\n' "${line##*/}" >> "$FM_REMFILE"
+	    # done < "$FM_REMFILE.backup"
+	    # while read -r line; do
+		# printf '%s\n' "${line%%/"${line##*/}"}" >> "$FM_REMFILE.dirname"
+	    # done < "$FM_REMFILE.backup"
+	    # unset IFS
 
-	FileOpen "$FM_REMFILE"
+	    FileOpen "$FM_REMFILE"
 
-	if [ "$(grep -c ^ "$FM_REMFILE")" -ne "$(grep -c ^ "$FM_REMFILE.backup")" ]; then
-	    NotiPrompt "ERROR: Lines mismatch in rename file; do nothing." && return
-	else
-	    renamevar=$(paste -d ':' "$FM_REMFILE.backup" "$FM_REMFILE.dirname" "$FM_REMFILE")
-	    # Set IFS for for loop as \n
-	    IFS="$nl"
-	    for selection in $(printf '%s' "$renamevar"); do
-		TMP="${selection%%:"${selection##*:}"}"
-		start="${TMP%%:"${TMP##*:}"}"
-		destination="${TMP##*:}/${selection##*:}"
-		unset TMP
-		[ "$start" != "$destination" ] && mv "$start" "$destination"
-	    done && NotiPrompt "Selected renamed"
-	    unset IFS
-	fi
-	rm "$FM_REMFILE" "$FM_REMFILE.dirname" "$FM_REMFILE.backup"
-    else
-	return
-    fi
+	    if [ $(wc -l "$FM_REMFILE") -ne $(wc -l "$FM_REMFILE.backup") ]; then
+		NotiPrompt "ERROR: Lines mismatch in rename file; do nothing." && return
+	    else
+		# renamevar=$(paste -d ':' "$FM_REMFILE.backup" "$FM_REMFILE.dirname" "$FM_REMFILE")
+		renamevar=$(paste -d ':' "$FM_REMFILE.backup" "$FM_REMFILE")
+		# Set IFS for for loop as \n
+		IFS="$nl"
+		set -- $renamevar
+		unset IFS
+		for selection do
+		    start=${selection%%:*}
+		    destination="${selection##*:}"
+		    [ "$start" != "$destination" ] && eval "mv \"$start\" \"$destination\""
+		done
+		# for selection in $(printf '%s' "$renamevar"); do
+		    # TMP="${selection%%:"${selection##*:}"}"
+		    # start="${TMP%%:"${TMP##*:}"}"
+		    # destination="${TMP##*:}/${selection##*:}"
+		    # start=${selection%%:*}
+		    # destination="${selection##*:}"
+		    # unset TMP
+		    # [ "$start" != "$destination" ] && mv "$start" "$destination"
+		# done && NotiPrompt "Selected renamed"
+		# unset IFS
+	    fi
+	    # rm "$FM_REMFILE" "$FM_REMFILE.dirname" "$FM_REMFILE.backup"
+	    ;;
+    esac
+    # if [ -n "$SELECTED" ]; then
+    # else
+	# return
+    # fi
 }
 
 FM_REM () { # Usage: FM_REM
     allowbulk="Bulk Rename"
     allselection="Bulk Rename All"
     masselection="Bulk Rename Mass"
-    ActionMenu "Source: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+    ActionMenu "Source: " "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}" || return && allowbulk="NotAllowed"
     case "$actCHOICE" in
         "$allselection")
 	    BulkListAll
@@ -424,10 +459,10 @@ FM_TRH () { # Usage: FM_TRH
     allowbulk="Bulk Trash"
     allselection="Bulk Trash All"
     masselection="Bulk Trash Mass"
-    trashmenu=$(printf '%s\n' "Move to trash" "Go to trash" "Empty trash" | yprompt "Dmenufm Trash" "$FM_GENERIC_COLOR")
+    trashmenu=$(printf '%s\n' "Move to trash" "Go to trash" "Empty trash" | yprompt "Dmenufm Trash" "${FM_OPTS_GENERIC:--fn "$FM_GENERIC_FONT" -sb "$FM_GENERIC_COLOR"}")
     case $trashmenu in
 	"Move to trash")
-	    ActionMenu "Move file / directory to trash: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+	    ActionMenu "Move file / directory to trash: " "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}" || return && allowbulk="NotAllowed"
 	    case "$actCHOICE" in
 	        "$allselection")
 		    BulkListAll
@@ -482,11 +517,14 @@ BulkCompress () { # Usage: BulkCompress
 	[ -d "$FM_ZIPATH" ] && rm -rf "$FM_ZIPATH"
 	mkdir "$FM_ZIPATH"
 	IFS="$nl"
-	for file in $SELECTED; do
-	    unset IFS
-	    cp -R "$file" "$FM_ZIPATH"
-	done
-	archive_name=$(xprompt "Please insert archive name: " "$FM_ACTION_COLOR_LV2" | cut -d '.' -f1) || return
+	set -- $SELECTED
+	unset IFS
+	for file do eval "cp -R \"$file\" \"$FM_ZIPATH\""; done
+	# for file in $SELECTED; do
+	#     unset IFS
+	#     cp -R "$file" "$FM_ZIPATH"
+	# done
+	archive_name=$(xprompt "Please insert archive name: " "${FM_OPTS_ACTION_LV2:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV2"}" | cut -d '.' -f1) || return
 	[ -n "$archive_name" ] &&
 	    compressdir_name="$archive_name" &&
 	    archive_name="$archive_name.$compression_type" &&
@@ -497,10 +535,13 @@ BulkCompress () { # Usage: BulkCompress
 	rm -rf "$FM_ZIPATH"
     else
 	IFS="$nl"
-	for file in $SELECTED; do
-	    unset IFS
-	    $cmd "$file" && NotiPrompt "Compressed to ${file##*/}"
-	done
+	set -- $SELECTED
+	unset IFS
+	for file do eval "$cmd \"$file\" && NotiPrompt \"Compressed to ${file##*/}\""; done
+	# for file in $SELECTED; do
+	#     unset IFS
+	#     $cmd "$file" && NotiPrompt "Compressed to ${file##*/}"
+	# done
     fi
 }
 
@@ -509,9 +550,9 @@ FM_ZIP () { # Usage: FM_ZIP
     allowbulk="Bulk Compress"
     allselection="Bulk Compress All"
     masselection="Bulk Compress Mass"
-    compression_type=$(printf '%s\n' "$COMPRESSIONLIST" | yprompt "Compression type: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed")
+    compression_type=$(printf '%s\n' "$COMPRESSIONLIST" | yprompt "Compression type: " "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}" || return && allowbulk="NotAllowed")
     ! printf '%s' "$compression_type" | grep -E '^tar|^zip' && allowbulk="NotAllowed"
-    [ -n "$compression_type" ] && ActionMenu "Source: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+    [ -n "$compression_type" ] && ActionMenu "Source: " "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}" || return && allowbulk="NotAllowed"
     case "$actCHOICE" in
         "$allselection")
 	    BulkListAll
@@ -547,11 +588,11 @@ FM_EYE () {
 	dmenu -f -fn "$FM_GENERIC_FONT" -b -i -sb "$2" -p "$1"
     }
 
-    ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+    ActionMenu "Preview mode: " "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}" || return && allowbulk="NotAllowed"
     [ -n "$HERE" ] && FileOpen "$HERE" &
     while [ -n "$HERE" ]; do
 	wmctrl -ic "$eyeid" &
-	ActionMenu "Preview mode: " "$FM_ACTION_COLOR_LV1" || return && allowbulk="NotAllowed"
+	ActionMenu "Preview mode: " "${FM_OPTS_ACTION_LV1:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}" || return && allowbulk="NotAllowed"
 	eyeid="$(xprop -root _NET_ACTIVE_WINDOW | cut -d ' ' -f 5)"
 	[ -n "$HERE" ] && FileOpen "$HERE" &
     done
