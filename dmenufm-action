@@ -114,11 +114,6 @@ BulkCMD () { # Usage: BulkCMD
     set -- $execfile
     unset IFS
     for selection do eval "$execmd \"$selection\""; done && NotiPrompt "Command executed on selected."
-    # IFS="$nl"
-    # for selection in $(printf '%s' "$execfile"); do
-	# unset IFS
-	# $execmd "$selection"
-    # done && NotiPrompt "Command executed on selected."
 }
 
 ExecCMD () { # Usage: ExecCMD [CMD]
@@ -191,12 +186,6 @@ DangerMenu () { # Usage: DangerMenu [CMD] [MSG] (OPT: [Dest])
 	set -- $SELECTED
 	unset IFS
 	for selection do [ -z "$destination" ] && eval "$cmd \"$selection\"" || eval "$cmd \"$selection\" \"$3\""; done && NotiPrompt "Selected removed."
-	# for selection in $(printf '%s' "$SELECTED"); do
-	#     unset IFS
-	#     [ -z "$destination" ] &&
-	# 	$1 "$selection" ||
-	# 	$1 "$selection" "$3"
-	# done && NotiPrompt "Selected removed."
     fi
 }
 
@@ -272,12 +261,6 @@ DestMenu () { # Usage: DestMenu
 	    for selection do eval "$cmd \"$selection\" \"$destination\""; done && NotiPrompt "Selected files / directories $cmdname to $destname"
 	    ;;
     esac
-
-    # [ -n "$HERE" ] &&
-	# for selection in $(printf '%s' "$SELECTED"); do
-	#     unset IFS
-	#     $cmd "$selection" "$destination"
-	# done && NotiPrompt "Selected files / directories $cmdname to $destname"
 }
 
 FM_MYL () { # Usage: FM_MYL
@@ -375,25 +358,14 @@ BulkRename () { # Usage: BulkRename
 	*)
 	    [ -f "$FM_REMFILE" ] && rm "$FM_REMFILE" "$FM_REMFILE.dirname" "$FM_REMFILE.backup"
 
-	    # printf '%s\n' "$SELECTED" | sed "s=/$==g; /^$/ d" > "$FM_REMFILE.backup"
 	    printf '%s' "$SELECTED" > "$FM_REMFILE.backup"
 	    printf '%s' "$SELECTED" > "$FM_REMFILE"
-
-	    # IFS="$nl"
-	    # while read -r line; do
-		# printf '%s\n' "${line##*/}" >> "$FM_REMFILE"
-	    # done < "$FM_REMFILE.backup"
-	    # while read -r line; do
-		# printf '%s\n' "${line%%/"${line##*/}"}" >> "$FM_REMFILE.dirname"
-	    # done < "$FM_REMFILE.backup"
-	    # unset IFS
 
 	    FileOpen "$FM_REMFILE"
 
 	    if [ $(wc -l "$FM_REMFILE") -ne $(wc -l "$FM_REMFILE.backup") ]; then
 		NotiPrompt "ERROR: Lines mismatch in rename file; do nothing." && return
 	    else
-		# renamevar=$(paste -d ':' "$FM_REMFILE.backup" "$FM_REMFILE.dirname" "$FM_REMFILE")
 		renamevar=$(paste -d ':' "$FM_REMFILE.backup" "$FM_REMFILE")
 		# Set IFS for for loop as \n
 		IFS="$nl"
@@ -404,24 +376,10 @@ BulkRename () { # Usage: BulkRename
 		    destination="${selection##*:}"
 		    [ "$start" != "$destination" ] && eval "mv \"$start\" \"$destination\""
 		done
-		# for selection in $(printf '%s' "$renamevar"); do
-		    # TMP="${selection%%:"${selection##*:}"}"
-		    # start="${TMP%%:"${TMP##*:}"}"
-		    # destination="${TMP##*:}/${selection##*:}"
-		    # start=${selection%%:*}
-		    # destination="${selection##*:}"
-		    # unset TMP
-		    # [ "$start" != "$destination" ] && mv "$start" "$destination"
-		# done && NotiPrompt "Selected renamed"
-		# unset IFS
 	    fi
-	    # rm "$FM_REMFILE" "$FM_REMFILE.dirname" "$FM_REMFILE.backup"
+	    rm "$FM_REMFILE" "$FM_REMFILE.dirname" "$FM_REMFILE.backup"
 	    ;;
     esac
-    # if [ -n "$SELECTED" ]; then
-    # else
-	# return
-    # fi
 }
 
 FM_REM () { # Usage: FM_REM
@@ -520,10 +478,6 @@ BulkCompress () { # Usage: BulkCompress
 	set -- $SELECTED
 	unset IFS
 	for file do eval "cp -R \"$file\" \"$FM_ZIPATH\""; done
-	# for file in $SELECTED; do
-	#     unset IFS
-	#     cp -R "$file" "$FM_ZIPATH"
-	# done
 	archive_name=$(xprompt "Please insert archive name: " "${FM_OPTS_ACTION_LV2:--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV2"}" | cut -d '.' -f1) || return
 	[ -n "$archive_name" ] &&
 	    compressdir_name="$archive_name" &&
@@ -538,10 +492,6 @@ BulkCompress () { # Usage: BulkCompress
 	set -- $SELECTED
 	unset IFS
 	for file do eval "$cmd \"$file\" && NotiPrompt \"Compressed to ${file##*/}\""; done
-	# for file in $SELECTED; do
-	#     unset IFS
-	#     $cmd "$file" && NotiPrompt "Compressed to ${file##*/}"
-	# done
     fi
 }
 
