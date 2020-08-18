@@ -2,21 +2,21 @@
 
 ## PROMPT FUNCTIONS
 yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-    ${FM_PROG:-dmenu} ${FM_OPTS:--f -i -l 10} $2 ${FM_OPT_PROMPT:--p} "$1 "
+    ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} $2 ${FM_OPT_PROMPT--p} "$1 "
 }
 
 xprompt () { # Usage xprompt [MSG] [BG_COLOR]
-    printf '%s' "" | ${FM_PROG:-dmenu} ${FM_OPTS--f -i -l 10} $2 ${FM_OPT_PROMPT:--p} "$1 "
+    printf '%s' "" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} $2 ${FM_OPT_PROMPT--p} "$1 "
 }
 
 
 NotiPrompt () { # Usage NotiPrompt [MSG]
-    printf '%s' "" | ${FM_PROG:-dmenu} ${FM_OPTS--f -i -l 10} ${FM_NOTIF_OPTS:--fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000"} ${FM_OPT_PROMPT:--p} "$1 "
+    printf '%s' "" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} ${FM_NOTIF_OPTS--fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000"} ${FM_OPT_PROMPT--p} "$1 "
 
 }
 
 DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
-    [ "$(printf "No\\nYes" | ${FM_PROG:-dmenu} ${FM_OPTS--f -i -l 10} ${FM_DANGER_OPTS:--fn $FM_DANGER_FONT -nb darkred -sb red -sf white -nf gray} ${FM_OPT_PROMPT--p} "$1")" = "Yes" ]
+    [ "$(printf "No\\nYes" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} ${FM_DANGER_OPTS--fn $FM_DANGER_FONT -nb darkred -sb red -sf white -nf gray} ${FM_OPT_PROMPT--p} "$1")" = "Yes" ]
 }
 
 
@@ -199,7 +199,7 @@ MainMenu () { # Usage: MainMenu
 		rollmenu="" &&
 		rolldir=""
 	TwoPWD
-	CHOICE=$(printf '%s\n%s\n%s\n%s\n%s' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$list" | yprompt "$TwoPWD" "${FM_OPTS_GENERIC:--fn "$FM_GENERIC_FONT" -sb "$FM_GENERIC_COLOR"}")
+	CHOICE=$(printf '%s\n%s\n%s\n%s\n%s' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$list" | yprompt "$TwoPWD" "${FM_OPTS_GENERIC--fn "$FM_GENERIC_FONT" -sb "$FM_GENERIC_COLOR"}")
 	# Outcome matching
 	case "$CHOICE" in
 	    "$TARGET")
