@@ -249,6 +249,7 @@ FM_HIS () { # Usage: FM_HIS
 }
 
 DestMenu () { # Usage: DestMenu
+    dir="$PWD"
     ActionMenu "Destination: " "${FM_OPTS_ACTION_LV2--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV2"}" || return && allowbulk="NotAllowed" && actCHOICE="placeholder"
     case "$HERE" in
         '') ;;
@@ -258,7 +259,7 @@ DestMenu () { # Usage: DestMenu
 	    IFS="$nl"
 	    set -- $SELECTED
 	    unset IFS
-	    for selection do eval "$cmd \"$selection\" \"$destination\""; done && NotiPrompt "Selected files / directories $cmdname to $destname"
+	    for selection do eval "$cmd \"$dir/$selection\" \"$destination\""; done && NotiPrompt "Selected files / directories $cmdname to $destname"
 	    ;;
     esac
 }

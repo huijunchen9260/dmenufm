@@ -199,7 +199,7 @@ MainMenu () { # Usage: MainMenu
 		rollmenu="" &&
 		rolldir=""
 	TwoPWD
-	CHOICE=$(printf '%s\n%s\n%s\n%s\n%s' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$list" | yprompt "$TwoPWD" "${FM_OPTS_GENERIC--fn "$FM_GENERIC_FONT" -sb "$FM_GENERIC_COLOR"}")
+	CHOICE=$(printf '%s\n%s\n%s\n%s\n%s\n%s' "$BACKWARD" "$TARGET" "$ACTION" "$TERM" "$OPENIN" "$list" | yprompt "$TwoPWD" "${FM_OPTS_GENERIC--fn "$FM_GENERIC_FONT" -sb "$FM_GENERIC_COLOR"}")
 	# Outcome matching
 	case "$CHOICE" in
 	    "$TARGET")
@@ -230,6 +230,7 @@ MainMenu () { # Usage: MainMenu
 		;;
 	    "$ACTION") FM_Action ;;
 	    "$TERM") $TERMINAL ;;
+	    "$OPENIN") openin=1; continue ;;
 	    *)
 		if [ -d "$CHOICE" ]; then
 		    case "$rollingmenu" in

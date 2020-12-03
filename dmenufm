@@ -37,7 +37,7 @@ Program () {
 	    [ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK="-sb '#CB06CB'"
 	    FM_OPT_PROMPT="-p"
 	    ;;
-	"") echo "No program selected, falling back to dmenu." ;;
+	"") [ "$termpath" = "true" ] || echo "No program selected, falling back to dmenu." ;;
 	*)
 	    [ -z "$FM_OPTS" ] && FM_OPTS=""
 	    [ -z "$FM_OPT_PROMPT" ] && FM_OPT_PROMPT="" && echo "Program \`$FM_PROG\` not recognized, trying to run without any option. If this does not work, please set both \'$FM_OPTS\' and \'$FM_OPT_PROMPT\' variable!"
@@ -59,6 +59,7 @@ ENDSELECTION="End Selection"
 allowbulk="NotAllowed"
 ACTION="Actions"
 TERM="Terminal"
+OPENIN='Open in...'
 FM_PCP="PCP - Copy path"
 FM_NEW="NEW - Create new file / directory"
 FM_DEL="DEL - Delete files / directories"
@@ -129,10 +130,10 @@ UsageInfo () {
 		\r            -p | --lastpath           - Opens in last working directory. (cd on exit)
 		\r            -r | --rollingmenu        - Rolling menu based on selected files.
 		\r            -t | --termpath           - Print out the path of file / directory.
-		\r	      -m | --menu               - Choose other menu system
-		\r	      -o | --option             - Choose options for other menu system
-		\r	     -no | --notif-option      - Choose NotiPrompt options for other menu system
-		\r	     -do | --danger-option     - Choose DangerPrompt options for other menu system
+		\r            -m | --menu               - Choose other menu system
+		\r            -o | --option             - Choose options for other menu system
+		\r           -no | --notif-option       - Choose NotiPrompt options for other menu system
+		\r           -do | --danger-option      - Choose DangerPrompt options for other menu system
 	EOF
 	unset CurLine
 }
