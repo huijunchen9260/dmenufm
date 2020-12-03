@@ -230,7 +230,11 @@ MainMenu () { # Usage: MainMenu
 		;;
 	    "$ACTION") FM_Action ;;
 	    "$TERM") $TERMINAL ;;
-	    "$OPENIN") openin=1; continue ;;
+	    "$OPENIN")
+		openin=1
+		FM_OPENER=$(dmenu_path | yprompt "Choose opening software: " "${FM_OPTS_GENERIC--fn "$FM_GENERIC_FONT" -sb "$FM_GENERIC_COLOR"}")
+		continue
+		;;
 	    *)
 		if [ -d "$CHOICE" ]; then
 		    case "$rollingmenu" in
@@ -256,6 +260,20 @@ MainMenu () { # Usage: MainMenu
 			    rollmenu="$CHOICE"
 			    FileOpen "$PWD/$CHOICE"
 			    History "$CHOICE"
+
+			    # Reload conf
+			    if openin=1; then
+				openin=0
+				unset FM_OPENER
+				configuration
+				# if [ -r "$FM_PATH/dmenufm.conf" ]; then
+				#     . "$FM_PATH/dmenufm.conf"
+				# elif [ -r "/etc/dmenufm.conf" ]; then
+				#     . "/etc/dmenufm.conf"
+				# else
+				#     echo 'Run `sudo make install` first to install all dmenufm files.'
+				# fi
+			    fi
 			    ;;
 		    esac
 		else

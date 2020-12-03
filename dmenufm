@@ -3,13 +3,16 @@
 # source configuration file
 FM_PATH="$HOME/.config/dmenufm"
 FM_CACHE_PATH="$HOME/.cache/dmenufm"
-if [ -r "$FM_PATH/dmenufm.conf" ]; then
-    . "$FM_PATH/dmenufm.conf"
-elif [ -r "/etc/dmenufm.conf" ]; then
-    . "/etc/dmenufm.conf"
-else
-    echo 'Run `sudo make install` first to install all dmenufm files.'
-fi
+
+configuration () {
+    if [ -r "$FM_PATH/dmenufm.conf" ]; then
+	. "$FM_PATH/dmenufm.conf"
+    elif [ -r "/etc/dmenufm.conf" ]; then
+	. "/etc/dmenufm.conf"
+    else
+	echo 'Run `sudo make install` first to install all dmenufm files.'
+    fi
+}
 
 Program () {
     case $FM_PROG in
@@ -195,10 +198,12 @@ if [ "$(id -u)" -eq 0 ]; then
     FM_GENERIC_COLOR="$FM_SUDO_COLOR"
 
     GetOS
+    configuration
     Program
     MainMenu
 else
     GetOS
+    configuration
     Program
     MainMenu
 fi

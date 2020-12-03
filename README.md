@@ -23,6 +23,7 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 * [Installation](#installation)
 * [Usage](#usage)
 	* [Terminal](#terminal)
+	* [Open in...](#open-in)
 	* [CD on Exit](#cd-on-exit)
 	* [Rolling Menu](#rolling-menu)
 	* [Actions](#actions)
@@ -126,6 +127,12 @@ OPTS:       -h | --help               - Show this usage information.
 
 `Terminal` to open terminal in current working directory. To define terminal, add
 `export TERMINAL=<your terminal>` to the end of your `.bashrc` file (or any other system configuration file, like `.profile`, `zshrc`, etc).
+
+### Open in...
+
+`Open in...` to temporarily open a file in a different program from `FM_OPENER` or `xdg-open`.
+
+Requires `dmenu_path`. This function use `dmenu_path` to search for programs that is going to open the next selected file.
 
 ### CD on Exit
 
