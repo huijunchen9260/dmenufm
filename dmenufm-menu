@@ -266,13 +266,6 @@ MainMenu () { # Usage: MainMenu
 				openin=0
 				unset FM_OPENER
 				configuration
-				# if [ -r "$FM_PATH/dmenufm.conf" ]; then
-				#     . "$FM_PATH/dmenufm.conf"
-				# elif [ -r "/etc/dmenufm.conf" ]; then
-				#     . "/etc/dmenufm.conf"
-				# else
-				#     echo 'Run `sudo make install` first to install all dmenufm files.'
-				# fi
 			    fi
 			    ;;
 		    esac

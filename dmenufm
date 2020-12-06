@@ -82,6 +82,8 @@ COMPRESSIONLIST=$(printf '%s\n' "tar.gz" "tar.bz2" "tar.xz" "xz" "lzma" "gz" "bz
 nl='
 '
 
+configuration
+
 # Create files / directories
 [ ! -d "$FM_PATH" ] && mkdir -p "$FM_PATH"
 [ ! -f "$FM_PATH/dmenufm.conf" ] && cp "/etc/dmenufm.conf" "$FM_PATH/dmenufm.conf"
@@ -198,12 +200,10 @@ if [ "$(id -u)" -eq 0 ]; then
     FM_GENERIC_COLOR="$FM_SUDO_COLOR"
 
     GetOS
-    configuration
     Program
     MainMenu
 else
     GetOS
-    configuration
     Program
     MainMenu
 fi
