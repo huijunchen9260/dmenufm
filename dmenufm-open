@@ -36,7 +36,11 @@ FileOpen () { # Usage: FileOpen [File/Dir]
 		    text/*|*x-empty*|*json*)
 		    case "$TERMINAL" in
 			"") "${FM_OPENER:-${opener:-xdg-open}}" "$1" ;;
-			*) $TERMINAL -e "${EDITOR:-vi}" "$1" ;;
+			*)
+			    [ -t 0 ] &&
+				"${EDITOR:-vi}" "$1" ||
+				$TERMINAL -e "${EDITOR:-vi}" "$1"
+			    ;;
 		    esac
 		    ;;
 		inode/symlink)

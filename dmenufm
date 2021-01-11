@@ -40,6 +40,14 @@ Program () {
 	    [ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK="-sb '#CB06CB'"
 	    FM_OPT_PROMPT="-p"
 	    ;;
+	"shellect")
+	    [ -z "$FM_OPTS" ] && FM_OPTS='-i -l'
+	    [ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC=""
+	    [ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1=""
+	    [ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2=""
+	    [ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK=""
+	    FM_OPT_PROMPT='-t'
+	    ;;
 	"") [ "$termpath" = "true" ] || echo "No program selected, falling back to dmenu." ;;
 	*)
 	    [ -z "$FM_OPTS" ] && FM_OPTS=""

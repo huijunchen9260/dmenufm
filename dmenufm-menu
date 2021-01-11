@@ -12,7 +12,6 @@ xprompt () { # Usage xprompt [MSG] [BG_COLOR]
 
 NotiPrompt () { # Usage NotiPrompt [MSG]
     printf '%s' "" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} ${FM_NOTIF_OPTS--fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000"} ${FM_OPT_PROMPT--p} "$1 "
-
 }
 
 DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
