@@ -44,6 +44,7 @@ A simple dmenu file manager written in POSIX-compliant shell script.
 	* [Open files](#open-files)
 * [Configuration](#configuration)
 	* [Use other menu system](#use-other-menu-system)
+	* [Use terminal menu system](#use-terminal-menu-system)
 * [Note](#note)
 * [Troubleshooting](#troubleshooting)
 	* [Why some of my GUI app will open in terminal?](#why-some-of-my-gui-app-will-open-in-terminal)
@@ -314,6 +315,17 @@ FM_OPTS_ACTION_LV1="--sb='#33691e'"
 FM_OPTS_ACTION_LV2="--sb='#FF8C00'"
 FM_OPTS_ACTION_BULK="--sb='#CB06CB'"
 ```
+
+### Use terminal menu system
+
+The terminal menu system, such as [fzf](https://github.com/junegunn/fzf) and [shellect](https://github.com/huijunchen9260/shellect), will slightly change the `stty` settings in an unknown way such that the original terminal color scheme will be distorted when opening text files in vim/neovim.
+The way to fix it is to use install a vim/neovim colorscheme, and include the following line in your `.vimrc` / `init.vim`:
+
+```vimL
+set tgc
+```
+
+This will enable the termguicolors setting inside vim/neovim, and force the color scheme to match your installed vim/neovim color scheme.
 
 ## Note
 
