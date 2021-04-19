@@ -11,7 +11,10 @@ Extract () { # Usage: Extract [CMD] [FILE]
     cd "$DirName" || return
     $1 "$2" &&
 	NotiPrompt "$CHOICE extracted to $DirName" ||
-	NotiPrompt "Extraction fail"
+	{
+	    cd .. && rm -rf $DirName
+	    NotiPrompt "Extraction fail"
+	}
 }
 
 FileOpen () { # Usage: FileOpen [File/Dir]

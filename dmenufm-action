@@ -22,6 +22,15 @@ FM_Action () { # Usage: FM_Action
 BulkListAll () { # Usage: BulkListAll
     SELECTED="$list"
     [ -n "$SELECTED" ] && check=$(printf '%s' "$SELECTED" | yprompt "Check selections. (Enter to continue, ESC to quit)" "${FM_OPTS_ACTION_LV1--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}")
+
+    # add PWD back to selection's path
+    IFS="$nl"
+    set -- $SELECTED
+    unset IFS SELECTED
+    for selection do
+        SELECTED="$SELECTED${nl}$PWD/$selection"
+    done
+    SELECTED=${SELECTED#$nl}
 }
 
 
@@ -35,6 +44,15 @@ BulkListMass () { # Usage: BulkListMass
 
     SELECTED="$(cat -u $FM_MASFILE)"
     [ -n "$SELECTED" ] && check=$(printf '%s' "$SELECTED" | yprompt "Check selections. (Enter to continue, ESC to quit)" "${FM_OPTS_ACTION_LV1--fn "$FM_GENERIC_FONT" -sb "$FM_ACTION_COLOR_LV1"}")
+
+    # add PWD back to selection's path
+    IFS="$nl"
+    set -- $SELECTED
+    unset IFS SELECTED
+    for selection do
+        SELECTED="$SELECTED${nl}$PWD/$selection"
+    done
+    SELECTED=${SELECTED#$nl}
 
     rm "$FM_MASFILE"
 }
@@ -181,11 +199,12 @@ FM_CMD () { # Usage: FM_CMD
 
 DangerMenu () { # Usage: DangerMenu [CMD] [MSG] (OPT: [Dest])
     cmd="$1"
+    destination="$3"
     if DangerPrompt "$2"; then
 	IFS="$nl"
 	set -- $SELECTED
 	unset IFS
-	for selection do [ -z "$destination" ] && eval "$cmd \"$selection\"" || eval "$cmd \"$selection\" \"$3\""; done && NotiPrompt "Selected removed."
+	for selection do [ -z "$destination" ] && eval "$cmd \"$selection\"" || eval "$cmd \"$selection\" \"$destination\""; done && NotiPrompt "Selected removed."
     fi
 }
 
