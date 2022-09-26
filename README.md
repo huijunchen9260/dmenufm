@@ -92,11 +92,11 @@ For Arch Linux user, there is an [AUR](https://aur.archlinux.org/packages/dmenuf
 # If you are not a archlinux user
 # do this:
  
-* In order for this to work you need to install ``make``, ``git``, ``dmenu``
+* In order for this to work you need to install `make`, `git`, `dmenu`
 * Install this programs.
-* clone this gitrepo ``git clone https://github.com/huijunchen9260/dmenufm/``
+* clone this gitrepo `git clone https://github.com/huijunchen9260/dmenufm/`
 * cd to the repo directory you just cloned ``cd dmenufm``
-* run ``sudo make install``
+* run `sudo make install`
 
 To uninstall dmenufm, type `sudo make uninstall` in terminal. On the gitrepo directory.
 
