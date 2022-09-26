@@ -88,9 +88,17 @@ In Debian- or Ubuntu-based distributions of Linux, the packages needed (versions
 
 For Arch Linux user, there is an [AUR](https://aur.archlinux.org/packages/dmenufm/) package available.
 
-`cd` into the `Makefile` directory, and type `sudo make install` in terminal to install dmenufm.
+`
+# If you are not a archlinux user
+# do this:
+ 
+* In order for this to work you need to install ``make``, ``git``, ``dmenu``
+* Install this programs.
+* clone this gitrepo ``git clone https://github.com/huijunchen9260/dmenufm/``
+* cd to the repo directory you just cloned ``cd dmenufm``
+* run ``sudo make install``
 
-To uninstall dmenufm, type `sudo make uninstall` in terminal.
+To uninstall dmenufm, type `sudo make uninstall` in terminal. On the gitrepo directory.
 
 ## Usage
 
