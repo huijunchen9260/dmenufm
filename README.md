@@ -88,7 +88,7 @@ In Debian- or Ubuntu-based distributions of Linux, the packages needed (versions
 
 For Arch Linux user, there is an [AUR](https://aur.archlinux.org/packages/dmenufm/) package available.
 
-`
+
 # If you are not a archlinux user
 # do this:
  
