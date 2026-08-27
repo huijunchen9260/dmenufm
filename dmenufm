@@ -186,6 +186,9 @@ done
 # --lastpath option:
 [ -n "$outputpath" ] && cd "$(cat -u "$FM_LASTPATH")"
 
+# set delete action color if missing in config
+[ -z "$FM_ACTION_COLOR_DELETE" ] && FM_ACTION_COLOR_DELETE=darkred
+
 if [ "$(id -u)" -eq 0 ]; then
 
     # super user privilege

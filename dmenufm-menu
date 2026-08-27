@@ -1,11 +1,11 @@
 #!/bin/sh
 
 ## PROMPT FUNCTIONS
-yprompt () { # Usage yprompt [MSG] [BG_COLOR]
+yprompt () { # Usage yprompt [MSG] [MENU OPTIONS]
     ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} $2 ${FM_OPT_PROMPT--p} "$1 "
 }
 
-xprompt () { # Usage xprompt [MSG] [BG_COLOR]
+xprompt () { # Usage xprompt [MSG] [MENU OPTIONS]
     printf '%s' "" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} $2 ${FM_OPT_PROMPT--p} "$1 "
 }
 
