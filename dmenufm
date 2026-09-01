@@ -1,9 +1,48 @@
 #!/bin/sh
 
+# region Variables
+
 # source configuration file
 FM_PATH="$HOME/.config/dmenufm"
 FM_CACHE_PATH="$HOME/.cache/dmenufm"
 
+# SUDO setting
+export SUDO_ASKPASS="$FM_SDOPROP"
+
+## GLOBAL VARIABLES
+CHOICE="placeholder"
+actCHOICE="placeholder"
+allselection="placeholder"
+masselection="placeholder"
+TARGET="./"
+BACKWARD="../"
+ENDSELECTION="End Selection"
+allowbulk="NotAllowed"
+ACTION="Actions"
+TERM="Terminal"
+OPENIN='Open in...'
+FM_PCP="PCP - Copy path"
+FM_NEW="NEW - Create new file / directory"
+FM_DEL="DEL - Delete files / directories"
+FM_MVV="MVV - Move files / directories"
+FM_YAK="YAK - Copy files / directories"
+FM_LNK="LNK - Symbolically link files / directories"
+FM_REM="REM - Rename files / directories"
+FM_TRH="TRH - Trash of dmenufm"
+FM_HIS="HIS - History of dmenufm"
+FM_BMK="BMK - Bookmark for dmenufm"
+FM_CMD="CMD - Frequently used command"
+FM_ZIP="ZIP - Compress files / directories"
+FM_SDO="SDO - Enable Super user privilege"
+FM_EYE="EYE - Preview files"
+ACTLIST=$(printf '%s\n' "$FM_PCP" "$FM_NEW" "$FM_MVV" "$FM_YAK" "$FM_LNK" "$FM_DEL" "$FM_TRH" "$FM_REM" "$FM_HIS" "$FM_BMK" "$FM_CMD" "$FM_ZIP" "$FM_SDO" "$FM_EYE")
+COMPRESSIONLIST=$(printf '%s\n' "tar.gz" "tar.bz2" "tar.xz" "xz" "lzma" "gz" "bz2" "7z" "zip")
+nl='
+'
+
+# endregion
+
+# region Functions
 configuration () {
     if [ -r "$FM_PATH/dmenufm.conf" ]; then
 	. "$FM_PATH/dmenufm.conf"
@@ -74,42 +113,6 @@ Program () {
     esac
 }
 
-# SUDO setting
-export SUDO_ASKPASS="$FM_SDOPROP"
-
-## GLOBAL VARIABLES
-CHOICE="placeholder"
-actCHOICE="placeholder"
-allselection="placeholder"
-masselection="placeholder"
-TARGET="./"
-BACKWARD="../"
-ENDSELECTION="End Selection"
-allowbulk="NotAllowed"
-ACTION="Actions"
-TERM="Terminal"
-OPENIN='Open in...'
-FM_PCP="PCP - Copy path"
-FM_NEW="NEW - Create new file / directory"
-FM_DEL="DEL - Delete files / directories"
-FM_MVV="MVV - Move files / directories"
-FM_YAK="YAK - Copy files / directories"
-FM_LNK="LNK - Symbolically link files / directories"
-FM_REM="REM - Rename files / directories"
-FM_TRH="TRH - Trash of dmenufm"
-FM_HIS="HIS - History of dmenufm"
-FM_BMK="BMK - Bookmark for dmenufm"
-FM_CMD="CMD - Frequently used command"
-FM_ZIP="ZIP - Compress files / directories"
-FM_SDO="SDO - Enable Super user privilege"
-FM_EYE="EYE - Preview files"
-ACTLIST=$(printf '%s\n' "$FM_PCP" "$FM_NEW" "$FM_MVV" "$FM_YAK" "$FM_LNK" "$FM_DEL" "$FM_TRH" "$FM_REM" "$FM_HIS" "$FM_BMK" "$FM_CMD" "$FM_ZIP" "$FM_SDO" "$FM_EYE")
-COMPRESSIONLIST=$(printf '%s\n' "tar.gz" "tar.bz2" "tar.xz" "xz" "lzma" "gz" "bz2" "7z" "zip")
-nl='
-'
-
-configuration
-
 CreateFiles () { # for correct sudo askpass prompt, execute this after setting FM_PROG and its attributes
 	[ ! -d "$FM_PATH" ] && mkdir -p "$FM_PATH"
 	[ ! -f "$FM_PATH/dmenufm.conf" ] && cp "/etc/dmenufm.conf" "$FM_PATH/dmenufm.conf"
@@ -120,19 +123,12 @@ CreateFiles () { # for correct sudo askpass prompt, execute this after setting F
 	chmod +x "$FM_SDOPROP"
 }
 
-. dmenufm-open
-. dmenufm-action
-. dmenufm-menu
-
-
 CheckDeps () {
     for CurDep in "$@"; do
 	command -v "$CurDep" 1> /dev/null 2>&1 || printf '%s\n' "ERROR: Dependency $CurDep not met."  1>&2
     done
     unset CurDep
 }
-
-CheckDeps find tail sed grep cp mv rm paste cut id wmctrl touch
 
 GetOS () {
     # Stolen from fff
@@ -166,7 +162,6 @@ SetConfigDefaults () { # sets default values for variables if not set in config
 	[ -z "$FM_DANGER_COLOR_NF" ] && FM_DANGER_COLOR_NF="#BEBEBE"
 }
 
-
 UsageInfo () {
 	while read -r CurLine; do
 		printf "%b\n" "$CurLine"
@@ -194,6 +189,15 @@ UsageInfo () {
 	unset CurLine
 }
 
+# endregion
+
+configuration
+
+. dmenufm-open
+. dmenufm-action
+. dmenufm-menu
+
+CheckDeps find tail sed grep cp mv rm paste cut id wmctrl touch
 
 ### ARGUMENTS
 while [ -n "$1" ]; do
