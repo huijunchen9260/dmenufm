@@ -11,11 +11,11 @@ xprompt () { # Usage xprompt [MSG] [MENU OPTIONS]
 
 
 NotiPrompt () { # Usage NotiPrompt [MSG]
-    printf '%s' "" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} ${FM_NOTIF_OPTS--fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000"} ${FM_OPT_PROMPT--p} "$FM_PROMPT_TEXT$1"
+    printf '%s' "" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} ${FM_NOTIF_OPTS--fn "$FM_NOTIF_FONT" -sb "$FM_NOTIF_COLOR_SB" -sf "$FM_NOTIF_COLOR_SF" -nf "$FM_NOTIF_COLOR_NF" -nb "$FM_NOTIF_COLOR_NB"} ${FM_OPT_PROMPT--p} "$FM_PROMPT_TEXT$1"
 }
 
 DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
-    [ "$(printf "No\\nYes" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} ${FM_DANGER_OPTS--fn $FM_DANGER_FONT -nb darkred -sb red -sf white -nf gray} ${FM_OPT_PROMPT--p} "$1")" = "Yes" ]
+    [ "$(printf "No\\nYes" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} ${FM_DANGER_OPTS--fn $FM_DANGER_FONT -nb $FM_DANGER_COLOR_NB -sb $FM_DANGER_COLOR_SB -sf $FM_DANGER_COLOR_SF -nf $FM_DANGER_COLOR_NF} ${FM_OPT_PROMPT--p} "$1")" = "Yes" ]
 }
 
 
