@@ -2,16 +2,16 @@
 
 ## PROMPT FUNCTIONS
 yprompt () { # Usage yprompt [MSG] [MENU OPTIONS]
-    ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} $2 ${FM_OPT_PROMPT--p} "$1 "
+    ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} $2 ${FM_OPT_PROMPT--p} "$FM_PROMPT_TEXT$1"
 }
 
 xprompt () { # Usage xprompt [MSG] [MENU OPTIONS]
-    printf '%s' "" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} $2 ${FM_OPT_PROMPT--p} "$1 "
+    printf '%s' "" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} $2 ${FM_OPT_PROMPT--p} "$FM_PROMPT_TEXT$1"
 }
 
 
 NotiPrompt () { # Usage NotiPrompt [MSG]
-    printf '%s' "" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} ${FM_NOTIF_OPTS--fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000"} ${FM_OPT_PROMPT--p} "$1 "
+    printf '%s' "" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} ${FM_NOTIF_OPTS--fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000"} ${FM_OPT_PROMPT--p} "$FM_PROMPT_TEXT$1"
 }
 
 DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
