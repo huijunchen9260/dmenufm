@@ -15,6 +15,11 @@ configuration () {
 }
 
 Program () {
+	if [ -z "$FM_PROG" ]; then
+		FM_PROG=dmenu
+		[ "$termpath" = "true" ] || echo "No program selected, falling back to dmenu." 
+	fi
+
     case $FM_PROG in
 	"fzf")
 	    [ -z "$FM_OPTS" ] && FM_OPTS="--reverse"
@@ -48,7 +53,20 @@ Program () {
 	    [ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK=""
 	    FM_OPT_PROMPT='-t'
 	    ;;
-	"") [ "$termpath" = "true" ] || echo "No program selected, falling back to dmenu." ;;
+	"dmenu")
+		[ -z "$FM_OPTS" ] && FM_OPTS="-f -i -l 10"
+		[ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC="-fn $FM_GENERIC_FONT -sb $FM_GENERIC_COLOR"
+		[ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1="-fn $FM_GENERIC_FONT -sb $FM_ACTION_COLOR_LV1"
+		[ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2="-fn $FM_GENERIC_FONT -sb $FM_ACTION_COLOR_LV2"
+		[ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK="-fn $FM_GENERIC_FONT -sb $FM_ACTION_COLOR_BULK"
+		[ -z "$FM_OPTS_ACTION_DELETE" ] && FM_OPTS_ACTION_DELETE="-fn $FM_GENERIC_FONT -sb $FM_ACTION_COLOR_DELETE"
+		[ -z "$FM_DANGER_OPTS" ] && FM_DANGER_OPTS="-fn $FM_DANGER_FONT -nb $FM_DANGER_COLOR_NB -sb $FM_DANGER_COLOR_SB -sf $FM_DANGER_COLOR_SF -nf $FM_DANGER_COLOR_NF"
+		[ -z "$FM_NOTIF_OPTS" ] && FM_NOTIF_OPTS="-fn $FM_NOTIF_FONT -sb $FM_NOTIF_COLOR_SB -sf $FM_NOTIF_COLOR_SF -nf $FM_NOTIF_COLOR_NF -nb $FM_NOTIF_COLOR_NB"
+		[ -z "$FM_ASKSUDO_OPTS" ] && FM_ASKSUDO_OPTS="-fn $FM_NOTIF_FONT -sb \"$FM_ROOT_COLOR_SB\" -sf \"$FM_ROOT_COLOR_SF\" -nf \"$FM_ROOT_COLOR_NF\" -nb \"$FM_ROOT_COLOR_NB\""
+
+
+		FM_OPT_PROMPT="-p"
+		;;
 	*)
 	    [ -z "$FM_OPTS" ] && FM_OPTS=""
 	    [ -z "$FM_OPT_PROMPT" ] && FM_OPT_PROMPT="" && echo "Program \`$FM_PROG\` not recognized, trying to run without any option. If this does not work, please set both \'$FM_OPTS\' and \'$FM_OPT_PROMPT\' variable!"
@@ -98,7 +116,7 @@ CreateFiles () { # for correct sudo askpass prompt, execute this after setting F
 	[ ! -d "$FM_CACHE_PATH" ] && mkdir -p "$FM_CACHE_PATH"
 	[ ! -d "$FM_TRASH" ] && mkdir -p "$FM_TRASH"
 	printf '%s\n' '#!/bin/sh' > "$FM_SDOPROP"
-	printf '%s ' "printf '%s' \"\" | ${FM_PROG-dmenu} ${FM_OPTS--fn Monospace-18 -sb \"$FM_ROOT_COLOR_SB\" -sf \"$FM_ROOT_COLOR_SF\" -nf \"$FM_ROOT_COLOR_NF\" -nb \"$FM_ROOT_COLOR_NB\"} ${FM_OPT_PROMPT--p}"  '"$1 " && echo' >> "$FM_SDOPROP"
+	printf '%s ' "printf '%s' \"\" | ${FM_PROG} ${FM_OPTS} ${FM_ASKSUDO_OPTS} ${FM_OPT_PROMPT}"  '"$1 " && echo' >> "$FM_SDOPROP"
 	chmod +x "$FM_SDOPROP"
 }
 
