@@ -1,60 +1,10 @@
 #!/bin/sh
 
+# region Variables
+
 # source configuration file
 FM_PATH="$HOME/.config/dmenufm"
 FM_CACHE_PATH="$HOME/.cache/dmenufm"
-
-configuration () {
-    if [ -r "$FM_PATH/dmenufm.conf" ]; then
-	. "$FM_PATH/dmenufm.conf"
-    elif [ -r "/etc/dmenufm.conf" ]; then
-	. "/etc/dmenufm.conf"
-    else
-	echo 'Run `sudo make install` first to install all dmenufm files.'
-    fi
-}
-
-Program () {
-    case $FM_PROG in
-	"fzf")
-	    [ -z "$FM_OPTS" ] && FM_OPTS="--reverse"
-	    [ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC=""
-	    [ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1=""
-	    [ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2=""
-	    [ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK=""
-	    FM_OPT_PROMPT="--prompt"
-	    ;;
-	"bemenu")
-	    [ -z "$FM_OPTS" ] && FM_OPTS="-l 10"
-	    [ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC="--sb='#005577'"
-	    [ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1="--sb='#33691e'"
-	    [ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2="--sb='#FF8C00'"
-	    [ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK="--sb='#CB06CB'"
-	    FM_OPT_PROMPT="-p"
-	    ;;
-	"rofi")
-	    [ -z "$FM_OPTS" ] && FM_OPTS="-dmenu -l 10"
-	    [ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC="-sb '#005577'"
-	    [ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1="-sb '#33691e'"
-	    [ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2="-sb '#FF8C00'"
-	    [ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK="-sb '#CB06CB'"
-	    FM_OPT_PROMPT="-p"
-	    ;;
-	"shellect")
-	    [ -z "$FM_OPTS" ] && FM_OPTS='-i -l'
-	    [ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC=""
-	    [ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1=""
-	    [ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2=""
-	    [ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK=""
-	    FM_OPT_PROMPT='-t'
-	    ;;
-	"") [ "$termpath" = "true" ] || echo "No program selected, falling back to dmenu." ;;
-	*)
-	    [ -z "$FM_OPTS" ] && FM_OPTS=""
-	    [ -z "$FM_OPT_PROMPT" ] && FM_OPT_PROMPT="" && echo "Program \`$FM_PROG\` not recognized, trying to run without any option. If this does not work, please set both \'$FM_OPTS\' and \'$FM_OPT_PROMPT\' variable!"
-	    ;;
-    esac
-}
 
 # SUDO setting
 export SUDO_ASKPASS="$FM_SDOPROP"
@@ -90,21 +40,88 @@ COMPRESSIONLIST=$(printf '%s\n' "tar.gz" "tar.bz2" "tar.xz" "xz" "lzma" "gz" "bz
 nl='
 '
 
-configuration
+# endregion
 
-# Create files / directories
-[ ! -d "$FM_PATH" ] && mkdir -p "$FM_PATH"
-[ ! -f "$FM_PATH/dmenufm.conf" ] && cp "/etc/dmenufm.conf" "$FM_PATH/dmenufm.conf"
-[ ! -d "$FM_CACHE_PATH" ] && mkdir -p "$FM_CACHE_PATH"
-[ ! -d "$FM_TRASH" ] && mkdir -p "$FM_TRASH"
-printf '%s\n' '#!/bin/sh' > "$FM_SDOPROP"
-printf '%s ' "printf '%s' \"\" | ${FM_PROG-dmenu} ${FM_OPTS--fn Monospace-18 -sb \"#FEE12B\" -sf \"#1d2021\" -nf \"#000000\" -nb \"#000000\"} ${FM_OPT_PROMPT--p}"  '"$1 " && echo' >> "$FM_SDOPROP"
-chmod +x "$FM_SDOPROP"
+# region Functions
+configuration () {
+    if [ -r "$FM_PATH/dmenufm.conf" ]; then
+	. "$FM_PATH/dmenufm.conf"
+    elif [ -r "/etc/dmenufm.conf" ]; then
+	. "/etc/dmenufm.conf"
+    else
+	echo 'Run `sudo make install` first to install all dmenufm files.'
+    fi
+}
 
-. dmenufm-open
-. dmenufm-action
-. dmenufm-menu
+Program () {
+	if [ -z "$FM_PROG" ]; then
+		FM_PROG=dmenu
+		[ "$termpath" = "true" ] || echo "No program selected, falling back to dmenu." 
+	fi
 
+    case $FM_PROG in
+	"fzf")
+	    [ -z "$FM_OPTS" ] && FM_OPTS="--reverse"
+	    [ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC=""
+	    [ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1=""
+	    [ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2=""
+	    [ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK=""
+	    FM_OPT_PROMPT="--prompt"
+	    ;;
+	"bemenu")
+	    [ -z "$FM_OPTS" ] && FM_OPTS="-l 10"
+	    [ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC="--sb=$FM_GENERIC_COLOR"
+	    [ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1="--sb=$FM_ACTION_COLOR_LV1"
+	    [ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2="--sb=$FM_ACTION_COLOR_LV2"
+	    [ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK="--sb=$FM_ACTION_COLOR_BULK"
+	    FM_OPT_PROMPT="-p"
+	    ;;
+	"rofi")
+	    [ -z "$FM_OPTS" ] && FM_OPTS="-dmenu -l 10"
+	    [ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC="-sb $FM_GENERIC_COLOR"
+	    [ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1="-sb $FM_ACTION_COLOR_LV1"
+	    [ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2="-sb $FM_ACTION_COLOR_LV2"
+	    [ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK="-sb $FM_ACTION_COLOR_BULK"
+	    FM_OPT_PROMPT="-p"
+	    ;;
+	"shellect")
+	    [ -z "$FM_OPTS" ] && FM_OPTS='-i -l'
+	    [ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC=""
+	    [ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1=""
+	    [ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2=""
+	    [ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK=""
+	    FM_OPT_PROMPT='-t'
+	    ;;
+	"dmenu")
+		[ -z "$FM_OPTS" ] && FM_OPTS="-f -i -l 10"
+		[ -z "$FM_OPTS_GENERIC" ] && FM_OPTS_GENERIC="-fn $FM_GENERIC_FONT -sb $FM_GENERIC_COLOR"
+		[ -z "$FM_OPTS_ACTION_LV1" ] && FM_OPTS_ACTION_LV1="-fn $FM_GENERIC_FONT -sb $FM_ACTION_COLOR_LV1"
+		[ -z "$FM_OPTS_ACTION_LV2" ] && FM_OPTS_ACTION_LV2="-fn $FM_GENERIC_FONT -sb $FM_ACTION_COLOR_LV2"
+		[ -z "$FM_OPTS_ACTION_BULK" ] && FM_OPTS_ACTION_BULK="-fn $FM_GENERIC_FONT -sb $FM_ACTION_COLOR_BULK"
+		[ -z "$FM_OPTS_ACTION_DELETE" ] && FM_OPTS_ACTION_DELETE="-fn $FM_GENERIC_FONT -sb $FM_ACTION_COLOR_DELETE"
+		[ -z "$FM_DANGER_OPTS" ] && FM_DANGER_OPTS="-fn $FM_DANGER_FONT -nb $FM_DANGER_COLOR_NB -sb $FM_DANGER_COLOR_SB -sf $FM_DANGER_COLOR_SF -nf $FM_DANGER_COLOR_NF"
+		[ -z "$FM_NOTIF_OPTS" ] && FM_NOTIF_OPTS="-fn $FM_NOTIF_FONT -sb $FM_NOTIF_COLOR_SB -sf $FM_NOTIF_COLOR_SF -nf $FM_NOTIF_COLOR_NF -nb $FM_NOTIF_COLOR_NB"
+		[ -z "$FM_ASKSUDO_OPTS" ] && FM_ASKSUDO_OPTS="-fn $FM_NOTIF_FONT -sb \"$FM_ROOT_COLOR_SB\" -sf \"$FM_ROOT_COLOR_SF\" -nf \"$FM_ROOT_COLOR_NF\" -nb \"$FM_ROOT_COLOR_NB\""
+
+
+		FM_OPT_PROMPT="-p"
+		;;
+	*)
+	    [ -z "$FM_OPTS" ] && FM_OPTS=""
+	    [ -z "$FM_OPT_PROMPT" ] && FM_OPT_PROMPT="" && echo "Program \`$FM_PROG\` not recognized, trying to run without any option. If this does not work, please set both \'$FM_OPTS\' and \'$FM_OPT_PROMPT\' variable!"
+	    ;;
+    esac
+}
+
+CreateFiles () { # for correct sudo askpass prompt, execute this after setting FM_PROG and its attributes
+	[ ! -d "$FM_PATH" ] && mkdir -p "$FM_PATH"
+	[ ! -f "$FM_PATH/dmenufm.conf" ] && cp "/etc/dmenufm.conf" "$FM_PATH/dmenufm.conf"
+	[ ! -d "$FM_CACHE_PATH" ] && mkdir -p "$FM_CACHE_PATH"
+	[ ! -d "$FM_TRASH" ] && mkdir -p "$FM_TRASH"
+	printf '%s\n' '#!/bin/sh' > "$FM_SDOPROP"
+	printf '%s ' "printf '%s' \"\" | ${FM_PROG} ${FM_OPTS} ${FM_ASKSUDO_OPTS} ${FM_OPT_PROMPT}"  '"$1 " && echo' >> "$FM_SDOPROP"
+	chmod +x "$FM_SDOPROP"
+}
 
 CheckDeps () {
     for CurDep in "$@"; do
@@ -112,8 +129,6 @@ CheckDeps () {
     done
     unset CurDep
 }
-
-CheckDeps find tail sed grep cp mv rm paste cut id wmctrl touch
 
 GetOS () {
     # Stolen from fff
@@ -123,6 +138,29 @@ GetOS () {
     esac
 }
 
+SetConfigDefaults () { # sets default values for variables if not set in config
+	[ -z "$FM_SUDO_COLOR" ] && FM_SUDO_COLOR="#FF0000"
+	[ -z "$FM_GENERIC_COLOR" ] && FM_GENERIC_COLOR="#005577"
+	[ -z "$FM_ACTION_COLOR_LV1" ] && FM_ACTION_COLOR_LV1="#33691E"
+	[ -z "$FM_ACTION_COLOR_LV2" ] && FM_ACTION_COLOR_LV2="#FF8C00"
+	[ -z "$FM_ACTION_COLOR_BULK" ] && FM_ACTION_COLOR_BULK="#CB06CB"
+	[ -z "$FM_ACTION_COLOR_DELETE" ] && FM_ACTION_COLOR_DELETE="#8B0000"
+
+	[ -z "$FM_ROOT_COLOR_SB" ] && FM_ROOT_COLOR_SB="#FEE12B" 
+	[ -z "$FM_ROOT_COLOR_SF" ] && FM_ROOT_COLOR_SF="#1D2021" 
+	[ -z "$FM_ROOT_COLOR_NF" ] && FM_ROOT_COLOR_NF="#000000" 
+	[ -z "$FM_ROOT_COLOR_NB" ] && FM_ROOT_COLOR_NB="#000000"
+
+	[ -z "$FM_NOTIF_COLOR_SB" ] && FM_NOTIF_COLOR_SB="#D79921" 
+	[ -z "$FM_NOTIF_COLOR_SF" ] && FM_NOTIF_COLOR_SF="#1D2021" 
+	[ -z "$FM_NOTIF_COLOR_NF" ] && FM_NOTIF_COLOR_NF="#000000" 
+	[ -z "$FM_NOTIF_COLOR_NB" ] && FM_NOTIF_COLOR_NB="#000000"
+
+	[ -z "$FM_DANGER_COLOR_NB" ] && FM_DANGER_COLOR_NB="#8B0000"
+	[ -z "$FM_DANGER_COLOR_SB" ] && FM_DANGER_COLOR_SB="#FF0000"
+	[ -z "$FM_DANGER_COLOR_SF" ] && FM_DANGER_COLOR_SF="#FFFFFF" 
+	[ -z "$FM_DANGER_COLOR_NF" ] && FM_DANGER_COLOR_NF="#BEBEBE"
+}
 
 UsageInfo () {
 	while read -r CurLine; do
@@ -151,6 +189,15 @@ UsageInfo () {
 	unset CurLine
 }
 
+# endregion
+
+configuration
+
+. dmenufm-open
+. dmenufm-action
+. dmenufm-menu
+
+CheckDeps find tail sed grep cp mv rm paste cut id wmctrl touch
 
 ### ARGUMENTS
 while [ -n "$1" ]; do
@@ -186,37 +233,16 @@ done
 # --lastpath option:
 [ -n "$outputpath" ] && cd "$(cat -u "$FM_LASTPATH")"
 
-# set delete action color if missing in config
-[ -z "$FM_ACTION_COLOR_DELETE" ] && FM_ACTION_COLOR_DELETE=darkred
-
+# different ui if superuser
 if [ "$(id -u)" -eq 0 ]; then
-
-    # super user privilege
-    yprompt () { # Usage yprompt [MSG] [BG_COLOR]
-	${FM_PROG:-dmenu} ${FM_OPTS--f -i -l 10} $2 ${FM_OPT_PROMPT--p} "SUDO: $1 "
-    }
-
-    xprompt () { # Usage xprompt [MSG] [BG_COLOR]
-	printf '%s' "" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} $2 ${FM_OPT_PROMPT--p} "SUDO: $1 "
-    }
-
-    NotiPrompt () { # Usage NotiPrompt [MSG]
-	printf '%s' "" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} ${FM_NOTIF_OPTS--fn "$FM_NOTIF_FONT" -sb "#d79921" -sf "#1d2021" -nf "#000000" -nb "#000000"} ${FM_OPT_PROMPT--p} "SUDO: $1 "
-
-    }
-
-    DangerPrompt () { # Usage: DangerPrompt [MSG] && ...
-	[ "$(printf "No\\nYes" | ${FM_PROG-dmenu} ${FM_OPTS--f -i -l 10} ${FM_DANGER_OPTS--fn $FM_DANGER_FONT -nb darkred -sb red -sf white -nf gray} ${FM_OPT_PROMPT--p} "$1")" = "Yes" ]
-    }
-    FM_GENERIC_COLOR="$FM_SUDO_COLOR"
-
-    GetOS
-    Program
-    MainMenu
-else
-    GetOS
-    Program
-    MainMenu
+	FM_GENERIC_COLOR="$FM_SUDO_COLOR"
+	FM_PROMPT_TEXT="SUDO: $FM_PROMPT_TEXT"
 fi
+
+SetConfigDefaults
+GetOS
+Program
+CreateFiles
+MainMenu
 
 printf '%s' "$PWD" > "$FM_LASTPATH"
